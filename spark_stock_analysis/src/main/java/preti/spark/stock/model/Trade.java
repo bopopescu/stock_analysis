@@ -48,6 +48,10 @@ public class Trade implements Serializable {
 		return sellDate == null;
 	}
 
+	public boolean isOpen(Date d) {
+		return (buyDate != null && sellDate != null && d.compareTo(buyDate) >= 0 && d.compareTo(sellDate) < 0);
+	}
+
 	public void close(Date d) {
 		this.sellDate = d;
 	}

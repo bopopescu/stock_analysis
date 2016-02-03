@@ -5,8 +5,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import preti.spark.stock.reporting.AbstractReport;
+
 @SuppressWarnings("serial")
 public class StockTrade implements Serializable {
+	protected static final Log log = LogFactory.getLog(StockTrade.class);
+
 	private Stock stock;
 	private List<Trade> trades;
 
@@ -89,6 +96,22 @@ public class StockTrade implements Serializable {
 			}
 		}
 		return tradeClosed;
+	}
+
+	public double getOpenPositionsValueAtDate(Date d) {
+		if (!hasAnyTrade()) {
+			return 0;
+		}
+
+		double value = 0;
+		for (Trade t : trades) {
+			if (t.isOpen(d)) {
+				value += t.getStock().getCloseValueAtDate(d)*t.getSize();
+			}
+		}
+
+		log.info(String.format("Value is %s", value));
+		return value;
 	}
 
 }

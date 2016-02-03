@@ -106,11 +106,10 @@ public class StockAnalysis {
 		System.out.println("Final balance: " + system.getAccountBalance());
 
 		log.info("Generating reports ...");
-		 new BalanceReport(system, "localhost", 5003, "balance").generate();
+		new AggregatedReport(system, "localhost", 5000, "aggregated").generate();
 		new StockReport(system, "localhost", 5001, "stock").generate();
 		new OperationsReport(system, "localhost", 5002, "operations").generate();
-//		 new TradeReport(system, "localhost", 5000, "trade").generate();
-		new AggregatedReport(system, "localhost", 5000, "aggregated").generate();
+		new BalanceReport(system, "localhost", 5003, "balance").generate();
 		log.info("Reports generated");
 
 	}

@@ -6,11 +6,13 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+import preti.spark.stock.model.StockTrade;
 import preti.spark.stock.system.TradeSystem;
 
 public class BalanceReport extends AbstractReport {
@@ -19,9 +21,16 @@ public class BalanceReport extends AbstractReport {
 
 		private String indexName;
 		private Date date;
-		private Double balance;
+		private Double accountBalance;
+		private Double openPositionsValue;
 
-		
+		public BalanceEvent(Date d, Double accountBalance, Double openPositionsValue, String indexName) {
+			this.date = d;
+			this.accountBalance = accountBalance;
+			this.openPositionsValue = openPositionsValue;
+			this.indexName = indexName;
+		}
+
 		public String getIndexName() {
 			return indexName;
 		}
@@ -30,16 +39,14 @@ public class BalanceReport extends AbstractReport {
 			return new SimpleDateFormat("yyyyMMdd").format(date);
 		}
 
-		public Double getBalance() {
-			return balance;
+		public Double getAccountBalance() {
+			return accountBalance;
 		}
 
-		public BalanceEvent(Date d, Double balance, String indexName) {
-			this.date = d;
-			this.balance = balance;
-			this.indexName = indexName;
+		public Double getOpenPositionsValue() {
+			return openPositionsValue;
 		}
-		
+
 		public long getUnixTimestamp() {
 			return date.getTime() / 1000l;
 		}
@@ -58,8 +65,16 @@ public class BalanceReport extends AbstractReport {
 		ObjectMapper mapper = new ObjectMapper();
 
 		Map<Date, Double> balanceHistory = system.getBalanceHistory();
+		Collection<StockTrade> wallet = system.getWallet();
+
 		for (Date d : balanceHistory.keySet()) {
-			writer.println(mapper.writeValueAsString(new BalanceEvent(d, balanceHistory.get(d), this.indexName)));
+			double openPositionsValue = 0;
+			for (StockTrade st : wallet) {
+				openPositionsValue += st.getOpenPositionsValueAtDate(d);
+			}
+
+			writer.println(mapper.writeValueAsString(
+					new BalanceEvent(d, balanceHistory.get(d), openPositionsValue, this.indexName)));
 		}
 		writer.close();
 		socket.close();
