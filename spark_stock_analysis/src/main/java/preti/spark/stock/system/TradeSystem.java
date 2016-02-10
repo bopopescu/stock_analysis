@@ -91,12 +91,12 @@ public class TradeSystem implements Serializable {
 			size--;
 		}
 		if (size < 1) {
-			log.info("Not enough balance to enter position");
+			log.warn("Not enough balance to enter position");
 			return false;
 		}
 
 		Trade t = stockTrade.openNewTrade(size, d, strategy.calculateStopLossPoint(d));
-		log.info("Opening new trade: " + t);
+		log.debug("Opening new trade: " + t);
 		this.accountBalance -= t.getSize() * t.getBuyValue();
 		return true;
 	}
@@ -104,7 +104,7 @@ public class TradeSystem implements Serializable {
 	private void closeLastTrade(StockTrade stockTrade, Date d) {
 		Trade t = stockTrade.closeLastTrade(d);
 		this.accountBalance += t.getSize() * t.getSellValue();
-		log.info("Closing trade " + t);
+		log.debug("Closing trade " + t);
 	}
 
 	private double calculateTotalOpenPositions(Date d) {
