@@ -1,0 +1,586 @@
+{
+  "id": 1,
+  "title": "Trades Summary",
+  "originalTitle": "Trades Summary",
+  "tags": [],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "sharedCrosshair": true,
+  "rows": [
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "decimals": 2,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)",
+            "thresholdLine": false
+          },
+          "id": 1,
+          "isNew": true,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "minSpan": 1,
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "repeat": null,
+          "rightYAxisLabel": "",
+          "scopedVars": {
+            "stock": {
+              "text": "ELPL4",
+              "value": "ELPL4",
+              "selected": true
+            }
+          },
+          "seriesOverrides": [
+            {
+              "alias": "profitablebuy",
+              "color": "#0A437C",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 2,
+              "points": true,
+              "steppedLine": true
+            },
+            {
+              "alias": "profitablesell",
+              "color": "#0A437C",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 4,
+              "points": true
+            },
+            {
+              "alias": "unprofitablebuy",
+              "color": "#890F02",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 2,
+              "points": true
+            },
+            {
+              "alias": "unprofitablesell",
+              "color": "#890F02",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 4,
+              "points": true
+            },
+            {
+              "alias": "stockvalue",
+              "legend": false
+            }
+          ],
+          "span": 12,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "alias(stocks.$stock.close, 'stockvalue')"
+            },
+            {
+              "hide": false,
+              "refId": "B",
+              "target": "alias(operations.BUY.profitable.$stock.value, 'profitablebuy')"
+            },
+            {
+              "refId": "C",
+              "target": "alias(operations.SELL.profitable.$stock.value, 'profitablesell')"
+            },
+            {
+              "refId": "D",
+              "target": "alias(operations.BUY.unprofitable.$stock.value, 'unprofitablebuy')"
+            },
+            {
+              "refId": "E",
+              "target": "alias(operations.SELL.unprofitable.$stock.value, 'unprofitablesell')"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "$stock",
+          "tooltip": {
+            "shared": false,
+            "value_type": "cumulative"
+          },
+          "transparent": false,
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "none"
+          ]
+        }
+      ],
+      "repeat": "stock",
+      "scopedVars": {
+        "stock": {
+          "text": "ELPL4",
+          "value": "ELPL4",
+          "selected": true
+        }
+      },
+      "showTitle": false,
+      "title": "$stock"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "decimals": 2,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)",
+            "thresholdLine": false
+          },
+          "id": 2,
+          "isNew": true,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "minSpan": 1,
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "repeat": null,
+          "rightYAxisLabel": "",
+          "scopedVars": {
+            "stock": {
+              "text": "PETR4",
+              "value": "PETR4",
+              "selected": true
+            }
+          },
+          "seriesOverrides": [
+            {
+              "alias": "profitablebuy",
+              "color": "#0A437C",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 2,
+              "points": true,
+              "steppedLine": true
+            },
+            {
+              "alias": "profitablesell",
+              "color": "#0A437C",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 4,
+              "points": true
+            },
+            {
+              "alias": "unprofitablebuy",
+              "color": "#890F02",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 2,
+              "points": true
+            },
+            {
+              "alias": "unprofitablesell",
+              "color": "#890F02",
+              "legend": false,
+              "lines": false,
+              "nullPointMode": "connected",
+              "pointradius": 4,
+              "points": true
+            },
+            {
+              "alias": "stockvalue",
+              "legend": false
+            }
+          ],
+          "span": 12,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "alias(stocks.$stock.close, 'stockvalue')"
+            },
+            {
+              "hide": false,
+              "refId": "B",
+              "target": "alias(operations.BUY.profitable.$stock.value, 'profitablebuy')"
+            },
+            {
+              "refId": "C",
+              "target": "alias(operations.SELL.profitable.$stock.value, 'profitablesell')"
+            },
+            {
+              "refId": "D",
+              "target": "alias(operations.BUY.unprofitable.$stock.value, 'unprofitablebuy')"
+            },
+            {
+              "refId": "E",
+              "target": "alias(operations.SELL.unprofitable.$stock.value, 'unprofitablesell')"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "$stock",
+          "tooltip": {
+            "shared": false,
+            "value_type": "cumulative"
+          },
+          "transparent": false,
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "none"
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": 1455064473805,
+      "repeatRowId": 1,
+      "scopedVars": {
+        "stock": {
+          "text": "PETR4",
+          "value": "PETR4",
+          "selected": true
+        }
+      },
+      "showTitle": false,
+      "title": "$stock"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "decimals": 2,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 3,
+          "isNew": true,
+          "leftYAxisLabel": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": true,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "unprofitablesell",
+              "color": "#890F02",
+              "legend": false,
+              "nullPointMode": "null"
+            },
+            {
+              "alias": "profitablesell",
+              "color": "#0A437C",
+              "legend": false,
+              "nullPointMode": "null"
+            }
+          ],
+          "span": 12,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "alias(operations.SELL.unprofitable.*.gain, 'unprofitablesell')"
+            },
+            {
+              "refId": "B",
+              "target": "alias(operations.SELL.profitable.*.gain, 'profitablesell')"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Operations Resume",
+          "tooltip": {
+            "shared": false,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "none",
+            "none"
+          ]
+        }
+      ],
+      "title": "New row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 0,
+          "grid": {
+            "leftLogBase": 1,
+            "leftMax": null,
+            "leftMin": null,
+            "rightLogBase": 1,
+            "rightMax": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "id": 4,
+          "isNew": true,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 2,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "saldo_conta",
+              "bars": false,
+              "linewidth": 1
+            },
+            {
+              "alias": "posicoes",
+              "bars": false,
+              "linewidth": 1
+            },
+            {
+              "alias": "total",
+              "bars": false
+            }
+          ],
+          "span": 12,
+          "stack": false,
+          "steppedLine": true,
+          "targets": [
+            {
+              "refId": "A",
+              "target": "alias(balance.accountBalance, 'saldo_conta')"
+            },
+            {
+              "refId": "B",
+              "target": "alias(balance.openPositionsValue, 'posicoes')"
+            },
+            {
+              "hide": false,
+              "refId": "C",
+              "target": "alias(sumSeries(#A, #B), 'total')",
+              "textEditor": false
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Balance",
+          "tooltip": {
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "type": "graph",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ]
+        }
+      ],
+      "title": "New row"
+    }
+  ],
+  "time": {
+    "from": "now-2y",
+    "to": "now-1y"
+  },
+  "timepicker": {
+    "now": true,
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "allFormat": "glob",
+        "current": {
+          "tags": [],
+          "text": "ELPL4 + PETR4",
+          "value": [
+            "ELPL4",
+            "PETR4"
+          ]
+        },
+        "datasource": null,
+        "includeAll": false,
+        "label": "Stock",
+        "multi": true,
+        "multiFormat": "glob",
+        "name": "stock",
+        "options": [
+          {
+            "text": "ELPL4",
+            "value": "ELPL4",
+            "selected": true
+          },
+          {
+            "text": "PETR4",
+            "value": "PETR4",
+            "selected": true
+          }
+        ],
+        "query": "stocks.*",
+        "refresh": true,
+        "regex": "",
+        "tags": [],
+        "type": "query",
+        "useTags": true
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "schemaVersion": 8,
+  "version": 3,
+  "links": []
+}
