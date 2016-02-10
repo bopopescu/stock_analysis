@@ -110,7 +110,6 @@ public class StockTrade implements Serializable {
 			}
 		}
 
-		log.info(String.format("Value is %s", value));
 		return value;
 	}
 
