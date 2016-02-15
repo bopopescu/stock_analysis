@@ -1,7 +1,8 @@
 graphite:
   image: hopsoft/graphite-statsd
- # volumes:
+  volumes:
  #   - ./graphite/config/storage-schemas.conf/:/opt/graphite/conf/storage-schemas.conf
+    - ./graphite/config/graphite-conf:/opt/graphite/conf
   ports:
     - "80:80"
     - "2003:2003"
