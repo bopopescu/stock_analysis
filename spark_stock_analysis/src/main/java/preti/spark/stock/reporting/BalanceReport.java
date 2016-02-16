@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.StockTrade;
+import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystem;
 
 public class BalanceReport extends AbstractReport {
@@ -65,11 +65,11 @@ public class BalanceReport extends AbstractReport {
 		ObjectMapper mapper = new ObjectMapper();
 
 		Map<Date, Double> balanceHistory = system.getBalanceHistory();
-		Collection<StockTrade> wallet = system.getWallet();
+		Collection<StockContext> wallet = system.getWallet();
 
 		for (Date d : balanceHistory.keySet()) {
 			double openPositionsValue = 0;
-			for (StockTrade st : wallet) {
+			for (StockContext st : wallet) {
 				openPositionsValue += st.getOpenPositionsValueAtDate(d);
 			}
 

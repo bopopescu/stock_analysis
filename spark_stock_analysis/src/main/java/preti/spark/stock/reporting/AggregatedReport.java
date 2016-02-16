@@ -13,8 +13,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import preti.spark.stock.model.Stock;
 import preti.spark.stock.model.StockHistory;
-import preti.spark.stock.model.StockTrade;
 import preti.spark.stock.model.Trade;
+import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystem;
 
 public class AggregatedReport extends AbstractReport {
@@ -98,8 +98,8 @@ public class AggregatedReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockTrade> wallet = system.getWallet();
-		for (StockTrade st : wallet) {
+		Collection<StockContext> wallet = system.getWallet();
+		for (StockContext st : wallet) {
 			Stock stock = st.getStock();
 			for (Date d : stock.getAllHistoryDates()) {
 				Double closeValue = null;

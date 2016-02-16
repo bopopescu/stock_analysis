@@ -66,9 +66,9 @@ public class Trade implements Serializable {
 		}
 
 		if (d != null) {
-			return (stock.getCloseValueAtDate(d) - stock.getCloseValueAtDate(buyDate));
+			return size * (stock.getCloseValueAtDate(d) - stock.getCloseValueAtDate(buyDate));
 		} else {
-			return (stock.getCloseValueAtDate(sellDate) - stock.getCloseValueAtDate(buyDate));
+			return size * (stock.getCloseValueAtDate(sellDate) - stock.getCloseValueAtDate(buyDate));
 		}
 	}
 
@@ -97,6 +97,10 @@ public class Trade implements Serializable {
 			throw new IllegalArgumentException("Trade is not opened.");
 
 		return stock.getCloseValueAtDate(d) <= stopPos;
+	}
+
+	public double getTotalValue(Date d) {
+		return stock.getCloseValueAtDate(d) * size;
 	}
 
 	public String toString() {

@@ -11,8 +11,8 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.StockTrade;
 import preti.spark.stock.model.Trade;
+import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystem;
 
 public class OperationsReport extends AbstractReport {
@@ -115,8 +115,8 @@ public class OperationsReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockTrade> wallet = system.getWallet();
-		for (StockTrade st : wallet) {
+		Collection<StockContext> wallet = system.getWallet();
+		for (StockContext st : wallet) {
 			for (Trade t : st.getTrades()) {
 				log.info("Generating report for trade " + t);
 				boolean proffitable = t.isProfitable();

@@ -16,14 +16,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockTrade;
 import preti.spark.stock.model.Trade;
 
 @SuppressWarnings("serial")
 public class TradeSystem implements Serializable {
 	private static final Log log = LogFactory.getLog(TradeSystem.class);
 
-	private Collection<StockTrade> wallet;
+	private Collection<StockContext> wallet;
 	private double accountInitialPosition;
 	private double accountBalance;
 	private Map<Date, Double> balanceHistory;
@@ -47,7 +46,7 @@ public class TradeSystem implements Serializable {
 
 		wallet = new HashSet<>();
 		for (Stock s : stocks) {
-			wallet.add(new StockTrade(s));
+			wallet.add(new StockContext(s));
 		}
 
 		balanceHistory = new TreeMap<>();
@@ -58,13 +57,13 @@ public class TradeSystem implements Serializable {
 		return balanceHistory;
 	}
 
-	public Collection<StockTrade> getWallet() {
+	public Collection<StockContext> getWallet() {
 		return wallet;
 	}
 
 	public List<Stock> getStocks() {
 		List<Stock> stocks = new ArrayList<>();
-		for (StockTrade st : wallet) {
+		for (StockContext st : wallet) {
 			stocks.add(st.getStock());
 		}
 		return stocks;
@@ -78,7 +77,7 @@ public class TradeSystem implements Serializable {
 		this.tradingStrategies.put(stockCode, strategy);
 	}
 
-	private boolean openNewTrade(StockTrade stockTrade, Date d) {
+	private boolean openNewTrade(StockContext stockTrade, Date d) {
 		TradingStrategy strategy = this.tradingStrategies.get(stockTrade.getStock().getCode());
 		double size = strategy.calculatePositionSize(d);
 		if (size < 1) {
@@ -101,7 +100,7 @@ public class TradeSystem implements Serializable {
 		return true;
 	}
 
-	private void closeLastTrade(StockTrade stockTrade, Date d) {
+	private void closeLastTrade(StockContext stockTrade, Date d) {
 		Trade t = stockTrade.closeLastTrade(d);
 		this.accountBalance += t.getSize() * t.getSellValue();
 		log.debug("Closing trade " + t);
@@ -109,7 +108,7 @@ public class TradeSystem implements Serializable {
 
 	private double calculateTotalOpenPositions(Date d) {
 		double total = 0;
-		for (StockTrade st : wallet) {
+		for (StockContext st : wallet) {
 			if (st.isInOpenPosition()) {
 				Trade openTrade = st.getLastTrade();
 				total += openTrade.getSize() * openTrade.getStock().getCloseValueAtDate(d);
@@ -129,7 +128,7 @@ public class TradeSystem implements Serializable {
 	public void analyzeStocks(Date initialDate, Date finalDate) {
 		// Identifica todas as datas, de forma unica e ordenada
 		TreeSet<Date> allDates = new TreeSet<>();
-		for (StockTrade st : this.wallet) {
+		for (StockContext st : this.wallet) {
 			allDates.addAll(st.getStock().getAllHistoryDates());
 		}
 
@@ -144,7 +143,7 @@ public class TradeSystem implements Serializable {
 		}
 
 		for (Date date : allDates) {
-			for (StockTrade stockTrade : wallet) {
+			for (StockContext stockTrade : wallet) {
 				if (!stockTrade.getStock().hasHistoryAtDate(date)) {
 					continue;
 				}
@@ -172,7 +171,7 @@ public class TradeSystem implements Serializable {
 	}
 
 	public void closeAllOpenTrades(Date d) {
-		for (StockTrade st : wallet) {
+		for (StockContext st : wallet) {
 			if (st.isInOpenPosition()) {
 				this.closeLastTrade(st, d);
 			}

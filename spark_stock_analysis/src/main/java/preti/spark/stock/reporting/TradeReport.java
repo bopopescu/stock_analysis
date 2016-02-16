@@ -11,8 +11,8 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.StockTrade;
 import preti.spark.stock.model.Trade;
+import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystem;
 
 public class TradeReport extends AbstractReport {
@@ -79,8 +79,8 @@ public class TradeReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockTrade> wallet = system.getWallet();
-		for (StockTrade st : wallet) {
+		Collection<StockContext> wallet = system.getWallet();
+		for (StockContext st : wallet) {
 			for (Trade t : st.getTrades()) {
 				log.info("Generating report for trade " + t);
 				writer.println(mapper.writeValueAsString(new TradeEvent(t.getBuyDate(), t.getSellDate(),

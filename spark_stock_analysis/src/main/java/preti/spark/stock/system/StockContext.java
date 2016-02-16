@@ -1,4 +1,4 @@
-package preti.spark.stock.model;
+package preti.spark.stock.system;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -8,16 +8,18 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import preti.spark.stock.model.Stock;
+import preti.spark.stock.model.Trade;
 import preti.spark.stock.reporting.AbstractReport;
 
 @SuppressWarnings("serial")
-public class StockTrade implements Serializable {
-	protected static final Log log = LogFactory.getLog(StockTrade.class);
+public class StockContext implements Serializable {
+	protected static final Log log = LogFactory.getLog(StockContext.class);
 
 	private Stock stock;
 	private List<Trade> trades;
 
-	public StockTrade(Stock stock) {
+	public StockContext(Stock stock) {
 		super();
 		this.stock = stock;
 		trades = new ArrayList<>();
@@ -106,7 +108,7 @@ public class StockTrade implements Serializable {
 		double value = 0;
 		for (Trade t : trades) {
 			if (t.isOpen(d)) {
-				value += t.getStock().getCloseValueAtDate(d)*t.getSize();
+				value += t.getTotalValue(d);
 			}
 		}
 
