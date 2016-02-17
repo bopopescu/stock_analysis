@@ -40,9 +40,9 @@ public class StockAnalysis {
 			System.out.println("Must specify config file");
 			System.exit(-1);
 		}
-		
+
 		ConfigContext configContext = new ObjectMapper().readValue(new File(args[0]), ConfigContext.class);
-		
+
 		SparkConf conf = new SparkConf();
 		sc = new JavaSparkContext(conf);
 
@@ -50,8 +50,6 @@ public class StockAnalysis {
 				.filter(s -> !s.trim().isEmpty()).map(InputDataEntry::parseFromLine);
 		inputData.persist(StorageLevel.MEMORY_ONLY());
 
-		// List<String> stockCodes = sc.textFile(stockFilterFile).filter(s ->
-		// !s.trim().isEmpty()).collect();
 		List<String> stockCodes = configContext.getStockCodesToAnalyze();
 
 		List<Stock> stocks = new ArrayList<>();
@@ -131,8 +129,10 @@ public class StockAnalysis {
 
 	private static TradingStrategy optimizeParameters(Stock stock, double initialPosition, Date initialDate,
 			Date finalDate, ConfigContext configContext) {
-		List<Integer> entryDonchianSizes = configContext.getEntryDonchianSizes();
-		List<Integer> exitDonchianSizes = configContext.getExitDonchianSizes();
+		List<Integer> entryDonchianSizes = new ArrayList<>();
+		for (int i = configContext.getMinDochianEntryValue(); i <= configContext.getMaxDonchianEntryValue(); i++) {
+			entryDonchianSizes.add(i);
+		}
 
 		final int NO_ENTRY_FOUND = -1;
 
@@ -140,7 +140,8 @@ public class StockAnalysis {
 		Map<Integer, Number[]> gains = entryDonchianRDD.mapToPair(entryDonchianSize -> {
 			double bestGain = 0;
 			int selectedExitSize = NO_ENTRY_FOUND;
-			for (int exitDonchianSize : exitDonchianSizes) {
+			for (int exitDonchianSize = configContext.getMinDonchianExitValue(); exitDonchianSize <= configContext
+					.getMaxDonchianExitValue() && exitDonchianSize <= entryDonchianSize; exitDonchianSize++) {
 				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
 						initialPosition, configContext.getRiskRate());
 				TradeSystem system = new TradeSystem(stock, initialPosition, strategy);
