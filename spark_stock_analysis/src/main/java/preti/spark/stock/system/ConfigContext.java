@@ -10,6 +10,7 @@ import java.util.List;
 
 @SuppressWarnings("serial")
 public class ConfigContext implements Serializable {
+	private final String DATE_FORMAT = "yyyy-MM-dd";
 	private String stockHistoryFile;
 	private List<String> stockCodesToAnalyze;
 	private int minDochianEntryValue, maxDonchianEntryValue, minDonchianExitValue, maxDonchianExitValue;
@@ -71,10 +72,14 @@ public class ConfigContext implements Serializable {
 	public Date getInitialDate() {
 		return initialDate;
 	}
+	
+	public String getFormatedInitialDate() {
+		return new SimpleDateFormat(DATE_FORMAT).format(initialDate);
+	}
 
 	public void setInitialDate(String initialDate) {
 		try {
-			this.initialDate = new SimpleDateFormat("yyyy-MM-dd").parse(initialDate);
+			this.initialDate = new SimpleDateFormat(DATE_FORMAT).parse(initialDate);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -83,10 +88,14 @@ public class ConfigContext implements Serializable {
 	public Date getFinalDate() {
 		return finalDate;
 	}
+	
+	public String getFormatedFinalDate() {
+		return new SimpleDateFormat(DATE_FORMAT).format(finalDate);
+	}
 
 	public void setFinalDate(String finalDate) {
 		try {
-			this.finalDate = new SimpleDateFormat("yyyy-MM-dd").parse(finalDate);
+			this.finalDate = new SimpleDateFormat(DATE_FORMAT).parse(finalDate);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}

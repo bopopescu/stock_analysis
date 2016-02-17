@@ -22,6 +22,7 @@ import org.joda.time.DateTime;
 import preti.spark.stock.model.Stock;
 import preti.spark.stock.model.StockHistory;
 import preti.spark.stock.reporting.BalanceReport;
+import preti.spark.stock.reporting.FileReport;
 import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
 import preti.spark.stock.system.ConfigContext;
@@ -107,6 +108,7 @@ public class StockAnalysis {
 		new StockReport(system, "localhost", 5001, "stock").generate();
 		new OperationsReport(system, "localhost", 5002, "operations").generate();
 		new BalanceReport(system, "localhost", 5003, "balance").generate();
+		new FileReport(system, "/tmp", configContext).generate();
 		log.info("Reports generated");
 
 	}
