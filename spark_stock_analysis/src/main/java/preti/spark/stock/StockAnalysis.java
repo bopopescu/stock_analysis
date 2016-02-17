@@ -1,10 +1,8 @@
 package preti.spark.stock;
 
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -18,14 +16,15 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 
 import preti.spark.stock.model.Stock;
 import preti.spark.stock.model.StockHistory;
-import preti.spark.stock.reporting.AggregatedReport;
 import preti.spark.stock.reporting.BalanceReport;
 import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
+import preti.spark.stock.system.ConfigContext;
 import preti.spark.stock.system.TradeSystem;
 import preti.spark.stock.system.TradingStrategy;
 import preti.spark.stock.system.TradingStrategyImpl;
@@ -36,24 +35,23 @@ public class StockAnalysis {
 	private static JavaSparkContext sc;
 
 	public static void main(String[] args) throws IOException, ParseException {
+		if (args.length != 1) {
+			System.out.println("Must specify config file");
+			System.exit(-1);
+		}
+		
+		ConfigContext configContext = new ObjectMapper().readValue(new File(args[0]), ConfigContext.class);
+		
 		SparkConf conf = new SparkConf();
 		sc = new JavaSparkContext(conf);
 
-		// Load the text file into Spark.
-		if (args.length < 2) {
-			System.out.println("Must specify input files");
-			System.exit(-1);
-		}
-		String dataFile = args[0];
-		String stockFilterFile = args[1];
-
-		JavaRDD<InputDataEntry> inputData = sc.textFile(dataFile).filter(s -> !s.trim().isEmpty())
-				.map(InputDataEntry::parseFromLine);
+		JavaRDD<InputDataEntry> inputData = sc.textFile(configContext.getStockHistoryFile())
+				.filter(s -> !s.trim().isEmpty()).map(InputDataEntry::parseFromLine);
 		inputData.persist(StorageLevel.MEMORY_ONLY());
 
-		List<String> stockCodes = sc.textFile(stockFilterFile).filter(s -> !s.trim().isEmpty()).collect();
-		// List<String> stockCodes = inputData.map(sd ->
-		// sd.getCode()).distinct().collect();
+		// List<String> stockCodes = sc.textFile(stockFilterFile).filter(s ->
+		// !s.trim().isEmpty()).collect();
+		List<String> stockCodes = configContext.getStockCodesToAnalyze();
 
 		List<Stock> stocks = new ArrayList<>();
 
@@ -70,33 +68,37 @@ public class StockAnalysis {
 			}
 		}
 
-		final double accountInitialPosition = 10000;
-		Date initialDate = new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-01");
-		Date finalDate = new SimpleDateFormat("yyyy-MM-dd").parse("2015-01-01");
+		final double accountInitialPosition = configContext.getAccountInitialValue();
+		final int trainingSize = configContext.getTrainingSizeInMonths();
+		final int windowSize = configContext.getWindowSizeInMonths();
+
+		Date initialDate = configContext.getInitialDate();
+		Date finalDate = configContext.getFinalDate();
 		TradeSystem system = new TradeSystem(stocks, accountInitialPosition, null);
 
-		DateTime currentInitialDate = new DateTime(initialDate.getTime()).plusMonths(1);
-		DateTime currentFinalDate = currentInitialDate.plusMonths(1);
+		DateTime currentInitialDate = new DateTime(initialDate.getTime()).plusMonths(trainingSize);
+		DateTime currentFinalDate = currentInitialDate.plusMonths(windowSize);
 		Map<String, TradingStrategy> optimzedStrategies = new HashMap<>();
 		while (currentFinalDate.isBefore(finalDate.getTime() + 1)) {
 			Map<String, TradingStrategy> newStrategies = new HashMap<>();
 			for (Stock s : stocks) {
 				TradingStrategy strategy = optimizeParameters(s, accountInitialPosition,
-						currentInitialDate.minusMonths(1).toDate(), currentInitialDate.minusDays(1).toDate());
+						currentInitialDate.minusMonths(trainingSize).toDate(), currentInitialDate.minusDays(1).toDate(),
+						configContext);
 				if (strategy != null) {
 					newStrategies.put(s.getCode(), strategy);
 				}
 			}
 			log.info("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
-					+ currentInitialDate.minusMonths(1) + " to " + currentInitialDate.minusDays(1));
+					+ currentInitialDate.minusMonths(trainingSize) + " to " + currentInitialDate.minusDays(1));
 			optimzedStrategies = mergeStrategies(optimzedStrategies, newStrategies);
 
 			system.setTradingStrategies(optimzedStrategies);
 			system.analyzeStocks(currentInitialDate.toDate(), currentFinalDate.toDate());
 			log.info("Analyze finished.");
 
-			currentInitialDate = currentInitialDate.plusMonths(1);
-			currentFinalDate = currentFinalDate.plusMonths(1);
+			currentInitialDate = currentInitialDate.plusMonths(windowSize);
+			currentFinalDate = currentFinalDate.plusMonths(windowSize);
 		}
 		system.closeAllOpenTrades(finalDate);
 		System.out.println("Final balance: " + system.getAccountBalance());
@@ -116,8 +118,9 @@ public class StockAnalysis {
 		for (String code : oldStrategies.keySet()) {
 			if (!newStrategies.containsKey(code)) {
 				TradingStrategyImpl oldStrategy = (TradingStrategyImpl) oldStrategies.get(code);
-				mergedStrategies.put(code, new TradingStrategyImpl(oldStrategy.getStock(), 0,
-						oldStrategy.getExitDonchianSize(), oldStrategy.getAccountInitialPosition()));
+				mergedStrategies.put(code,
+						new TradingStrategyImpl(oldStrategy.getStock(), 0, oldStrategy.getExitDonchianSize(),
+								oldStrategy.getAccountInitialPosition(), oldStrategy.getRiskRate()));
 			}
 		}
 
@@ -125,19 +128,19 @@ public class StockAnalysis {
 	}
 
 	private static TradingStrategy optimizeParameters(Stock stock, double initialPosition, Date initialDate,
-			Date finalDate) {
-		Integer[] entryDonchianSizes = new Integer[] { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-		Integer[] exitDonchianSizes = new Integer[] { 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+			Date finalDate, ConfigContext configContext) {
+		List<Integer> entryDonchianSizes = configContext.getEntryDonchianSizes();
+		List<Integer> exitDonchianSizes = configContext.getExitDonchianSizes();
 
 		final int NO_ENTRY_FOUND = -1;
 
-		JavaRDD<Integer> entryDonchianRDD = sc.parallelize(Arrays.asList(entryDonchianSizes));
+		JavaRDD<Integer> entryDonchianRDD = sc.parallelize(entryDonchianSizes);
 		Map<Integer, Number[]> gains = entryDonchianRDD.mapToPair(entryDonchianSize -> {
 			double bestGain = 0;
 			int selectedExitSize = NO_ENTRY_FOUND;
 			for (int exitDonchianSize : exitDonchianSizes) {
 				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
-						initialPosition);
+						initialPosition, configContext.getRiskRate());
 				TradeSystem system = new TradeSystem(stock, initialPosition, strategy);
 				system.analyzeStocks(initialDate, finalDate);
 				system.closeAllOpenTrades(finalDate);
@@ -180,58 +183,9 @@ public class StockAnalysis {
 
 		// Verify if a positive result was found
 		if (selectedExit != NO_ENTRY_FOUND)
-			return new TradingStrategyImpl(stock, selectedEntry, selectedExit, initialPosition);
+			return new TradingStrategyImpl(stock, selectedEntry, selectedExit, initialPosition,
+					configContext.getRiskRate());
 		else
 			return null;
 	}
-
-	// private static TradingStrategy optimizeParameters(Stock stock, double
-	// initialPosition, Date initialDate,
-	// Date finalDate) {
-	// TradingStrategyImpl selectedStrategy = null;
-	//
-	// double bestGain = 0;
-	// for (int entryDonchianSize = 10; entryDonchianSize <= 20;
-	// entryDonchianSize++) {
-	// for (int exitDonchianSize = 2; exitDonchianSize <= 10;
-	// exitDonchianSize++) {
-	// TradingStrategyImpl strategy = new TradingStrategyImpl(stock,
-	// entryDonchianSize, exitDonchianSize,
-	// initialPosition);
-	// TradeSystem system = new TradeSystem(stock, initialPosition, strategy);
-	// system.analyzeStocks(initialDate, finalDate);
-	// system.closeAllOpenTrades(finalDate);
-	//
-	// double currentGain = system.getAccountBalance() -
-	// system.getAccountInitialPosition();
-	// if (currentGain > bestGain) {
-	// bestGain = currentGain;
-	// selectedStrategy = strategy;
-	// }
-	// }
-	// }
-	// log.info(String.format("Optimization for stock %s initial date %s gain %s
-	// entry %s exit %s", stock.getCode(),
-	// initialDate, bestGain, selectedStrategy != null ?
-	// selectedStrategy.getEntryDonchianSize() : null,
-	// selectedStrategy != null ? selectedStrategy.getExitDonchianSize() :
-	// null));
-	// return selectedStrategy;
-	// }
-
-	private static void printStocks(List<Stock> stocks) throws IOException {
-		System.out.println("Stocks: " + stocks);
-		String outputFile = "/tmp/output.txt";
-		PrintWriter writer = new PrintWriter(new FileWriter(outputFile));
-		for (Stock stock : stocks) {
-			writer.println(stock.getCode());
-			for (Date d : stock.getHistory().keySet()) {
-				StockHistory h = stock.getHistory(d);
-				writer.println("####" + h);
-			}
-		}
-		writer.flush();
-		writer.close();
-	}
-
 }

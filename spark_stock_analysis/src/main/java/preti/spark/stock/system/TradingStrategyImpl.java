@@ -22,7 +22,7 @@ import preti.spark.stock.model.StockHistory;
 public class TradingStrategyImpl implements TradingStrategy {
 	private static final Log log = LogFactory.getLog(TradingStrategyImpl.class);
 
-	private static final double RISK_FACTOR = 0.02;
+	private final double riskRate;
 	private LowestValueIndicator lowestValueIndicator;
 	private HighestValueIndicator highestValueIndicator;
 
@@ -31,8 +31,8 @@ public class TradingStrategyImpl implements TradingStrategy {
 
 	private Stock stock;
 
-	public TradingStrategyImpl(Stock stock, int entryDonchianSize, int exitDonchianSize,
-			double accountInitialPosition) {
+	public TradingStrategyImpl(Stock stock, int entryDonchianSize, int exitDonchianSize, double accountInitialPosition,
+			double riskRate) {
 		super();
 		this.entryDonchianSize = entryDonchianSize;
 		this.exitDonchianSize = exitDonchianSize;
@@ -41,6 +41,12 @@ public class TradingStrategyImpl implements TradingStrategy {
 
 		this.lowestValueIndicator = createLowestValueIndicator();
 		this.highestValueIndicator = createHighestValueIndicator();
+
+		this.riskRate = riskRate;
+	}
+
+	public double getRiskRate() {
+		return riskRate;
 	}
 
 	public int getEntryDonchianSize() {
@@ -87,15 +93,16 @@ public class TradingStrategyImpl implements TradingStrategy {
 		}
 
 		int dataSize = stock.getHistorySizeBeforeDate(d);
-		if (dataSize <= entryDonchianSize){
+		if (dataSize <= entryDonchianSize) {
 			log.info("Skiping at date " + d);
 			return false;
 		}
-		
-		if(d.getMonth()==6 && d.getDate()==22){
-			log.info(String.format("date=%s volume=%s close=%s highestValueIndicator=%s", d, stock.getVolumeAtDate(d), stock.getCloseValueAtDate(d), highestValueIndicator.getValue(dataSize-1)));
+
+		if (d.getMonth() == 6 && d.getDate() == 22) {
+			log.info(String.format("date=%s volume=%s close=%s highestValueIndicator=%s", d, stock.getVolumeAtDate(d),
+					stock.getCloseValueAtDate(d), highestValueIndicator.getValue(dataSize - 1)));
 		}
-		
+
 		return stock.getVolumeAtDate(d) >= Math.pow(10, 6)
 				&& stock.getCloseValueAtDate(d) > highestValueIndicator.getValue(dataSize - 1).toDouble();
 	}
@@ -118,7 +125,7 @@ public class TradingStrategyImpl implements TradingStrategy {
 		// risck_factor=%s stock_value=%s stopLossPoint=%s",
 		// stockTrade.getStock().getCode(), accountInitialPosition, RISK_FACTOR,
 		// stockValue, stopLossPoint));
-		return Math.floor((accountInitialPosition * RISK_FACTOR) / (stockValue - stopLossPoint));
+		return Math.floor((accountInitialPosition * riskRate) / (stockValue - stopLossPoint));
 
 	}
 

@@ -44,7 +44,7 @@ public class TradeSystem implements Serializable {
 			throw new IllegalArgumentException("No stocks to analyze.");
 		}
 
-		wallet = new HashSet<>();
+		wallet = new ArrayList<>();
 		for (Stock s : stocks) {
 			wallet.add(new StockContext(s));
 		}
