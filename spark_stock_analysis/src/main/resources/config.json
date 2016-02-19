@@ -7,8 +7,8 @@
 	"maxDonchianExitValue":10,
 	"initialDate":"2014-01-01",
 	"finalDate":"2015-01-01",
-	"riskRate":0.02,
+	"riskRate":0.03,
 	"trainingSizeInMonths":1,
-	"windowSizeInMonths":1,
+	"windowSizeInMonths":4,
 	"accountInitialValue":10000
 }
