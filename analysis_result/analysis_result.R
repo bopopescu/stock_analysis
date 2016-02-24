@@ -33,3 +33,15 @@ plotData = executionsData[
   & executionsData$maxDonchianExitValue==10 & executionsData$trainingSizeInMonths==1 & executionsData$windowSizeInMonths==1 & executionsData$initialBalance==50000, ]
 plotData = plotData[order(plotData$riskRate), c("riskRate", "profitRate")]
 plot(plotData, type="b")
+
+plotData = executionsData[
+  executionsData$minDochianEntryValue==10 & executionsData$maxDonchianEntryValue==20 & executionsData$minDonchianExitValue==2
+  & executionsData$maxDonchianExitValue==10 & executionsData$windowSizeInMonths==1 & executionsData$initialBalance==10000 & executionsData$riskRate==0.01, ]
+plotData = plotData[order(plotData$trainingSizeInMonths), c("trainingSizeInMonths", "profitRate")]
+plot(plotData, type="b")
+
+plotData = executionsData[
+  executionsData$minDochianEntryValue==10 & executionsData$maxDonchianEntryValue==20 & executionsData$minDonchianExitValue==2
+  & executionsData$maxDonchianExitValue==10 & executionsData$trainingSizeInMonths==1 & executionsData$initialBalance==10000 & executionsData$riskRate==0.01, ]
+plotData = plotData[order(plotData$windowSizeInMonths), c("windowSizeInMonths", "profitRate")]
+plot(plotData, type="b")
