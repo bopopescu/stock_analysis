@@ -1,0 +1,13 @@
+{
+	"stockHistoryFile":"/tmp/cotacoes.txt",
+	"start":"2014-01-01",
+	"end":"2014-02-01",
+	"minDonchianEntrySize":10,
+	"maxDonchianEntrySize":20,
+	"minDonchianExitSize":2,
+	"maxDonchianExitSize":10,
+	"stockCodesToAnalyze":["BBDC4","BDLL4","BGIP4","BOBR4","BRAP4","BRIV4","CMIG4","CRIV4","CTNM4","ELPL4","ESTR4","FJTA4","GETI4","GGBR4","GOAU4","GOLL4","GUAR4","INEP4","ITSA4","LAME4","LIXC4","MGEL4","MTSA4","MWET4","PCAR4","PETR4","POMO4","RAPT4","RCSL4","SAPR4","SHUL4","SLED4","TEKA4","TOYB4","TRPL4"],
+	"accountInitialValue":10000,
+	"riskRate":0.03,
+	"outputFile":"/tmp/model.json"	
+}

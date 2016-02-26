@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -25,11 +24,12 @@ import preti.spark.stock.reporting.BalanceReport;
 import preti.spark.stock.reporting.FileReport;
 import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
+import preti.spark.stock.run.model.DonchianParametersOptimizationResult;
+import preti.spark.stock.run.model.DonchianStrategyParametersOptimizer;
 import preti.spark.stock.system.ConfigContext;
 import preti.spark.stock.system.TradeSystem;
 import preti.spark.stock.system.TradingStrategy;
 import preti.spark.stock.system.TradingStrategyImpl;
-import scala.Tuple2;
 
 public class StockAnalysis {
 	private static final Log log = LogFactory.getLog(StockAnalysis.class);
@@ -77,15 +77,21 @@ public class StockAnalysis {
 
 		DateTime currentInitialDate = new DateTime(initialDate.getTime()).plusMonths(trainingSize);
 		DateTime currentFinalDate = currentInitialDate.plusMonths(windowSize);
+		DonchianStrategyParametersOptimizer optimizer = new DonchianStrategyParametersOptimizer(sc);
 		Map<String, TradingStrategy> optimzedStrategies = new HashMap<>();
 		while (currentFinalDate.isBefore(finalDate.getTime() + 1)) {
 			Map<String, TradingStrategy> newStrategies = new HashMap<>();
 			for (Stock s : stocks) {
-				TradingStrategy strategy = optimizeParameters(s, accountInitialPosition,
-						currentInitialDate.minusMonths(trainingSize).toDate(), currentInitialDate.minusDays(1).toDate(),
-						configContext);
-				if (strategy != null) {
-					newStrategies.put(s.getCode(), strategy);
+				DonchianParametersOptimizationResult optimizationResult = optimizer.optimizeParameters(s,
+						accountInitialPosition, currentInitialDate.minusMonths(trainingSize).toDate(),
+						currentInitialDate.minusDays(1).toDate(), configContext.getMinDochianEntryValue(),
+						configContext.getMaxDonchianEntryValue(), configContext.getMinDonchianExitValue(),
+						configContext.getMaxDonchianExitValue(), configContext.getRiskRate());
+				if (optimizationResult != null) {
+					newStrategies.put(s.getCode(),
+							new TradingStrategyImpl(s, optimizationResult.getEntryDonchianSize(),
+									optimizationResult.getExitDonchianSize(), accountInitialPosition,
+									optimizationResult.getRiskRate()));
 				}
 			}
 			log.info("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
@@ -125,70 +131,5 @@ public class StockAnalysis {
 		}
 
 		return mergedStrategies;
-	}
-
-	private static TradingStrategy optimizeParameters(Stock stock, double initialPosition, Date initialDate,
-			Date finalDate, ConfigContext configContext) {
-		List<Integer> entryDonchianSizes = new ArrayList<>();
-		for (int i = configContext.getMinDochianEntryValue(); i <= configContext.getMaxDonchianEntryValue(); i++) {
-			entryDonchianSizes.add(i);
-		}
-
-		final int NO_ENTRY_FOUND = -1;
-
-		JavaRDD<Integer> entryDonchianRDD = sc.parallelize(entryDonchianSizes);
-		Map<Integer, Number[]> gains = entryDonchianRDD.mapToPair(entryDonchianSize -> {
-			double bestGain = 0;
-			int selectedExitSize = NO_ENTRY_FOUND;
-			for (int exitDonchianSize = configContext.getMinDonchianExitValue(); exitDonchianSize <= configContext
-					.getMaxDonchianExitValue() && exitDonchianSize <= entryDonchianSize; exitDonchianSize++) {
-				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
-						initialPosition, configContext.getRiskRate());
-				TradeSystem system = new TradeSystem(stock, initialPosition, strategy);
-				system.analyzeStocks(initialDate, finalDate);
-				system.closeAllOpenTrades(finalDate);
-
-				double currentGain = system.getAccountBalance() - system.getAccountInitialPosition();
-				if (currentGain > bestGain) {
-					bestGain = currentGain;
-					selectedExitSize = exitDonchianSize;
-				}
-			}
-			return new Tuple2<>(entryDonchianSize, new Number[] { selectedExitSize, bestGain });
-		}).collectAsMap();
-
-		// Keeps ascending order when evaluating the entry sizes for the
-		// Donchian Channel, so that I keep the results the same I got using the
-		// R version.
-		Integer[] entrySizes = gains.keySet().toArray(new Integer[] {});
-		Arrays.sort(entrySizes);
-
-		// find the best gain
-		double bestGain = 0;
-		int selectedEntry = 0;
-		for (int entrySize : entrySizes) {
-			Number[] entrySizeResult = gains.get(entrySize);
-			if (entrySizeResult[1].doubleValue() > bestGain) {
-				bestGain = entrySizeResult[1].doubleValue();
-				selectedEntry = entrySize;
-			}
-
-		}
-		if (selectedEntry == 0) {
-			log.info(String.format("Optimization for stock %s initial date %s gain %s	 is null", stock.getCode(),
-					initialDate, bestGain));
-			return null;
-		}
-
-		int selectedExit = gains.get(selectedEntry)[0].intValue();
-		log.info(String.format("Stock %s initial date %s entry size %s exit size	 %s gain %s", stock.getCode(),
-				initialDate, selectedEntry, selectedExit, bestGain));
-
-		// Verify if a positive result was found
-		if (selectedExit != NO_ENTRY_FOUND)
-			return new TradingStrategyImpl(stock, selectedEntry, selectedExit, initialPosition,
-					configContext.getRiskRate());
-		else
-			return null;
 	}
 }
