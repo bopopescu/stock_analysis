@@ -11,6 +11,10 @@ public class Stock implements Serializable {
 	private String code;
 	private TreeMap<Date, StockHistory> history = new TreeMap<>();
 
+	public Stock() {
+
+	}
+
 	public Stock(String code) {
 		super();
 		this.code = code;
@@ -39,7 +43,7 @@ public class Stock implements Serializable {
 	public double getCloseValueAtDate(Date d) {
 		return history.floorEntry(d).getValue().getClose();
 	}
-	
+
 	public double getVolumeAtDate(Date d) {
 		return history.floorEntry(d).getValue().getVolume();
 	}
@@ -47,8 +51,8 @@ public class Stock implements Serializable {
 	public boolean hasHistoryAtDate(Date d) {
 		return history.containsKey(d);
 	}
-	
-	public int getHistorySizeBeforeDate(Date d){
+
+	public int getHistorySizeBeforeDate(Date d) {
 		return history.headMap(d).size();
 	}
 

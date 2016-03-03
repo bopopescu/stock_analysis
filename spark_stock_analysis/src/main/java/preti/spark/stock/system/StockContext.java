@@ -2,6 +2,7 @@ package preti.spark.stock.system;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 
 import preti.spark.stock.model.Stock;
 import preti.spark.stock.model.Trade;
-import preti.spark.stock.reporting.AbstractReport;
 
 @SuppressWarnings("serial")
 public class StockContext implements Serializable {
@@ -31,6 +31,11 @@ public class StockContext implements Serializable {
 
 	public List<Trade> getTrades() {
 		return trades;
+	}
+
+	public void addTrade(Trade t) {
+		trades.add(t);
+		Collections.sort(trades, (Trade t1, Trade t2) -> t1.getBuyDate().compareTo(t2.getBuyDate()));
 	}
 
 	public Trade getLastTrade() {

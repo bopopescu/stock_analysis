@@ -11,6 +11,10 @@ public class Trade implements Serializable {
 	private Date buyDate;
 	private Date sellDate;
 
+	public Trade() {
+
+	}
+
 	public Trade(Stock stock, double size, double stopPos, Date buyDate) {
 		this(stock, size, stopPos, buyDate, null);
 	}
@@ -22,6 +26,10 @@ public class Trade implements Serializable {
 		this.stopPos = stopPos;
 		this.buyDate = buyDate;
 		this.sellDate = sellDate;
+	}
+
+	public void setStock(Stock s) {
+		this.stock = s;
 	}
 
 	public Stock getStock() {

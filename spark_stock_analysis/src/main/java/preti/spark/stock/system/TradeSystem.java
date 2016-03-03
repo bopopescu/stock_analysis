@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,6 +52,24 @@ public class TradeSystem implements Serializable {
 		this.tradingStrategies = tradingStrategies;
 	}
 
+	// TODO: esse construtor foi criado para um caso muito específico, que é
+	// gerar as recomendações para um dia em específico.
+	// Vale verificar se não é melhor rever essa classe.
+	public TradeSystem(List<Trade> trades, Collection<Stock> stocks, double accountInitialPosition,
+			Map<String, TradingStrategy> tradingStrategies) {
+		this(stocks, accountInitialPosition, tradingStrategies);
+
+		// FIXME: está tosco, mas é um MVP
+		for (Trade t : trades) {
+			for (StockContext sc : wallet) {
+				if (sc.getStock().getCode().equals(t.getStock().getCode())) {
+					sc.addTrade(t);
+					break;
+				}
+			}
+		}
+	}
+
 	public Map<Date, Double> getBalanceHistory() {
 		return balanceHistory;
 	}
@@ -77,12 +94,12 @@ public class TradeSystem implements Serializable {
 		this.tradingStrategies.put(stockCode, strategy);
 	}
 
-	private boolean openNewTrade(StockContext stockTrade, Date d) {
+	private Trade openNewTrade(StockContext stockTrade, Date d) {
 		TradingStrategy strategy = this.tradingStrategies.get(stockTrade.getStock().getCode());
 		double size = strategy.calculatePositionSize(d);
 		if (size < 1) {
 			log.info("Postion size<1: not enough balance to enter position");
-			return false;
+			return null;
 		}
 
 		double stockValue = stockTrade.getStock().getCloseValueAtDate(d);
@@ -91,19 +108,20 @@ public class TradeSystem implements Serializable {
 		}
 		if (size < 1) {
 			log.warn("Not enough balance to enter position");
-			return false;
+			return null;
 		}
 
 		Trade t = stockTrade.openNewTrade(size, d, strategy.calculateStopLossPoint(d));
 		log.debug("Opening new trade: " + t);
 		this.accountBalance -= t.getSize() * t.getBuyValue();
-		return true;
+		return t;
 	}
 
-	private void closeLastTrade(StockContext stockTrade, Date d) {
+	private Trade closeLastTrade(StockContext stockTrade, Date d) {
 		Trade t = stockTrade.closeLastTrade(d);
 		this.accountBalance += t.getSize() * t.getSellValue();
 		log.debug("Closing trade " + t);
+		return t;
 	}
 
 	private double calculateTotalOpenPositions(Date d) {
@@ -123,6 +141,34 @@ public class TradeSystem implements Serializable {
 
 	public double getAccountBalance() {
 		return accountBalance;
+	}
+
+	public List<Trade> analyzeStocks(Date recomendationDate) {
+		List<Trade> trades = new ArrayList<>();
+		for (StockContext stockTrade : wallet) {
+			if (!stockTrade.getStock().hasHistoryAtDate(recomendationDate)) {
+				continue;
+			}
+
+			TradingStrategy strategy = this.tradingStrategies.get(stockTrade.getStock().getCode());
+			if (strategy == null) {
+				continue;
+			}
+
+			if (stockTrade.isInOpenPosition()) {
+				boolean profittable = stockTrade.isProfittable(recomendationDate);
+				if ((profittable && strategy.exitPosition(recomendationDate))
+						|| (!profittable && stockTrade.hasReachedStopPosition(recomendationDate))) {
+					trades.add(closeLastTrade(stockTrade, recomendationDate));
+				}
+
+			} else {
+				if (strategy.enterPosition(recomendationDate)) {
+					trades.add(openNewTrade(stockTrade, recomendationDate));
+				}
+			}
+		}
+		return trades;
 	}
 
 	public void analyzeStocks(Date initialDate, Date finalDate) {

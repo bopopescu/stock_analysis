@@ -1,4 +1,4 @@
-package preti.spark.stock.run.model;
+package preti.spark.stock.run;
 
 import java.util.ArrayList;
 import java.util.Arrays;

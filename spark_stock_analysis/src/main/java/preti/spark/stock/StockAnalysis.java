@@ -3,7 +3,6 @@ package preti.spark.stock;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -12,20 +11,18 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.storage.StorageLevel;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 
 import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
 import preti.spark.stock.reporting.BalanceReport;
 import preti.spark.stock.reporting.FileReport;
 import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
-import preti.spark.stock.run.model.DonchianParametersOptimizationResult;
-import preti.spark.stock.run.model.DonchianStrategyParametersOptimizer;
+import preti.spark.stock.run.DonchianParametersOptimizationResult;
+import preti.spark.stock.run.DonchianStrategyParametersOptimizer;
+import preti.spark.stock.run.StocksRepository;
 import preti.spark.stock.system.ConfigContext;
 import preti.spark.stock.system.TradeSystem;
 import preti.spark.stock.system.TradingStrategy;
@@ -46,26 +43,10 @@ public class StockAnalysis {
 		SparkConf conf = new SparkConf();
 		sc = new JavaSparkContext(conf);
 
-		JavaRDD<InputDataEntry> inputData = sc.textFile(configContext.getStockHistoryFile())
-				.filter(s -> !s.trim().isEmpty()).map(InputDataEntry::parseFromLine);
-		inputData.persist(StorageLevel.MEMORY_ONLY());
-
-		List<String> stockCodes = configContext.getStockCodesToAnalyze();
-
-		List<Stock> stocks = new ArrayList<>();
-
-		for (String stockCode : stockCodes) {
-			List<InputDataEntry> stockEntries = inputData.filter(sd -> sd.getCode().equals(stockCode)).collect();
-			if (stockEntries.isEmpty())
-				continue;
-
-			Stock stock = new Stock(stockCode);
-			stocks.add(stock);
-			for (InputDataEntry data : stockEntries) {
-				stock.addHistory(new StockHistory(data.getDate(), data.getHigh(), data.getLow(), data.getClose(),
-						data.getVolume()));
-			}
-		}
+		log.info("Loading stock data ...");
+		StocksRepository stocksRepository = new StocksRepository(sc);
+		List<Stock> stocks = stocksRepository.loadStocks(configContext.getStockHistoryFile(),
+				configContext.getStockCodesToAnalyze());
 
 		final double accountInitialPosition = configContext.getAccountInitialValue();
 		final int trainingSize = configContext.getTrainingSizeInMonths();
