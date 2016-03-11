@@ -1,9 +1,13 @@
-package preti.spark.stock.model;
+package preti.stock.coremodel;
 
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(value = { "profitable" }, ignoreUnknown = true)
 public class Trade implements Serializable {
 	private Stock stock;
 	private double size;
@@ -34,6 +38,11 @@ public class Trade implements Serializable {
 
 	public Stock getStock() {
 		return stock;
+	}
+
+	@JsonIgnore
+	public String getStockCode() {
+		return stock.getCode();
 	}
 
 	public double getSize() {
@@ -80,18 +89,22 @@ public class Trade implements Serializable {
 		}
 	}
 
+	@JsonIgnore
 	public boolean isProfitable(Date d) {
 		return getProfit(d) > 0;
 	}
 
+	@JsonIgnore
 	public boolean isProfitable() {
 		return getProfit(sellDate) > 0;
 	}
 
+	@JsonIgnore
 	public double getBuyValue() {
 		return stock.getCloseValueAtDate(buyDate);
 	}
 
+	@JsonIgnore
 	public double getSellValue() {
 		if (sellDate == null) {
 			throw new IllegalArgumentException("No sell value: trade not closed");

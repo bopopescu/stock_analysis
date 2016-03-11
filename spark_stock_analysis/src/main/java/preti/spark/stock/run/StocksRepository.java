@@ -7,9 +7,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.storage.StorageLevel;
 
-import preti.spark.stock.InputDataEntry;
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
+import preti.stock.InputDataEntry;
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.StockHistory;
 
 public class StocksRepository {
 	private JavaSparkContext sc;

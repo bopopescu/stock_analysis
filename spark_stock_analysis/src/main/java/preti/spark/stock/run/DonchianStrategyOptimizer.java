@@ -11,25 +11,26 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.system.TradeSystem;
-import preti.spark.stock.system.TradingStrategy;
-import preti.spark.stock.system.TradingStrategyImpl;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Stock;
+import preti.stock.system.TradingStrategy;
+import preti.stock.system.TradingStrategyImpl;
 import scala.Tuple2;
 
-public class DonchianStrategyParametersOptimizer {
-	private static final Log log = LogFactory.getLog(DonchianStrategyParametersOptimizer.class);
+public class DonchianStrategyOptimizer {
+	private static final Log log = LogFactory.getLog(DonchianStrategyOptimizer.class);
 
 	private JavaSparkContext sc;
 
-	public DonchianStrategyParametersOptimizer(JavaSparkContext sc) {
+	public DonchianStrategyOptimizer(JavaSparkContext sc) {
 		super();
 		this.sc = sc;
 	}
 
-	public DonchianParametersOptimizationResult optimizeParameters(Stock stock, double initialPosition,
-			Date initialDate, Date finalDate, int minDonchianEntrySize, int maxDonchianEntrySize,
-			int minDonchianExitSize, int maxDonchianExitSize, double riskRate) {
+	public DonchianModel optimizeParameters(Stock stock, double initialPosition, Date initialDate, Date finalDate,
+			int minDonchianEntrySize, int maxDonchianEntrySize, int minDonchianExitSize, int maxDonchianExitSize,
+			double riskRate) {
 		List<Integer> entryDonchianSizes = new ArrayList<>();
 		for (int i = minDonchianEntrySize; i <= maxDonchianEntrySize; i++) {
 			entryDonchianSizes.add(i);
@@ -45,7 +46,7 @@ public class DonchianStrategyParametersOptimizer {
 					&& exitDonchianSize <= entryDonchianSize; exitDonchianSize++) {
 				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
 						initialPosition, riskRate);
-				TradeSystem system = new TradeSystem(stock, initialPosition, strategy);
+				TradeSystemExecution system = new TradeSystemExecution(stock, initialPosition, strategy);
 				system.analyzeStocks(initialDate, finalDate);
 				system.closeAllOpenTrades(finalDate);
 
@@ -87,7 +88,7 @@ public class DonchianStrategyParametersOptimizer {
 
 		// Verify if a positive result was found
 		if (selectedExit != NO_ENTRY_FOUND)
-			return new DonchianParametersOptimizationResult(stock.getCode(), selectedEntry, selectedExit, riskRate);
+			return new DonchianModel(stock.getCode(), selectedEntry, selectedExit, riskRate);
 		else
 			return null;
 	}

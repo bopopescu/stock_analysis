@@ -1,4 +1,4 @@
-package preti.spark.stock.system;
+package preti.stock.system;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,8 +16,8 @@ import eu.verdelhan.ta4j.indicators.helpers.LowestValueIndicator;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
 import eu.verdelhan.ta4j.indicators.simple.MaxPriceIndicator;
 import eu.verdelhan.ta4j.indicators.simple.MinPriceIndicator;
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.StockHistory;
 
 public class TradingStrategyImpl implements TradingStrategy {
 	private static final Log log = LogFactory.getLog(TradingStrategyImpl.class);
@@ -135,7 +135,7 @@ public class TradingStrategyImpl implements TradingStrategy {
 		return lowestValueIndicator.getValue(dataSize - 1).toDouble();
 	}
 
-	public static void main(String[] args) throws ParseException {
+	public static void main2(String[] args) throws ParseException {
 		TimeSeries stockHistory = new TimeSeries("OIBR4", new ArrayList<>());
 		stockHistory.addTick(
 				new Tick(new DateTime(new SimpleDateFormat("yyyy-MM-dd").parse("2014-01-01")), 0, 10, 8, 12, 30));

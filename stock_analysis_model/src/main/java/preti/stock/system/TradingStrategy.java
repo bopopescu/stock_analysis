@@ -1,4 +1,4 @@
-package preti.spark.stock.system;
+package preti.stock.system;
 
 import java.util.Date;
 

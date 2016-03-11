@@ -11,11 +11,11 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
-import preti.spark.stock.model.Trade;
 import preti.spark.stock.system.StockContext;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.StockHistory;
+import preti.stock.coremodel.Trade;
 
 public class AggregatedReport extends AbstractReport {
 
@@ -85,8 +85,8 @@ public class AggregatedReport extends AbstractReport {
 
 	}
 
-	public AggregatedReport(TradeSystem system, String outputIp, int outputPort, String indexName) {
-		super(system, outputIp, outputPort, indexName);
+	public AggregatedReport(TradeSystemExecution systemExecution, String outputIp, int outputPort, String indexName) {
+		super(systemExecution, outputIp, outputPort, indexName);
 	}
 
 	@Override
@@ -98,7 +98,7 @@ public class AggregatedReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockContext> wallet = system.getWallet();
+		Collection<StockContext> wallet = systemExecution.getWallet();
 		for (StockContext st : wallet) {
 			Stock stock = st.getStock();
 			for (Date d : stock.getAllHistoryDates()) {

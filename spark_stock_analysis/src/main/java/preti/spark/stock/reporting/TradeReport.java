@@ -11,9 +11,9 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.Trade;
 import preti.spark.stock.system.StockContext;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.coremodel.Trade;
 
 public class TradeReport extends AbstractReport {
 
@@ -66,8 +66,8 @@ public class TradeReport extends AbstractReport {
 
 	}
 
-	public TradeReport(TradeSystem system, String outputIp, int outputPort, String indexName) {
-		super(system, outputIp, outputPort, indexName);
+	public TradeReport(TradeSystemExecution systemExecution, String outputIp, int outputPort, String indexName) {
+		super(systemExecution, outputIp, outputPort, indexName);
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class TradeReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockContext> wallet = system.getWallet();
+		Collection<StockContext> wallet = systemExecution.getWallet();
 		for (StockContext st : wallet) {
 			for (Trade t : st.getTrades()) {
 				log.info("Generating report for trade " + t);

@@ -11,9 +11,9 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.Trade;
 import preti.spark.stock.system.StockContext;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.coremodel.Trade;
 
 public class OperationsReport extends AbstractReport {
 	public enum OperationType {
@@ -102,8 +102,8 @@ public class OperationsReport extends AbstractReport {
 
 	}
 
-	public OperationsReport(TradeSystem system, String outputIp, int outputPort, String indexName) {
-		super(system, outputIp, outputPort, indexName);
+	public OperationsReport(TradeSystemExecution systemExecution, String outputIp, int outputPort, String indexName) {
+		super(systemExecution, outputIp, outputPort, indexName);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class OperationsReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Collection<StockContext> wallet = system.getWallet();
+		Collection<StockContext> wallet = systemExecution.getWallet();
 		for (StockContext st : wallet) {
 			for (Trade t : st.getTrades()) {
 				log.info("Generating report for trade " + t);
@@ -123,8 +123,8 @@ public class OperationsReport extends AbstractReport {
 				OperationEvent buyEvent = new OperationEvent(this.indexName, OperationType.BUY, t.getStock().getCode(),
 						t.getBuyDate(), t.getSize(), t.getStopPos(), t.getBuyValue(), t.getSellValue(), proffitable);
 				OperationEvent sellEvent = new OperationEvent(this.indexName, OperationType.SELL,
-						t.getStock().getCode(), t.getSellDate(), t.getSize(), t.getStopPos(), t.getBuyValue(), t.getSellValue(),
-						proffitable);
+						t.getStock().getCode(), t.getSellDate(), t.getSize(), t.getStopPos(), t.getBuyValue(),
+						t.getSellValue(), proffitable);
 				writer.println(mapper.writeValueAsString(buyEvent));
 				writer.println(mapper.writeValueAsString(sellEvent));
 			}

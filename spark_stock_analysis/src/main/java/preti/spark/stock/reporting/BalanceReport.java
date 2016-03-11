@@ -13,7 +13,7 @@ import java.util.Map;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import preti.spark.stock.system.StockContext;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.system.TradeSystemExecution;
 
 public class BalanceReport extends AbstractReport {
 	@SuppressWarnings("serial")
@@ -52,8 +52,8 @@ public class BalanceReport extends AbstractReport {
 		}
 	}
 
-	public BalanceReport(TradeSystem system, String outputIp, int outputPort, String indexName) {
-		super(system, outputIp, outputPort, indexName);
+	public BalanceReport(TradeSystemExecution systemExecution, String outputIp, int outputPort, String indexName) {
+		super(systemExecution, outputIp, outputPort, indexName);
 	}
 
 	public void executeReport() throws IOException {
@@ -64,8 +64,8 @@ public class BalanceReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		Map<Date, Double> balanceHistory = system.getBalanceHistory();
-		Collection<StockContext> wallet = system.getWallet();
+		Map<Date, Double> balanceHistory = systemExecution.getBalanceHistory();
+		Collection<StockContext> wallet = systemExecution.getWallet();
 
 		for (Date d : balanceHistory.keySet()) {
 			double openPositionsValue = 0;

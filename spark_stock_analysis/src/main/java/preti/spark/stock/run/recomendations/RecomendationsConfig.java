@@ -4,21 +4,20 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
-import preti.spark.stock.model.Trade;
-import preti.spark.stock.run.DonchianParametersOptimizationResult;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import preti.stock.analysismodel.donchian.Account;
 
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@org.codehaus.jackson.annotate.JsonIgnoreProperties(ignoreUnknown = true)
 public class RecomendationsConfig implements Serializable {
 	private final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private String stockHistoryFile;
-	private List<DonchianParametersOptimizationResult> model;
-	private double accountInitialPosition;
-	private List<Trade> trades;
-	private List<String> stockCodesToAnalyze;
-	private Date recomendationDate;
+	private Account account;
+	private String recomendationDate;
 	private String outputFile;
 
 	public String getStockHistoryFile() {
@@ -29,48 +28,20 @@ public class RecomendationsConfig implements Serializable {
 		this.stockHistoryFile = stockHistoryFile;
 	}
 
-	public List<DonchianParametersOptimizationResult> getModel() {
-		return model;
-	}
-
-	public void setModel(List<DonchianParametersOptimizationResult> model) {
-		this.model = model;
-	}
-
-	public double getAccountInitialPosition() {
-		return accountInitialPosition;
-	}
-
-	public void setAccountInitialPosition(double accountInitialPosition) {
-		this.accountInitialPosition = accountInitialPosition;
-	}
-
-	public List<Trade> getTrades() {
-		return trades;
-	}
-
-	public void setTrades(List<Trade> trades) {
-		this.trades = trades;
-	}
-
-	public List<String> getStockCodesToAnalyze() {
-		return stockCodesToAnalyze;
-	}
-
-	public void setStockCodesToAnalyze(List<String> stockCodesToAnalyze) {
-		this.stockCodesToAnalyze = stockCodesToAnalyze;
-	}
-
-	public Date getRecomendationDate() {
+	public String getRecomendationDate() {
 		return recomendationDate;
 	}
 
-	public void setRecomendationDate(String recomendationDate) {
+	public Date getParsedRecomendationDate() {
 		try {
-			this.recomendationDate = new SimpleDateFormat(DATE_FORMAT).parse(recomendationDate);
+			return new SimpleDateFormat(DATE_FORMAT).parse(recomendationDate);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setRecomendationDate(String recomendationDate) {
+		this.recomendationDate = recomendationDate;
 	}
 
 	public String getOutputFile() {
@@ -79,6 +50,14 @@ public class RecomendationsConfig implements Serializable {
 
 	public void setOutputFile(String outputFile) {
 		this.outputFile = outputFile;
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 }

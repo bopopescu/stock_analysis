@@ -7,13 +7,17 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@org.codehaus.jackson.annotate.JsonIgnoreProperties(ignoreUnknown = true)
 public class ModelGenerationConfig implements Serializable {
 	private final String DATE_FORMAT = "yyyy-MM-dd";
 
 	private String stockHistoryFile;
-	private Date start;
-	private Date end;
+	private String start;
+	private String end;
 	private int minDonchianEntrySize, maxDonchianEntrySize, minDonchianExitSize, maxDonchianExitSize;
 	private List<String> stockCodesToAnalyze;
 	private double accountInitialValue;
@@ -28,28 +32,36 @@ public class ModelGenerationConfig implements Serializable {
 		this.stockHistoryFile = inputFile;
 	}
 
-	public Date getStart() {
+	public String getStart() {
 		return start;
 	}
 
-	public void setStart(String start) {
+	public Date getParsedStart() {
 		try {
-			this.start = new SimpleDateFormat(DATE_FORMAT).parse(start);
+			return new SimpleDateFormat(DATE_FORMAT).parse(start);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Date getEnd() {
+	public void setStart(String start) {
+		this.start = start;
+	}
+
+	public String getEnd() {
 		return end;
 	}
 
-	public void setEnd(String end) {
+	public Date getParsedEnd() {
 		try {
-			this.end = new SimpleDateFormat(DATE_FORMAT).parse(end);
+			return new SimpleDateFormat(DATE_FORMAT).parse(end);
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setEnd(String end) {
+		this.end = end;
 	}
 
 	public int getMinDonchianEntrySize() {
@@ -117,7 +129,5 @@ public class ModelGenerationConfig implements Serializable {
 	public void setOutputFile(String outputFile) {
 		this.outputFile = outputFile;
 	}
-	
-	
 
 }

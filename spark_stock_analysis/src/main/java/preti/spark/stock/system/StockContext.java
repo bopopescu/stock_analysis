@@ -9,15 +9,23 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.Trade;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.Trade;
 
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class StockContext implements Serializable {
 	protected static final Log log = LogFactory.getLog(StockContext.class);
 
 	private Stock stock;
 	private List<Trade> trades;
+
+	public StockContext() {
+
+	}
 
 	public StockContext(Stock stock) {
 		super();
@@ -29,6 +37,25 @@ public class StockContext implements Serializable {
 		return stock;
 	}
 
+	public void setStock(Stock stock) {
+		this.stock = stock;
+	}
+
+	public void applyStocksToAllTrades(Stock s) {
+		setStock(s);
+		if (trades == null || trades.isEmpty()) {
+			return;
+		}
+
+		for (Trade t : trades) {
+			t.setStock(s);
+		}
+	}
+
+	public void setTrades(List<Trade> trades) {
+		this.trades = trades;
+	}
+
 	public List<Trade> getTrades() {
 		return trades;
 	}
@@ -38,6 +65,7 @@ public class StockContext implements Serializable {
 		Collections.sort(trades, (Trade t1, Trade t2) -> t1.getBuyDate().compareTo(t2.getBuyDate()));
 	}
 
+	@JsonIgnore
 	public Trade getLastTrade() {
 		if (trades.size() == 0)
 			return null;
@@ -45,6 +73,7 @@ public class StockContext implements Serializable {
 		return trades.get(trades.size() - 1);
 	}
 
+	@JsonIgnore
 	public boolean isInOpenPosition() {
 		Trade t = getLastTrade();
 		return t != null && t.isOpen();
@@ -56,7 +85,7 @@ public class StockContext implements Serializable {
 		}
 
 		Trade t = new Trade(this.stock, size, stopPos, buyDate);
-		trades.add(t);
+		addTrade(t);
 		return t;
 	}
 
@@ -74,6 +103,7 @@ public class StockContext implements Serializable {
 		return t != null && t.isOpen() && t.hasReachedStopPosition(d);
 	}
 
+	@JsonIgnore
 	public boolean isProfittable(Date d) {
 		Trade t = getLastTrade();
 		return t != null && t.isProfitable(d);
@@ -83,6 +113,7 @@ public class StockContext implements Serializable {
 		return trades.size() > 0;
 	}
 
+	@JsonIgnore
 	public Trade getTradeOpenAt(Date d) {
 		Trade tradeOpen = null;
 		for (Trade t : trades) {
@@ -94,6 +125,7 @@ public class StockContext implements Serializable {
 		return tradeOpen;
 	}
 
+	@JsonIgnore
 	public Trade getTradeClosedAt(Date d) {
 		Trade tradeClosed = null;
 		for (Trade t : trades) {
@@ -105,6 +137,7 @@ public class StockContext implements Serializable {
 		return tradeClosed;
 	}
 
+	@JsonIgnore
 	public double getOpenPositionsValueAtDate(Date d) {
 		if (!hasAnyTrade()) {
 			return 0;

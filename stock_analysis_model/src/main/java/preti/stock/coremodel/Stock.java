@@ -1,4 +1,4 @@
-package preti.spark.stock.model;
+package preti.stock.coremodel;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -6,7 +6,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
+
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Stock implements Serializable {
 	private String code;
 	private TreeMap<Date, StockHistory> history = new TreeMap<>();
@@ -28,6 +34,7 @@ public class Stock implements Serializable {
 		return history;
 	}
 
+	@JsonIgnore
 	public Set<Date> getAllHistoryDates() {
 		return history.keySet();
 	}

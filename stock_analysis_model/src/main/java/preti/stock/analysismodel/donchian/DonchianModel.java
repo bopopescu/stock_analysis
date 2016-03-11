@@ -1,19 +1,19 @@
-package preti.spark.stock.run;
+package preti.stock.analysismodel.donchian;
 
 import java.io.Serializable;
 
 @SuppressWarnings("serial")
-public class DonchianParametersOptimizationResult implements Serializable {
+public class DonchianModel implements Serializable {
 
 	private String stock;
 	private int entryDonchianSize, exitDonchianSize;
 	private double riskRate;
 	
-	public DonchianParametersOptimizationResult() {
+	public DonchianModel() {
 		
 	}
 
-	public DonchianParametersOptimizationResult(String stock, int entryDonchianSize, int exitDonchianSize,
+	public DonchianModel(String stock, int entryDonchianSize, int exitDonchianSize,
 			double riskRate) {
 		super();
 		this.stock = stock;

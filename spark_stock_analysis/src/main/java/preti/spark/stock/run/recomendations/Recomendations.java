@@ -2,7 +2,6 @@ package preti.spark.stock.run.recomendations;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,14 +14,17 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.Trade;
-import preti.spark.stock.run.DonchianParametersOptimizationResult;
 import preti.spark.stock.run.StocksRepository;
 import preti.spark.stock.run.model.ModelGeneration;
-import preti.spark.stock.system.TradeSystem;
-import preti.spark.stock.system.TradingStrategy;
-import preti.spark.stock.system.TradingStrategyImpl;
+import preti.stock.analysismodel.donchian.Account;
+import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.Trade;
+import preti.spark.stock.system.StockContext;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.system.TradeSystem;
+import preti.stock.system.TradingStrategy;
+import preti.stock.system.TradingStrategyImpl;
 
 public class Recomendations {
 	private static final Log log = LogFactory.getLog(ModelGeneration.class);
@@ -41,38 +43,38 @@ public class Recomendations {
 		SparkConf conf = new SparkConf();
 		sc = new JavaSparkContext(conf);
 
+		Account account = config.getAccount();
+
 		log.info("Loading stock data ...");
 		StocksRepository stocksRepository = new StocksRepository(sc);
-		List<Stock> stocks = stocksRepository.loadStocks(config.getStockHistoryFile(), config.getStockCodesToAnalyze());
+		List<Stock> stocks = stocksRepository.loadStocks(config.getStockHistoryFile(),
+				account.getStockCodesToAnalyze());
 		Map<String, Stock> stocksMap = new HashMap<>();
 		for (Stock st : stocks) {
 			stocksMap.put(st.getCode(), st);
 		}
 
 		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
-		for (DonchianParametersOptimizationResult parameter : config.getModel()) {
+		for (DonchianModel parameter : account.getModel()) {
 			tradingStrategies.put(parameter.getStock(),
 					new TradingStrategyImpl(stocksMap.get(parameter.getStock()), parameter.getEntryDonchianSize(),
-							parameter.getExitDonchianSize(), config.getAccountInitialPosition(),
-							parameter.getRiskRate()));
+							parameter.getExitDonchianSize(), account.getInitialPosition(), parameter.getRiskRate()));
 		}
 
 		// TODO: Ter que repopular esses trades aqui não é um bom sinal, acho
 		// que meu modelo não está bom
 		// FIXME: rever isso aqui
-		for (Trade t : config.getTrades()) {
+		for (Trade t : account.getWallet()) {
 			t.setStock(stocksMap.get(t.getStock().getCode()));
 		}
 
-		TradeSystem system = new TradeSystem(config.getTrades(), stocks, config.getAccountInitialPosition(),
-				tradingStrategies);
-		List<Trade> trades = system.analyzeStocks(config.getRecomendationDate());
-
-		List<RecomendationResult> recomendations = new ArrayList<>();
-		for (Trade t : trades) {
-			recomendations.add(new RecomendationResult(t));
-		}
-		jsonMapper.writeValue(new File(config.getOutputFile()), recomendations);
+//		TradeSystemExecution system = new TradeSystemExecution(account.getWallet(), stocks, account.getInitialPosition(),
+//				account.getBalance(), tradingStrategies);
+//		system.analyzeStocks(config.getParsedRecomendationDate());
+//
+//		account.setWallet(system.getWallet());
+//		account.setBalance(system.getAccountBalance());
+//		jsonMapper.writeValue(new File(config.getOutputFile()), account);
 
 	}
 

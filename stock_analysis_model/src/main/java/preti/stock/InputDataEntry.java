@@ -1,4 +1,4 @@
-package preti.spark.stock;
+package preti.stock;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.esotericsoftware.minlog.Log;
+import javax.management.RuntimeErrorException;
 
 @SuppressWarnings("serial")
 public class InputDataEntry implements Serializable {
@@ -85,23 +85,29 @@ public class InputDataEntry implements Serializable {
 	private static String DATE_PATTERN = "yyyyMMdd";
 	private static Pattern pattern = Pattern.compile(INPUT_PATTERN);
 	
-	public static InputDataEntry parseFromLine(String line) throws ParseException{
+	public static InputDataEntry parseFromLine(String line) {
 		Matcher m = pattern.matcher(line);
 		m.find();
-		Date date = new SimpleDateFormat(DATE_PATTERN).parse(m.group("strdate"));
-		String code = m.group("code").trim();
-		String type = m.group("type").trim();
-		String name = m.group("name").trim();
-		double open = NumberFormat.getInstance().parse(m.group("open").trim()).doubleValue()/100;
-		double high = NumberFormat.getInstance().parse(m.group("high").trim()).doubleValue()/100;
-		double low = NumberFormat.getInstance().parse(m.group("low").trim()).doubleValue()/100;
-		double close = NumberFormat.getInstance().parse(m.group("close").trim()).doubleValue()/100;
-		double volume = NumberFormat.getInstance().parse(m.group("volume").trim()).doubleValue()/100;
+		Date date;
+		try {
+			date = new SimpleDateFormat(DATE_PATTERN).parse(m.group("strdate"));
+			String code = m.group("code").trim();
+			String type = m.group("type").trim();
+			String name = m.group("name").trim();
+			double open = NumberFormat.getInstance().parse(m.group("open").trim()).doubleValue()/100;
+			double high = NumberFormat.getInstance().parse(m.group("high").trim()).doubleValue()/100;
+			double low = NumberFormat.getInstance().parse(m.group("low").trim()).doubleValue()/100;
+			double close = NumberFormat.getInstance().parse(m.group("close").trim()).doubleValue()/100;
+			double volume = NumberFormat.getInstance().parse(m.group("volume").trim()).doubleValue()/100;
+			
+			return new InputDataEntry(date, code, type, name, open, high, low, close, volume);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 		
-		return new InputDataEntry(date, code, type, name, open, high, low, close, volume);
 	}
 
-	public static void main(String[] args) throws IOException, ParseException {
+	public static void main2(String[] args) throws IOException, ParseException {
 		String inputFile = "/tmp/cotacoes2.txt";
 		
 

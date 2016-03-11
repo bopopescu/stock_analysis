@@ -15,18 +15,17 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 
-import preti.spark.stock.model.Stock;
 import preti.spark.stock.reporting.BalanceReport;
 import preti.spark.stock.reporting.FileReport;
 import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
-import preti.spark.stock.run.DonchianParametersOptimizationResult;
-import preti.spark.stock.run.DonchianStrategyParametersOptimizer;
+import preti.spark.stock.run.DonchianStrategyOptimizer;
 import preti.spark.stock.run.StocksRepository;
-import preti.spark.stock.system.ConfigContext;
-import preti.spark.stock.system.TradeSystem;
-import preti.spark.stock.system.TradingStrategy;
-import preti.spark.stock.system.TradingStrategyImpl;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Stock;
+import preti.stock.system.TradingStrategy;
+import preti.stock.system.TradingStrategyImpl;
 
 public class StockAnalysis {
 	private static final Log log = LogFactory.getLog(StockAnalysis.class);
@@ -54,20 +53,21 @@ public class StockAnalysis {
 
 		Date initialDate = configContext.getInitialDate();
 		Date finalDate = configContext.getFinalDate();
-		TradeSystem system = new TradeSystem(stocks, accountInitialPosition, null);
+		TradeSystemExecution system = new TradeSystemExecution(stocks, accountInitialPosition, accountInitialPosition,
+				null);
 
 		DateTime currentInitialDate = new DateTime(initialDate.getTime()).plusMonths(trainingSize);
 		DateTime currentFinalDate = currentInitialDate.plusMonths(windowSize);
-		DonchianStrategyParametersOptimizer optimizer = new DonchianStrategyParametersOptimizer(sc);
+		DonchianStrategyOptimizer optimizer = new DonchianStrategyOptimizer(sc);
 		Map<String, TradingStrategy> optimzedStrategies = new HashMap<>();
 		while (currentFinalDate.isBefore(finalDate.getTime() + 1)) {
 			Map<String, TradingStrategy> newStrategies = new HashMap<>();
 			for (Stock s : stocks) {
-				DonchianParametersOptimizationResult optimizationResult = optimizer.optimizeParameters(s,
-						accountInitialPosition, currentInitialDate.minusMonths(trainingSize).toDate(),
-						currentInitialDate.minusDays(1).toDate(), configContext.getMinDochianEntryValue(),
-						configContext.getMaxDonchianEntryValue(), configContext.getMinDonchianExitValue(),
-						configContext.getMaxDonchianExitValue(), configContext.getRiskRate());
+				DonchianModel optimizationResult = optimizer.optimizeParameters(s, accountInitialPosition,
+						currentInitialDate.minusMonths(trainingSize).toDate(), currentInitialDate.minusDays(1).toDate(),
+						configContext.getMinDochianEntryValue(), configContext.getMaxDonchianEntryValue(),
+						configContext.getMinDonchianExitValue(), configContext.getMaxDonchianExitValue(),
+						configContext.getRiskRate());
 				if (optimizationResult != null) {
 					newStrategies.put(s.getCode(),
 							new TradingStrategyImpl(s, optimizationResult.getEntryDonchianSize(),
@@ -75,7 +75,7 @@ public class StockAnalysis {
 									optimizationResult.getRiskRate()));
 				}
 			}
-			log.info("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
+			log.error("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
 					+ currentInitialDate.minusMonths(trainingSize) + " to " + currentInitialDate.minusDays(1));
 			optimzedStrategies = mergeStrategies(optimzedStrategies, newStrategies);
 

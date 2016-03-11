@@ -11,9 +11,9 @@ import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.system.TradeSystemExecution;
+import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.StockHistory;
 
 public class StockReport extends AbstractReport {
 
@@ -25,7 +25,8 @@ public class StockReport extends AbstractReport {
 		private Date date;
 		private double high, low, close, volume;
 
-		public StockHistoryEvent(String code, Date date, double high, double low, double close, double volume, String indexName) {
+		public StockHistoryEvent(String code, Date date, double high, double low, double close, double volume,
+				String indexName) {
 			super();
 			this.code = code;
 			this.date = date;
@@ -39,7 +40,7 @@ public class StockReport extends AbstractReport {
 		public String getIndexName() {
 			return indexName;
 		}
-		
+
 		public String getCode() {
 			return code;
 		}
@@ -70,8 +71,8 @@ public class StockReport extends AbstractReport {
 
 	}
 
-	public StockReport(TradeSystem system, String outputIp, int outputPort, String indexName) {
-		super(system, outputIp, outputPort, indexName);
+	public StockReport(TradeSystemExecution systemExecution, String outputIp, int outputPort, String indexName) {
+		super(systemExecution, outputIp, outputPort, indexName);
 	}
 
 	public void executeReport() throws IOException {
@@ -82,12 +83,12 @@ public class StockReport extends AbstractReport {
 
 		ObjectMapper mapper = new ObjectMapper();
 
-		List<Stock> stocks = system.getStocks();
+		List<Stock> stocks = systemExecution.getStocks();
 		for (Stock s : stocks) {
 			for (Date d : s.getAllHistoryDates()) {
 				StockHistory history = s.getHistory(d);
-				writer.println(mapper.writeValueAsString(new StockHistoryEvent(s.getCode(), d, history.getHigh(), history.getLow(),
-						history.getClose(), history.getVolume(), this.indexName)));
+				writer.println(mapper.writeValueAsString(new StockHistoryEvent(s.getCode(), d, history.getHigh(),
+						history.getLow(), history.getClose(), history.getVolume(), this.indexName)));
 			}
 		}
 		writer.close();

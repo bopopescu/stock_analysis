@@ -8,12 +8,12 @@ import java.util.Date;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.system.ConfigContext;
-import preti.spark.stock.system.TradeSystem;
+import preti.spark.stock.ConfigContext;
+import preti.spark.stock.system.TradeSystemExecution;
 
 public class FileReport implements Report {
 
-	private TradeSystem system;
+	private TradeSystemExecution systemExecution;
 	private ConfigContext configContext;
 	private String outputDir;
 
@@ -88,9 +88,9 @@ public class FileReport implements Report {
 
 	}
 
-	public FileReport(TradeSystem system, String outputDir, ConfigContext configContext) {
+	public FileReport(TradeSystemExecution systemExecution, String outputDir, ConfigContext configContext) {
 		super();
-		this.system = system;
+		this.systemExecution = systemExecution;
 		this.outputDir = outputDir;
 		this.configContext = configContext;
 	}
@@ -104,12 +104,12 @@ public class FileReport implements Report {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			mapper.writeValue(outputFile,
-					new FileReportEvent(system.getAccountInitialPosition(), system.getAccountBalance(),
-							configContext.getMinDochianEntryValue(), configContext.getMaxDonchianEntryValue(),
-							configContext.getMinDonchianExitValue(), configContext.getMaxDonchianExitValue(),
-							configContext.getFormatedInitialDate(), configContext.getFormatedFinalDate(),
-							configContext.getRiskRate(), configContext.getTrainingSizeInMonths(),
-							configContext.getWindowSizeInMonths()));
+					new FileReportEvent(systemExecution.getAccountInitialPosition(),
+							systemExecution.getAccountBalance(), configContext.getMinDochianEntryValue(),
+							configContext.getMaxDonchianEntryValue(), configContext.getMinDonchianExitValue(),
+							configContext.getMaxDonchianExitValue(), configContext.getFormatedInitialDate(),
+							configContext.getFormatedFinalDate(), configContext.getRiskRate(),
+							configContext.getTrainingSizeInMonths(), configContext.getWindowSizeInMonths()));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

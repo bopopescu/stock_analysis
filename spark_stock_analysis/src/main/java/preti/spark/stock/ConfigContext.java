@@ -1,4 +1,4 @@
-package preti.spark.stock.system;
+package preti.spark.stock;
 
 import java.io.Serializable;
 import java.text.ParseException;

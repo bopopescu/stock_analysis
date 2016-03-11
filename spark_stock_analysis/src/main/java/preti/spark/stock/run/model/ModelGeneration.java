@@ -8,19 +8,15 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.storage.StorageLevel;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import preti.spark.stock.InputDataEntry;
-import preti.spark.stock.model.Stock;
-import preti.spark.stock.model.StockHistory;
-import preti.spark.stock.run.DonchianParametersOptimizationResult;
-import preti.spark.stock.run.DonchianStrategyParametersOptimizer;
+import preti.spark.stock.run.DonchianStrategyOptimizer;
 import preti.spark.stock.run.StocksRepository;
+import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Stock;
 
 public class ModelGeneration {
 	private static final Log log = LogFactory.getLog(ModelGeneration.class);
@@ -42,13 +38,13 @@ public class ModelGeneration {
 		StocksRepository stocksRepository = new StocksRepository(sc);
 		List<Stock> stocks = stocksRepository.loadStocks(config.getStockHistoryFile(), config.getStockCodesToAnalyze());
 
-		DonchianStrategyParametersOptimizer optimizer = new DonchianStrategyParametersOptimizer(sc);
-		List<DonchianParametersOptimizationResult> results = new ArrayList<>();
+		DonchianStrategyOptimizer optimizer = new DonchianStrategyOptimizer(sc);
+		List<DonchianModel> results = new ArrayList<>();
 		for (Stock s : stocks) {
-			DonchianParametersOptimizationResult result = optimizer.optimizeParameters(s,
-					config.getAccountInitialValue(), config.getStart(), config.getEnd(),
-					config.getMinDonchianEntrySize(), config.getMaxDonchianEntrySize(), config.getMinDonchianExitSize(),
-					config.getMaxDonchianExitSize(), config.getRiskRate());
+			DonchianModel result = optimizer.optimizeParameters(s, config.getAccountInitialValue(),
+					config.getParsedStart(), config.getParsedEnd(), config.getMinDonchianEntrySize(),
+					config.getMaxDonchianEntrySize(), config.getMinDonchianExitSize(), config.getMaxDonchianExitSize(),
+					config.getRiskRate());
 			if (result != null) {
 				results.add(result);
 			}

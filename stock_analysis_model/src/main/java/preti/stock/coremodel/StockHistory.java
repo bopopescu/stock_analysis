@@ -1,12 +1,19 @@
-package preti.spark.stock.model;
+package preti.stock.coremodel;
 
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @SuppressWarnings("serial")
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class StockHistory implements Serializable {
 	private Date date;
 	private double high, low, close, volume;
+	
+	public StockHistory() {
+		
+	}
 
 	public StockHistory(Date date, double high, double low, double close, double volume) {
 		super();
