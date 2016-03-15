@@ -45,7 +45,7 @@ public class DonchianStrategyOptimizer {
 			for (int exitDonchianSize = minDonchianExitSize; exitDonchianSize <= maxDonchianExitSize
 					&& exitDonchianSize <= entryDonchianSize; exitDonchianSize++) {
 				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
-						initialPosition, riskRate);
+						riskRate);
 				TradeSystemExecution system = new TradeSystemExecution(stock, initialPosition, strategy);
 				system.analyzeStocks(initialDate, finalDate);
 				system.closeAllOpenTrades(finalDate);

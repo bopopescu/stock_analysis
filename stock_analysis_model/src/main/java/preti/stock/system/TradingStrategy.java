@@ -8,7 +8,7 @@ public interface TradingStrategy {
 
 	boolean exitPosition(Date d);
 
-	double calculatePositionSize(Date d);
+	double calculatePositionSize(Date d, double currentTotalBalance);
 
 	double calculateStopLossPoint(Date d);
 

@@ -56,9 +56,8 @@ public class Recomendations {
 
 		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(),
-					new TradingStrategyImpl(stocksMap.get(parameter.getStock()), parameter.getEntryDonchianSize(),
-							parameter.getExitDonchianSize(), account.getInitialPosition(), parameter.getRiskRate()));
+			tradingStrategies.put(parameter.getStock(), new TradingStrategyImpl(stocksMap.get(parameter.getStock()),
+					parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
 		}
 
 		// TODO: Ter que repopular esses trades aqui não é um bom sinal, acho
@@ -68,13 +67,15 @@ public class Recomendations {
 			t.setStock(stocksMap.get(t.getStock().getCode()));
 		}
 
-//		TradeSystemExecution system = new TradeSystemExecution(account.getWallet(), stocks, account.getInitialPosition(),
-//				account.getBalance(), tradingStrategies);
-//		system.analyzeStocks(config.getParsedRecomendationDate());
-//
-//		account.setWallet(system.getWallet());
-//		account.setBalance(system.getAccountBalance());
-//		jsonMapper.writeValue(new File(config.getOutputFile()), account);
+		// TradeSystemExecution system = new
+		// TradeSystemExecution(account.getWallet(), stocks,
+		// account.getInitialPosition(),
+		// account.getBalance(), tradingStrategies);
+		// system.analyzeStocks(config.getParsedRecomendationDate());
+		//
+		// account.setWallet(system.getWallet());
+		// account.setBalance(system.getAccountBalance());
+		// jsonMapper.writeValue(new File(config.getOutputFile()), account);
 
 	}
 

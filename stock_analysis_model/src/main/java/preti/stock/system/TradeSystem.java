@@ -3,6 +3,7 @@ package preti.stock.system;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -69,8 +70,9 @@ public class TradeSystem {
 	private void openNewTrade(Stock stock, Date d) {
 		log.info(String.format("Opening new trade for stock %s at date %s", stock.getCode(), d));
 
+		double openTradesValue = calculateOpenTradesValue(d);
 		TradingStrategy strategy = this.tradingStrategies.get(stock.getCode());
-		double size = strategy.calculatePositionSize(d);
+		double size = strategy.calculatePositionSize(d, openTradesValue + accountBalance);
 		if (size < 1) {
 			log.info("Postion size<1: not enough balance to enter position");
 			return;
@@ -125,11 +127,24 @@ public class TradeSystem {
 		}
 	}
 
-	public void closeAllOpenTrades(Date d) {
+	private double calculateOpenTradesValue(Date d) {
+		double value = 0;
 		for (Trade t : getAllOpenTrades()) {
-			if (t.isOpen()) {
+			if (!t.isOpen())
+				continue;
+
+			value += t.getTotalValue(d);
+		}
+
+		return value;
+	}
+
+	public void closeAllOpenTrades(Date d) {
+		String[] stockCodes = openTrades.keySet().toArray(new String[] {});
+		for (String stockCode : stockCodes) {
+			Trade t = openTrades.get(stockCode);
+			if (t.isOpen())
 				closeTrade(t, d);
-			}
 		}
 	}
 

@@ -27,16 +27,13 @@ public class TradingStrategyImpl implements TradingStrategy {
 	private HighestValueIndicator highestValueIndicator;
 
 	private int entryDonchianSize, exitDonchianSize;
-	private double accountInitialPosition;
 
 	private Stock stock;
 
-	public TradingStrategyImpl(Stock stock, int entryDonchianSize, int exitDonchianSize, double accountInitialPosition,
-			double riskRate) {
+	public TradingStrategyImpl(Stock stock, int entryDonchianSize, int exitDonchianSize, double riskRate) {
 		super();
 		this.entryDonchianSize = entryDonchianSize;
 		this.exitDonchianSize = exitDonchianSize;
-		this.accountInitialPosition = accountInitialPosition;
 		this.stock = stock;
 
 		this.lowestValueIndicator = createLowestValueIndicator();
@@ -55,10 +52,6 @@ public class TradingStrategyImpl implements TradingStrategy {
 
 	public int getExitDonchianSize() {
 		return exitDonchianSize;
-	}
-
-	public double getAccountInitialPosition() {
-		return accountInitialPosition;
 	}
 
 	public Stock getStock() {
@@ -117,16 +110,10 @@ public class TradingStrategyImpl implements TradingStrategy {
 	}
 
 	@Override
-	public double calculatePositionSize(Date d) {
+	public double calculatePositionSize(Date d, double currentTotalBalance) {
 		double stopLossPoint = calculateStopLossPoint(d);
 		double stockValue = stock.getCloseValueAtDate(d);
-
-		// log.info(String.format("code=%s accountInitialPosition=%s
-		// risck_factor=%s stock_value=%s stopLossPoint=%s",
-		// stockTrade.getStock().getCode(), accountInitialPosition, RISK_FACTOR,
-		// stockValue, stopLossPoint));
-		return Math.floor((accountInitialPosition * riskRate) / (stockValue - stopLossPoint));
-
+		return Math.floor((currentTotalBalance * riskRate) / (stockValue - stopLossPoint));
 	}
 
 	@Override

@@ -69,10 +69,8 @@ public class StockAnalysis {
 						configContext.getMinDonchianExitValue(), configContext.getMaxDonchianExitValue(),
 						configContext.getRiskRate());
 				if (optimizationResult != null) {
-					newStrategies.put(s.getCode(),
-							new TradingStrategyImpl(s, optimizationResult.getEntryDonchianSize(),
-									optimizationResult.getExitDonchianSize(), accountInitialPosition,
-									optimizationResult.getRiskRate()));
+					newStrategies.put(s.getCode(), new TradingStrategyImpl(s, optimizationResult.getEntryDonchianSize(),
+							optimizationResult.getExitDonchianSize(), optimizationResult.getRiskRate()));
 				}
 			}
 			log.error("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
@@ -105,9 +103,8 @@ public class StockAnalysis {
 		for (String code : oldStrategies.keySet()) {
 			if (!newStrategies.containsKey(code)) {
 				TradingStrategyImpl oldStrategy = (TradingStrategyImpl) oldStrategies.get(code);
-				mergedStrategies.put(code,
-						new TradingStrategyImpl(oldStrategy.getStock(), 0, oldStrategy.getExitDonchianSize(),
-								oldStrategy.getAccountInitialPosition(), oldStrategy.getRiskRate()));
+				mergedStrategies.put(code, new TradingStrategyImpl(oldStrategy.getStock(), 0,
+						oldStrategy.getExitDonchianSize(), oldStrategy.getRiskRate()));
 			}
 		}
 
