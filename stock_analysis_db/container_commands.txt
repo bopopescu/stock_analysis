@@ -1,0 +1,8 @@
+#Subir container pela primeira vez
+sudo docker run --name stock_analysis_db -e MYSQL_ROOT_PASSWORD=a -d mysql:5.7
+
+#subir container ja existente
+sudo docker start stock_analysis_db
+
+#Iniciar client mysql
+sudo docker run -it --link stock_analysis_db:mysql --rm mysql:5.7 sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'

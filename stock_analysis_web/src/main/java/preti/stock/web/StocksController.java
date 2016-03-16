@@ -46,6 +46,10 @@ public class StocksController {
 			parsedFinalDate = format.parse(finalDate);
 
 		return stocksService.loadStocks(stockCodes, parsedInitialDate, parsedFinalDate);
+	}
 
+	@RequestMapping(path = "/stocks/loadData", headers = "Accept=application/json")
+	public void loadStockData(@RequestParam(name = "file", required = true) String stocksFile) throws IOException {
+		stocksService.loadStockData(stocksFile);
 	}
 }
