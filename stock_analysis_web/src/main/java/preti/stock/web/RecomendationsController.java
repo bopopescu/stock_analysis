@@ -46,7 +46,12 @@ public class RecomendationsController {
 
 		Calendar beginDate = Calendar.getInstance();
 		beginDate.setTime(recomendationDate);
-		beginDate.add(Calendar.MONTH, -6);
+		
+		// FIXME: preciso encontrar uma forma mais inteligente de identificar a
+		// data de inicio da procura. Preciso levar em consideração o tempo
+		// necessário para o algoritmo de análise (os canais de Donchian) e a
+		// data de compra do Trade mais antigo do Account
+		beginDate.add(Calendar.MONTH, -12);
 		logger.debug("Begin date is " + beginDate.getTime() + " end date is " + recomendationDate);
 
 		List<Stock> stocks = stocksService.loadStocks(account.getStockCodesToAnalyze(), beginDate.getTime(),

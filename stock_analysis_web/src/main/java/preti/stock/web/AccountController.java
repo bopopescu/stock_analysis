@@ -44,9 +44,10 @@ public class AccountController {
 		Date closeDate = dateFormat.parse(date);
 
 		logger.info("Closing all dates at date " + date);
+		logger.debug(String.format("Account balance is %s", account.getBalance()));
 		Calendar beginDate = Calendar.getInstance();
 		beginDate.setTime(closeDate);
-		beginDate.add(Calendar.MONTH, -6);
+		beginDate.add(Calendar.MONTH, -12);
 		logger.debug("Begin date is " + beginDate.getTime() + " end date is " + closeDate);
 
 		List<Stock> stocks = stocksService.loadStocks(account.getStockCodesToAnalyze(), beginDate.getTime(), closeDate);

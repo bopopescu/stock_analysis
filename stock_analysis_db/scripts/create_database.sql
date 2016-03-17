@@ -13,6 +13,8 @@ create table stock_history (
 	stock_history_id BIGINT NOT NULL AUTO_INCREMENT,
 	stock_id INT NOT NULL,
 	date DATE NOT NULL,
+	high  decimal(10,2) not null,
+	low  decimal(10,2) not null,
 	close decimal(10,2) not null,
 	open decimal(10,2) not null,
 	volume decimal(15,2) not null,

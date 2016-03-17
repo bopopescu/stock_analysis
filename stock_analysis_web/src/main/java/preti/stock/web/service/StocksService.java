@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -19,13 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.InputDataEntry;
 import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
 import preti.stock.web.repository.StocksRepository;
 
 @Service
 public class StocksService {
 	private Logger logger = LoggerFactory.getLogger(StocksService.class);
-	private List<InputDataEntry> allDataEntries;
 
 	@Autowired
 	private StocksRepository stocksRepository;
@@ -34,48 +30,16 @@ public class StocksService {
 		this.stocksRepository = stocksRepository;
 	}
 
-	// public StocksService() throws IOException {
-	// try (Stream<String> lines = Files.lines(Paths.get("/var/stock_analysis/",
-	// "cotacoes.txt"))) {
-	// Stream<InputDataEntry> inputData = lines.filter(s -> !s.trim().isEmpty())
-	// .map(InputDataEntry::parseFromLine);
-	//
-	// allDataEntries = new ArrayList<>();
-	// Iterator<InputDataEntry> inputDataIterator = inputData.iterator();
-	// while (inputDataIterator.hasNext()) {
-	// allDataEntries.add(inputDataIterator.next());
-	// }
-	//
-	// }
-	// }
-
 	public List<Stock> loadStocks(List<String> stockCodes, Date initialDate, Date finalDate) {
 		logger.info("Loading stocks " + stockCodes);
 
 		List<Stock> stocks = new ArrayList<>();
-
 		for (String stockCode : stockCodes) {
 			logger.info("Parsing " + stockCode);
-			Stream<InputDataEntry> localData = Arrays.stream(allDataEntries.toArray(new InputDataEntry[] {}));
-			localData = localData.filter(sd -> sd.getCode().equals(stockCode));
 
-			if (initialDate != null) {
-				localData = localData.filter(sd -> sd.getDate().compareTo(initialDate) >= 0);
-			}
-			if (finalDate != null) {
-				localData = localData.filter(sd -> sd.getDate().compareTo(finalDate) <= 0);
-			}
-
-			Iterator<InputDataEntry> stockEntries = localData.iterator();
-			Stock stock = new Stock(stockCode);
-			stocks.add(stock);
-
-			while (stockEntries.hasNext()) {
-				InputDataEntry data = stockEntries.next();
-				stock.addHistory(new StockHistory(data.getDate(), data.getHigh(), data.getLow(), data.getClose(),
-						data.getVolume()));
-
-			}
+			Stock s = stocksRepository.getStock(stockCode);
+			s.setHistory(stocksRepository.getStockHistory(stockCode, initialDate, finalDate));
+			stocks.add(s);
 		}
 
 		return stocks;
@@ -88,7 +52,10 @@ public class StocksService {
 		Date lastStockDate = stocksRepository.getLastStocksDate();
 		String.format("Last stock date is %s", lastStockDate);
 
+		// FIXME: verificar se de fato não há leak aqui.
+		@SuppressWarnings("resource")
 		Stream<String> lines = Files.lines(Paths.get(stockFile));
+
 		Stream<InputDataEntry> inputData;
 		if (lastStockDate != null) {
 			inputData = lines.filter(s -> !s.trim().isEmpty()).map(InputDataEntry::parseFromLine)
@@ -107,8 +74,8 @@ public class StocksService {
 			Integer stockId = stocksRepository.getStockId(entry.getCode());
 			logger.info(String.format("Creating history code=%s date=%s close=%s open=%s volume=%s", entry.getCode(),
 					entry.getDate(), entry.getClose(), entry.getOpen(), entry.getVolume()));
-			stocksRepository.createHistory(stockId, entry.getDate(), entry.getClose(), entry.getOpen(),
-					entry.getVolume());
+			stocksRepository.createHistory(stockId, entry.getDate(), entry.getHigh(), entry.getLow(), entry.getClose(),
+					entry.getOpen(), entry.getVolume());
 		});
 
 	}

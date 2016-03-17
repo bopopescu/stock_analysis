@@ -36,3 +36,4 @@ Input:
 	"accountInitialValue":10000
 }
 Resultado: 12381.59
+Após as mudanças no na utilização do initialPosition/accountBalance para calculo do tamanho da posicao, o resultado passou a ser 12348.95

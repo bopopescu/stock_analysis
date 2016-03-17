@@ -3,7 +3,6 @@ package preti.stock.system;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -102,7 +101,9 @@ public class TradeSystem {
 
 	public void analyzeStocks(Date recomendationDate) {
 		for (Stock stock : stocksToAnalyse) {
+			log.debug(String.format("Analysing stock %s at date %s", stock.getCode(), recomendationDate));
 			if (!stock.hasHistoryAtDate(recomendationDate)) {
+				log.debug("No data to analyze");
 				continue;
 			}
 
