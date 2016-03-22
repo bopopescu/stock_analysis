@@ -106,6 +106,7 @@ public class Run {
 			currentDate = currentDate.plusDays(1);
 		}
 
+		System.out.println("Final Balance: " + account.getBalance());
 		parameters.put("date", "2015-01-01");
 		account = restTemplate.postForObject("http://localhost:8080/account/closeAllOpenTrades?date={date}", account,
 				Account.class, parameters);

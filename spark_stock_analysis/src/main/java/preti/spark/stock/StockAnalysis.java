@@ -84,8 +84,10 @@ public class StockAnalysis {
 			currentInitialDate = currentInitialDate.plusMonths(windowSize);
 			currentFinalDate = currentFinalDate.plusMonths(windowSize);
 		}
+		
+		System.out.println("Final balance before closing open trades: " + system.getAccountBalance());
 		system.closeAllOpenTrades(finalDate);
-		System.out.println("Final balance: " + system.getAccountBalance());
+		System.out.println("Final balance after closing open trades: " + system.getAccountBalance());
 
 		log.info("Generating reports ...");
 		new StockReport(system, "localhost", 5001, "stock").generate();

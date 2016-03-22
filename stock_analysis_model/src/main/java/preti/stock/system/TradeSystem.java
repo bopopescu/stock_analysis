@@ -53,14 +53,14 @@ public class TradeSystem {
 		return closedTrades;
 	}
 
-	private void closeTrade(Trade trade, Date d) {
+	private void closeTrade(Trade trade, Date d, double sellValue) {
 		log.info(String.format("Closing trade for stock %s at date %s", trade.getStockCode(), d));
 
 		if (!trade.isOpen())
 			throw new IllegalArgumentException(
 					String.format("No open trade to close for stock %s.", trade.getStockCode()));
 
-		trade.close(d);
+		trade.close(d, sellValue);
 		this.accountBalance += trade.getSize() * trade.getSellValue();
 		openTrades.remove(trade.getStockCode());
 		closedTrades.put(trade.getStockCode(), trade);
@@ -90,7 +90,7 @@ public class TradeSystem {
 			throw new IllegalArgumentException(
 					String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
 		}
-		Trade newTrade = new Trade(stock, size, strategy.calculateStopLossPoint(d), d);
+		Trade newTrade = new Trade(stock, size, strategy.calculateStopLossPoint(d), d, stockValue);
 		this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
 		openTrades.put(newTrade.getStockCode(), newTrade);
 	}
@@ -117,7 +117,7 @@ public class TradeSystem {
 				boolean profittable = openTrade.isProfitable(recomendationDate);
 				if ((profittable && strategy.exitPosition(recomendationDate))
 						|| (!profittable && openTrade.hasReachedStopPosition(recomendationDate))) {
-					closeTrade(openTrade, recomendationDate);
+					closeTrade(openTrade, recomendationDate, stock.getCloseValueAtDate(recomendationDate));
 				}
 
 			} else {
@@ -145,7 +145,7 @@ public class TradeSystem {
 		for (String stockCode : stockCodes) {
 			Trade t = openTrades.get(stockCode);
 			if (t.isOpen())
-				closeTrade(t, d);
+				closeTrade(t, d, t.getStock().getCloseValueAtDate(d));
 		}
 	}
 

@@ -14,22 +14,27 @@ public class Trade implements Serializable {
 	private double stopPos;
 	private Date buyDate;
 	private Date sellDate;
+	private double buyValue;
+	private double sellValue;
 
 	public Trade() {
 
 	}
 
-	public Trade(Stock stock, double size, double stopPos, Date buyDate) {
-		this(stock, size, stopPos, buyDate, null);
+	public Trade(Stock stock, double size, double stopPos, Date buyDate, double buyValue) {
+		this(stock, size, stopPos, buyDate, null, buyValue, 0);
 	}
 
-	public Trade(Stock stock, double size, double stopPos, Date buyDate, Date sellDate) {
+	public Trade(Stock stock, double size, double stopPos, Date buyDate, Date sellDate, double buyValue,
+			double sellValue) {
 		super();
 		this.stock = stock;
 		this.size = size;
 		this.stopPos = stopPos;
 		this.buyDate = buyDate;
 		this.sellDate = sellDate;
+		this.buyValue = buyValue;
+		this.sellValue = sellValue;
 	}
 
 	public void setStock(Stock s) {
@@ -61,6 +66,14 @@ public class Trade implements Serializable {
 		return sellDate;
 	}
 
+	public void setBuyValue(double buyValue) {
+		this.buyValue = buyValue;
+	}
+
+	public void setSellValue(double sellValue) {
+		this.sellValue = sellValue;
+	}
+
 	public boolean isOpen() {
 		return sellDate == null;
 	}
@@ -69,8 +82,9 @@ public class Trade implements Serializable {
 		return (buyDate != null && sellDate != null && d.compareTo(buyDate) >= 0 && d.compareTo(sellDate) < 0);
 	}
 
-	public void close(Date d) {
+	public void close(Date d, double sellValue) {
 		this.sellDate = d;
+		this.sellValue = sellValue;
 	}
 
 	public double getProfit(Date d) {
@@ -83,9 +97,9 @@ public class Trade implements Serializable {
 		}
 
 		if (d != null) {
-			return size * (stock.getCloseValueAtDate(d) - stock.getCloseValueAtDate(buyDate));
+			return size * (stock.getCloseValueAtDate(d) - buyValue);
 		} else {
-			return size * (stock.getCloseValueAtDate(sellDate) - stock.getCloseValueAtDate(buyDate));
+			return size * (sellValue - buyValue);
 		}
 	}
 
@@ -96,21 +110,15 @@ public class Trade implements Serializable {
 
 	@JsonIgnore
 	public boolean isProfitable() {
-		return getProfit(sellDate) > 0;
+		return getProfit(null) > 0;
 	}
 
-	@JsonIgnore
 	public double getBuyValue() {
-		return stock.getCloseValueAtDate(buyDate);
+		return this.buyValue;
 	}
 
-	@JsonIgnore
 	public double getSellValue() {
-		if (sellDate == null) {
-			throw new IllegalArgumentException("No sell value: trade not closed");
-		}
-
-		return stock.getCloseValueAtDate(sellDate);
+		return this.sellValue;
 	}
 
 	public boolean hasReachedStopPosition(Date d) {
