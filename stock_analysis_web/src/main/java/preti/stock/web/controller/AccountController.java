@@ -1,4 +1,4 @@
-package preti.stock.web;
+package preti.stock.web.controller;
 
 import java.text.DateFormat;
 import java.text.ParseException;

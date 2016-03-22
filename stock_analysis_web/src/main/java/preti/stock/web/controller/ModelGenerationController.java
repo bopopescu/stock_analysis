@@ -1,4 +1,4 @@
-package preti.stock.web;
+package preti.stock.web.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
