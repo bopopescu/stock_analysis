@@ -8,12 +8,20 @@ import preti.stock.coremodel.Trade;
 
 @SuppressWarnings("serial")
 public class Account implements Serializable {
-
+	private long id;
 	private List<DonchianModel> model;
 	private double balance;
 	private double initialPosition;
 	private Collection<Trade> wallet;
 	private List<String> stockCodesToAnalyze;
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public List<DonchianModel> getModel() {
 		return model;

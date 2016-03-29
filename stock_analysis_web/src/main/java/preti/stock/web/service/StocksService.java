@@ -35,7 +35,7 @@ public class StocksService {
 
 		List<Stock> stocks = new ArrayList<>();
 		for (String stockCode : stockCodes) {
-			logger.info("Parsing " + stockCode);
+			logger.debug("Parsing " + stockCode);
 
 			Stock s = stocksRepository.getStock(stockCode);
 			s.setHistory(stocksRepository.getStockHistory(stockCode, initialDate, finalDate));

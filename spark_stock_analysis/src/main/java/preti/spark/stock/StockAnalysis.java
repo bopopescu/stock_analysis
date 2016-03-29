@@ -3,6 +3,8 @@ package preti.spark.stock;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +23,11 @@ import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
 import preti.spark.stock.run.DonchianStrategyOptimizer;
 import preti.spark.stock.run.StocksRepository;
+import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystemExecution;
 import preti.stock.analysismodel.donchian.DonchianModel;
 import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.Trade;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingStrategyImpl;
 
@@ -69,8 +73,9 @@ public class StockAnalysis {
 						configContext.getMinDonchianExitValue(), configContext.getMaxDonchianExitValue(),
 						configContext.getRiskRate());
 				if (optimizationResult != null) {
-					newStrategies.put(s.getCode(), new TradingStrategyImpl(s, optimizationResult.getEntryDonchianSize(),
-							optimizationResult.getExitDonchianSize(), optimizationResult.getRiskRate()));
+					newStrategies.put(s.getCode(),
+							new TradingStrategyImpl(s, 0, optimizationResult.getEntryDonchianSize(),
+									optimizationResult.getExitDonchianSize(), optimizationResult.getRiskRate()));
 				}
 			}
 			log.error("Analyzing from " + currentInitialDate + " to " + currentFinalDate + " with training data from "
@@ -84,7 +89,7 @@ public class StockAnalysis {
 			currentInitialDate = currentInitialDate.plusMonths(windowSize);
 			currentFinalDate = currentFinalDate.plusMonths(windowSize);
 		}
-		
+
 		System.out.println("Final balance before closing open trades: " + system.getAccountBalance());
 		system.closeAllOpenTrades(finalDate);
 		System.out.println("Final balance after closing open trades: " + system.getAccountBalance());
@@ -105,7 +110,7 @@ public class StockAnalysis {
 		for (String code : oldStrategies.keySet()) {
 			if (!newStrategies.containsKey(code)) {
 				TradingStrategyImpl oldStrategy = (TradingStrategyImpl) oldStrategies.get(code);
-				mergedStrategies.put(code, new TradingStrategyImpl(oldStrategy.getStock(), 0,
+				mergedStrategies.put(code, new TradingStrategyImpl(oldStrategy.getStock(), oldStrategy.getModelId(), 0,
 						oldStrategy.getExitDonchianSize(), oldStrategy.getRiskRate()));
 			}
 		}

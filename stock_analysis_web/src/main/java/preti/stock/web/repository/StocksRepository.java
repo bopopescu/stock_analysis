@@ -36,7 +36,7 @@ public class StocksRepository {
 	}
 
 	public Stock getStock(String stockCode) {
-		return jdbcTemplate.queryForObject("select stock_code, stock_name from stock where stock_code = ?",
+		return jdbcTemplate.queryForObject("select stock_id, stock_code, stock_name from stock where stock_code = ?",
 				new Object[] { stockCode }, new StockRowMapper());
 	}
 

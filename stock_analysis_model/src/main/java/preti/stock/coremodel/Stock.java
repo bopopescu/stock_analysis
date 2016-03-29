@@ -13,12 +13,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Stock implements Serializable {
+	private long id;
 	private String code;
 	private String name;
 	private TreeMap<Date, StockHistory> history = new TreeMap<>();
 
 	public Stock() {
 
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public Stock(String code) {

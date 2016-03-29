@@ -58,8 +58,10 @@ public class AccountController {
 
 		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(), new TradingStrategyImpl(stocksMap.get(parameter.getStock()),
-					parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
+			tradingStrategies.put(parameter.getStock(),
+					new TradingStrategyImpl(stocksMap.get(parameter.getStock()), parameter.getId(),
+							parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(),
+							parameter.getRiskRate()));
 		}
 
 		// TODO: Ter que repopular esses trades aqui não é um bom sinal, acho

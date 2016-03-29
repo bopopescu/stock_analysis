@@ -56,7 +56,7 @@ public class Recomendations {
 
 		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(), new TradingStrategyImpl(stocksMap.get(parameter.getStock()),
+			tradingStrategies.put(parameter.getStock(), new TradingStrategyImpl(stocksMap.get(parameter.getStock()), 0,
 					parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
 		}
 

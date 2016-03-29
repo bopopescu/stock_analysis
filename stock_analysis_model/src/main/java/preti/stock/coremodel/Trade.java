@@ -9,7 +9,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(value = { "profitable" }, ignoreUnknown = true)
 public class Trade implements Serializable {
+	private long id;
 	private Stock stock;
+	private long modelId;
 	private double size;
 	private double stopPos;
 	private Date buyDate;
@@ -21,14 +23,15 @@ public class Trade implements Serializable {
 
 	}
 
-	public Trade(Stock stock, double size, double stopPos, Date buyDate, double buyValue) {
-		this(stock, size, stopPos, buyDate, null, buyValue, 0);
+	public Trade(Stock stock, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
+		this(stock, modelId, size, stopPos, buyDate, null, buyValue, 0);
 	}
 
-	public Trade(Stock stock, double size, double stopPos, Date buyDate, Date sellDate, double buyValue,
+	public Trade(Stock stock, long modelId, double size, double stopPos, Date buyDate, Date sellDate, double buyValue,
 			double sellValue) {
 		super();
 		this.stock = stock;
+		this.modelId = modelId;
 		this.size = size;
 		this.stopPos = stopPos;
 		this.buyDate = buyDate;
@@ -37,12 +40,46 @@ public class Trade implements Serializable {
 		this.sellValue = sellValue;
 	}
 
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public void setSize(double size) {
+		this.size = size;
+	}
+
+	public void setStopPos(double stopPos) {
+		this.stopPos = stopPos;
+	}
+
+	public void setBuyDate(Date buyDate) {
+		this.buyDate = buyDate;
+	}
+
+	public void setSellDate(Date sellDate) {
+		this.sellDate = sellDate;
+	}
+
 	public void setStock(Stock s) {
 		this.stock = s;
 	}
 
 	public Stock getStock() {
 		return stock;
+	}
+	
+	
+
+	public long getModelId() {
+		return modelId;
+	}
+
+	public void setModelId(long modelId) {
+		this.modelId = modelId;
 	}
 
 	@JsonIgnore
@@ -104,6 +141,11 @@ public class Trade implements Serializable {
 	}
 
 	@JsonIgnore
+	public double getProfit() {
+		return getProfit(null);
+	}
+
+	@JsonIgnore
 	public boolean isProfitable(Date d) {
 		return getProfit(d) > 0;
 	}
@@ -139,7 +181,7 @@ public class Trade implements Serializable {
 		} else {
 			return String.format("stock=%s size=%s buyValue=%s stopPos=%s buy=Date%s sellDate=%s sellValue=%s",
 					stock.getCode(), size, getBuyValue(), stopPos, buyDate, sellDate,
-					stock.getCloseValueAtDate(sellDate));
+					sellValue);
 		}
 
 	}

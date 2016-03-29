@@ -22,6 +22,7 @@ import preti.stock.coremodel.StockHistory;
 public class TradingStrategyImpl implements TradingStrategy {
 	private static final Log log = LogFactory.getLog(TradingStrategyImpl.class);
 
+	private long modelId;
 	private final double riskRate;
 	private LowestValueIndicator lowestValueIndicator;
 	private HighestValueIndicator highestValueIndicator;
@@ -30,8 +31,10 @@ public class TradingStrategyImpl implements TradingStrategy {
 
 	private Stock stock;
 
-	public TradingStrategyImpl(Stock stock, int entryDonchianSize, int exitDonchianSize, double riskRate) {
+	public TradingStrategyImpl(Stock stock, long modelId, int entryDonchianSize, int exitDonchianSize,
+			double riskRate) {
 		super();
+		this.modelId = modelId;
 		this.entryDonchianSize = entryDonchianSize;
 		this.exitDonchianSize = exitDonchianSize;
 		this.stock = stock;
@@ -40,6 +43,10 @@ public class TradingStrategyImpl implements TradingStrategy {
 		this.highestValueIndicator = createHighestValueIndicator();
 
 		this.riskRate = riskRate;
+	}
+
+	public long getModelId() {
+		return modelId;
 	}
 
 	public double getRiskRate() {

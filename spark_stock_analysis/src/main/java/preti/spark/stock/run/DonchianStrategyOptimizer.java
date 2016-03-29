@@ -44,7 +44,7 @@ public class DonchianStrategyOptimizer {
 			int selectedExitSize = NO_ENTRY_FOUND;
 			for (int exitDonchianSize = minDonchianExitSize; exitDonchianSize <= maxDonchianExitSize
 					&& exitDonchianSize <= entryDonchianSize; exitDonchianSize++) {
-				TradingStrategy strategy = new TradingStrategyImpl(stock, entryDonchianSize, exitDonchianSize,
+				TradingStrategy strategy = new TradingStrategyImpl(stock, 0, entryDonchianSize, exitDonchianSize,
 						riskRate);
 				TradeSystemExecution system = new TradeSystemExecution(stock, initialPosition, strategy);
 				system.analyzeStocks(initialDate, finalDate);
@@ -88,7 +88,7 @@ public class DonchianStrategyOptimizer {
 
 		// Verify if a positive result was found
 		if (selectedExit != NO_ENTRY_FOUND)
-			return new DonchianModel(stock.getCode(), selectedEntry, selectedExit, riskRate);
+			return new DonchianModel(stock.getCode(), 0l, selectedEntry, selectedExit, riskRate);
 		else
 			return null;
 	}

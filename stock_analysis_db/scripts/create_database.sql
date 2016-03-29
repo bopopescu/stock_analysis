@@ -23,3 +23,59 @@ create table stock_history (
 ) ENGINE=InnoDB;
 alter table stock_history add constraint fk_stockhistory_stock foreign key (stock_id) references stock (stock_id);
 alter table stock_history add unique index (stock_id, date);
+
+
+create table account (
+	account_id BIGINT NOT NULL AUTO_INCREMENT,
+	balance decimal(15,2) not null,
+	initial_position decimal(15,2) not null,
+	primary key (account_id)
+) ENGINE=InnoDB;
+
+create table account_analyse_stock (
+	account_id BIGINT NOT NULL,
+	stock_id INT NOT NULL,
+	primary key (account_id, stock_id)
+) ENGINE=InnoDB;
+alter table account_analyse_stock add constraint fk_account_analyse_stock_stock foreign key (stock_id) references stock (stock_id);
+alter table account_analyse_stock add constraint fk_account_analyse_stock_account foreign key (account_id) references account (account_id);
+
+create table model (
+	model_id BIGINT NOT NULL AUTO_INCREMENT,
+	account_id BIGINT NOT NULL,
+	dat_start DATE NOT NULL,
+	dat_end DATE NOT NULL,
+	primary key (model_id)
+) ENGINE=InnoDB;
+alter table model add constraint fk_donchian_model_account foreign key (account_id) references account (account_id);
+
+create table donchian_model_entry (
+	donchian_model_entry_id BIGINT NOT NULL AUTO_INCREMENT,
+	model_id BIGINT NOT NULL,
+	stock_id INT NOT NULL,
+	entry_size INT NOT NULL,
+	exit_size INT NOT NULL,
+	risk_rate decimal(5,2) not null,
+	primary key (donchian_model_entry_id)
+) ENGINE=InnoDB;
+alter table donchian_model_entry add unique index (model_id, stock_id);
+alter table donchian_model_entry add constraint fk_donchian_model_entry_stock foreign key (stock_id) references stock (stock_id);
+alter table donchian_model_entry add constraint fk_donchian_model_entry_model foreign key (model_id) references model (model_id);
+
+create table trade (
+	trade_id BIGINT NOT NULL AUTO_INCREMENT,
+	account_id BIGINT NOT NULL,
+	stock_id INT NOT NULL,
+	model_id BIGINT,
+	buy_date DATE NOT NULL,
+	sell_date DATE,
+	buy_value decimal(10,2) not null,
+	sell_value decimal(10,2),
+	size decimal(10,2) not null,
+	stop_pos decimal(10,2) not null,
+	primary key (trade_id)
+) ENGINE=InnoDB;
+alter table trade add constraint fk_trade_stock foreign key (stock_id) references stock (stock_id);
+alter table trade add constraint fk_trade_account foreign key (account_id) references account (account_id);
+alter table trade add constraint fk_trade_model foreign key (account_id, model_id) references model (account_id, model_id);
+alter table trade add index (buy_date);

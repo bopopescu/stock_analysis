@@ -4,6 +4,8 @@ import java.util.Date;
 
 public interface TradingStrategy {
 
+	long getModelId();
+
 	boolean enterPosition(Date d);
 
 	boolean exitPosition(Date d);

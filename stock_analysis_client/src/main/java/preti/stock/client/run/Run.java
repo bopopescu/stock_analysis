@@ -7,7 +7,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Trade;
 
 public class Run {
 
@@ -49,7 +49,7 @@ public class Run {
 
 	}
 
-	public static void main(String[] args)
+	public static void main3(String[] args)
 			throws JsonParseException, JsonMappingException, IOException, ParseException {
 		ObjectMapper jsonMapper = new ObjectMapper();
 		RestTemplate restTemplate = new RestTemplate();
@@ -114,6 +114,32 @@ public class Run {
 		System.out.println("Final Balance: " + account.getBalance());
 	}
 
+	public static void main(String[] args) throws ParseException {
+		ObjectMapper jsonMapper = new ObjectMapper();
+		RestTemplate restTemplate = new RestTemplate();
+
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date initialDate = dateFormat.parse("2014-02-01");
+		Date finalDate = dateFormat.parse("2014-10-01");
+
+		Map<String, String> parameters = new HashMap<>();
+		DateTime currentDate = new DateTime(initialDate.getTime());
+		while (currentDate.isBefore(finalDate.getTime())) {
+			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
+
+			parameters.put("date", dateFormat.format(currentDate.toDate()));
+			Trade[] trades = restTemplate.getForObject("http://localhost:8080/recomendations/generate?date={date}",
+					Trade[].class, parameters);
+
+			System.out.println("Trades: " + trades.length);
+			restTemplate.postForLocation("http://localhost:8080/trades/realize", trades);
+
+			currentDate = currentDate.plusDays(1);
+		}
+		
+//		FALTA CHAMAR CLOSE ALL OPEN TRADES;
+	}
+
 	private static DonchianModel[] mergeModels(DonchianModel[] newModel, DonchianModel[] oldModel) {
 		Map<String, DonchianModel> mapModels = new HashMap<>();
 		for (DonchianModel m : newModel) {
@@ -123,7 +149,7 @@ public class Run {
 		for (DonchianModel m : oldModel) {
 			if (!mapModels.containsKey(m.getStock())) {
 				mapModels.put(m.getStock(),
-						new DonchianModel(m.getStock(), 0, m.getExitDonchianSize(), m.getRiskRate()));
+						new DonchianModel(m.getStock(), 0,  0, m.getExitDonchianSize(), m.getRiskRate()));
 			}
 		}
 
