@@ -88,7 +88,7 @@ public class DonchianStrategyOptimizer {
 
 		// Verify if a positive result was found
 		if (selectedExit != NO_ENTRY_FOUND)
-			return new DonchianModel(stock.getCode(), 0l, selectedEntry, selectedExit, riskRate);
+			return new DonchianModel(0l, stock.getId(), selectedEntry, selectedExit, riskRate);
 		else
 			return null;
 	}

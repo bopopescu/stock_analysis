@@ -30,16 +30,16 @@ public class TradeSystemExecution implements Serializable {
 	private double accountBalance;
 	private Map<Date, Double> balanceHistory;
 
-	private Map<String, TradingStrategy> tradingStrategies;
+	private Map<Long, TradingStrategy> tradingStrategies;
 
 	public TradeSystemExecution(Stock stock, double accountInitialPosition, TradingStrategy strategy) {
 		this(Arrays.asList(stock), accountInitialPosition, accountInitialPosition, null);
 		this.tradingStrategies = new HashMap<>();
-		tradingStrategies.put(stock.getCode(), strategy);
+		tradingStrategies.put(stock.getId(), strategy);
 	}
 
 	public TradeSystemExecution(Collection<Stock> stocks, double accountInitialPosition, double accountBalance,
-			Map<String, TradingStrategy> tradingStrategies) {
+			Map<Long, TradingStrategy> tradingStrategies) {
 		this.accountInitialPosition = accountInitialPosition;
 		this.accountBalance = accountBalance;
 
@@ -72,12 +72,12 @@ public class TradeSystemExecution implements Serializable {
 		return stocks;
 	}
 
-	public void setTradingStrategies(Map<String, TradingStrategy> strategies) {
+	public void setTradingStrategies(Map<Long, TradingStrategy> strategies) {
 		this.tradingStrategies = strategies;
 	}
 
-	public void applyTradingStrategy(String stockCode, TradingStrategy strategy) {
-		this.tradingStrategies.put(stockCode, strategy);
+	public void applyTradingStrategy(Long stockId, TradingStrategy strategy) {
+		this.tradingStrategies.put(stockId, strategy);
 	}
 
 	public double getAccountInitialPosition() {
@@ -98,11 +98,11 @@ public class TradeSystemExecution implements Serializable {
 		return openTrades;
 	}
 
-	private void updateWallet(Map<String, Trade> openTrades, Map<String, Trade> closedTrades) {
+	private void updateWallet(Map<Long, Trade> openTrades, Map<Long, Trade> closedTrades) {
 		for (StockContext sc : wallet) {
-			String stockCode = sc.getStock().getCode();
-			if (!sc.isInOpenPosition() && openTrades.containsKey(stockCode)) {
-				sc.addTrade(openTrades.get(stockCode));
+			Long stockId = sc.getStock().getId();
+			if (!sc.isInOpenPosition() && openTrades.containsKey(stockId)) {
+				sc.addTrade(openTrades.get(stockId));
 			}
 		}
 	}

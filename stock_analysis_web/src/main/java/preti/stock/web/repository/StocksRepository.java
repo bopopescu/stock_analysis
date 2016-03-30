@@ -7,7 +7,6 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import preti.stock.coremodel.Stock;
@@ -17,12 +16,10 @@ import preti.stock.web.repository.mappers.StockRowMapper;
 
 @Repository
 public class StocksRepository {
-	private NamedParameterJdbcTemplate namedParameterjdbcTemplate;
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
-		this.namedParameterjdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
@@ -58,7 +55,7 @@ public class StocksRepository {
 
 	public List<StockHistory> getStockHistory(String stockCode) {
 		StringBuilder sql = new StringBuilder();
-		sql.append("select sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
+		sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
 		sql.append("from stock_history sh ");
 		sql.append("inner join stock s on s.stock_id=sh.stock_id ");
 		sql.append("where s.stock_code = ?");
@@ -67,7 +64,7 @@ public class StocksRepository {
 
 	public List<StockHistory> getStockHistory(String stockCode, Date initialDate, Date finalDate) {
 		StringBuilder sql = new StringBuilder();
-		sql.append("select sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
+		sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
 		sql.append("from stock_history sh ");
 		sql.append("inner join stock s on s.stock_id=sh.stock_id ");
 		sql.append("where s.stock_code = ? and sh.date >= ? and sh.date <= ?");

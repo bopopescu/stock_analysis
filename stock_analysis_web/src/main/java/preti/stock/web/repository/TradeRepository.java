@@ -38,7 +38,7 @@ public class TradeRepository {
 	public void createTrade(Trade t, long accountId) {
 		jdbcTemplate.update(
 				"insert into trade (account_id, stock_id, model_id, buy_date, buy_value, size, stop_pos) values (?, ?, ?, ?, ?, ?, ?) ",
-				accountId, t.getStock().getId(), t.getModelId(), t.getBuyDate(), t.getBuyValue(), t.getSize(), t.getStopPos());
+				accountId, t.getStockId(), t.getModelId(), t.getBuyDate(), t.getBuyValue(), t.getSize(), t.getStopPos());
 	}
 
 	public void updateTrade(long tradeId, Date sellDate, double sellValue) {

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(value = { "profitable" }, ignoreUnknown = true)
 public class Trade implements Serializable {
 	private long id;
-	private Stock stock;
+	private long stockId;
 	private long modelId;
 	private double size;
 	private double stopPos;
@@ -19,18 +19,30 @@ public class Trade implements Serializable {
 	private double buyValue;
 	private double sellValue;
 
+	private Stock stock;
+
 	public Trade() {
 
 	}
 
 	public Trade(Stock stock, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
-		this(stock, modelId, size, stopPos, buyDate, null, buyValue, 0);
+		this(stock.getId(), modelId, size, stopPos, buyDate, buyValue);
+		applyStock(stock);
 	}
 
-	public Trade(Stock stock, long modelId, double size, double stopPos, Date buyDate, Date sellDate, double buyValue,
-			double sellValue) {
+	public Trade(long stockId, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
+		this(0, stockId, modelId, size, stopPos, buyDate, null, buyValue, 0);
+	}
+
+	public Trade(long id, long stockId, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
+		this(id, stockId, modelId, size, stopPos, buyDate, null, buyValue, 0);
+	}
+
+	public Trade(long id, long stockId, long modelId, double size, double stopPos, Date buyDate, Date sellDate,
+			double buyValue, double sellValue) {
 		super();
-		this.stock = stock;
+		this.id = id;
+		this.stockId = stockId;
 		this.modelId = modelId;
 		this.size = size;
 		this.stopPos = stopPos;
@@ -40,12 +52,29 @@ public class Trade implements Serializable {
 		this.sellValue = sellValue;
 	}
 
+	public void applyStock(Stock s) {
+		this.stock = s;
+	}
+
+	@JsonIgnore
+	public Stock getStock() {
+		return this.stock;
+	}
+
 	public long getId() {
 		return id;
 	}
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public long getStockId() {
+		return stockId;
+	}
+
+	public void setStockId(long stockId) {
+		this.stockId = stockId;
 	}
 
 	public void setSize(double size) {
@@ -64,27 +93,12 @@ public class Trade implements Serializable {
 		this.sellDate = sellDate;
 	}
 
-	public void setStock(Stock s) {
-		this.stock = s;
-	}
-
-	public Stock getStock() {
-		return stock;
-	}
-	
-	
-
 	public long getModelId() {
 		return modelId;
 	}
 
 	public void setModelId(long modelId) {
 		this.modelId = modelId;
-	}
-
-	@JsonIgnore
-	public String getStockCode() {
-		return stock.getCode();
 	}
 
 	public double getSize() {
@@ -176,12 +190,11 @@ public class Trade implements Serializable {
 
 	public String toString() {
 		if (isOpen()) {
-			return String.format("stock=%s size=%s buyValue=%s stopPos=%s buy=Date%s", stock.getCode(), size,
+			return String.format("stockId=%s size=%s buyValue=%s stopPos=%s buy=Date%s", stockId, size,
 					getBuyValue(), stopPos, buyDate);
 		} else {
-			return String.format("stock=%s size=%s buyValue=%s stopPos=%s buy=Date%s sellDate=%s sellValue=%s",
-					stock.getCode(), size, getBuyValue(), stopPos, buyDate, sellDate,
-					sellValue);
+			return String.format("stockId=%s size=%s buyValue=%s stopPos=%s buy=Date%s sellDate=%s sellValue=%s",
+					stockId, size, getBuyValue(), stopPos, buyDate, sellDate, sellValue);
 		}
 
 	}

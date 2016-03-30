@@ -22,14 +22,13 @@ import preti.stock.coremodel.StockHistory;
 public class TradingStrategyImpl implements TradingStrategy {
 	private static final Log log = LogFactory.getLog(TradingStrategyImpl.class);
 
+	private Stock stock;
 	private long modelId;
 	private final double riskRate;
-	private LowestValueIndicator lowestValueIndicator;
-	private HighestValueIndicator highestValueIndicator;
-
 	private int entryDonchianSize, exitDonchianSize;
 
-	private Stock stock;
+	private LowestValueIndicator lowestValueIndicator;
+	private HighestValueIndicator highestValueIndicator;
 
 	public TradingStrategyImpl(Stock stock, long modelId, int entryDonchianSize, int exitDonchianSize,
 			double riskRate) {

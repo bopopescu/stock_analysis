@@ -54,9 +54,9 @@ public class Recomendations {
 			stocksMap.put(st.getCode(), st);
 		}
 
-		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
+		Map<Long, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(), new TradingStrategyImpl(stocksMap.get(parameter.getStock()), 0,
+			tradingStrategies.put(parameter.getStockId(), new TradingStrategyImpl(stocksMap.get(parameter.getStockId()), 0,
 					parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
 		}
 
@@ -64,7 +64,7 @@ public class Recomendations {
 		// que meu modelo não está bom
 		// FIXME: rever isso aqui
 		for (Trade t : account.getWallet()) {
-			t.setStock(stocksMap.get(t.getStock().getCode()));
+			t.applyStock(stocksMap.get(t.getStock().getCode()));
 		}
 
 		// TradeSystemExecution system = new

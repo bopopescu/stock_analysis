@@ -115,7 +115,6 @@ public class Run {
 	}
 
 	public static void main(String[] args) throws ParseException {
-		ObjectMapper jsonMapper = new ObjectMapper();
 		RestTemplate restTemplate = new RestTemplate();
 
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -136,20 +135,20 @@ public class Run {
 
 			currentDate = currentDate.plusDays(1);
 		}
-		
-//		FALTA CHAMAR CLOSE ALL OPEN TRADES;
+
+		// FALTA CHAMAR CLOSE ALL OPEN TRADES;
 	}
 
 	private static DonchianModel[] mergeModels(DonchianModel[] newModel, DonchianModel[] oldModel) {
-		Map<String, DonchianModel> mapModels = new HashMap<>();
+		Map<Long, DonchianModel> mapModels = new HashMap<>();
 		for (DonchianModel m : newModel) {
-			mapModels.put(m.getStock(), m);
+			mapModels.put(m.getStockId(), m);
 		}
 
 		for (DonchianModel m : oldModel) {
-			if (!mapModels.containsKey(m.getStock())) {
-				mapModels.put(m.getStock(),
-						new DonchianModel(m.getStock(), 0,  0, m.getExitDonchianSize(), m.getRiskRate()));
+			if (!mapModels.containsKey(m.getStockId())) {
+				mapModels.put(m.getStockId(),
+						new DonchianModel(0l, m.getStockId(), 0, m.getExitDonchianSize(), m.getRiskRate()));
 			}
 		}
 

@@ -51,15 +51,15 @@ public class AccountController {
 		logger.debug("Begin date is " + beginDate.getTime() + " end date is " + closeDate);
 
 		List<Stock> stocks = stocksService.loadStocks(account.getStockCodesToAnalyze(), beginDate.getTime(), closeDate);
-		Map<String, Stock> stocksMap = new HashMap<>();
+		Map<Long, Stock> stocksMap = new HashMap<>();
 		for (Stock st : stocks) {
-			stocksMap.put(st.getCode(), st);
+			stocksMap.put(st.getId(), st);
 		}
 
-		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
+		Map<Long, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(),
-					new TradingStrategyImpl(stocksMap.get(parameter.getStock()), parameter.getId(),
+			tradingStrategies.put(parameter.getStockId(),
+					new TradingStrategyImpl(stocksMap.get(parameter.getStockId()), parameter.getId(),
 							parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(),
 							parameter.getRiskRate()));
 		}
@@ -68,7 +68,7 @@ public class AccountController {
 		// que meu modelo não está bom
 		// FIXME: rever isso aqui
 		for (Trade t : account.getWallet()) {
-			t.setStock(stocksMap.get(t.getStockCode()));
+			t.applyStock(stocksMap.get(t.getStockId()));
 		}
 		TradeSystem system = new TradeSystem(account.getWallet(), stocks, tradingStrategies, account.getBalance());
 		system.closeAllOpenTrades(closeDate);

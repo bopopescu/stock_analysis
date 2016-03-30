@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class DonchianModel implements Serializable {
 
 	private long id;
-	private String stock;
+	private long stockId;
 	private int entryDonchianSize, exitDonchianSize;
 	private double riskRate;
 
@@ -14,9 +14,9 @@ public class DonchianModel implements Serializable {
 
 	}
 
-	public DonchianModel(String stock, long id, int entryDonchianSize, int exitDonchianSize, double riskRate) {
+	public DonchianModel(long id, long stockId, int entryDonchianSize, int exitDonchianSize, double riskRate) {
 		super();
-		this.stock = stock;
+		this.stockId = stockId;
 		this.id = id;
 		this.entryDonchianSize = entryDonchianSize;
 		this.exitDonchianSize = exitDonchianSize;
@@ -27,12 +27,8 @@ public class DonchianModel implements Serializable {
 		return id;
 	}
 
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public String getStock() {
-		return stock;
+	public long getStockId() {
+		return stockId;
 	}
 
 	public int getEntryDonchianSize() {

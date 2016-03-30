@@ -22,17 +22,22 @@ public class Stock implements Serializable {
 
 	}
 
+	public Stock(long id) {
+		super();
+		this.id = id;
+	}
+
+	public Stock(long id, String code) {
+		this(id);
+		this.code = code;
+	}
+
 	public long getId() {
 		return id;
 	}
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public Stock(String code) {
-		super();
-		this.code = code;
 	}
 
 	public String getCode() {

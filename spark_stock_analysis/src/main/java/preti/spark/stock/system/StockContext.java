@@ -48,7 +48,7 @@ public class StockContext implements Serializable {
 		}
 
 		for (Trade t : trades) {
-			t.setStock(s);
+			t.applyStock(s);
 		}
 	}
 

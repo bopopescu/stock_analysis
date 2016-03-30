@@ -47,10 +47,10 @@ public class RecomendationsService {
 		beginDate = beginDate.minusMonths(12);
 		logger.debug("Begin date is " + beginDate.toDate() + " end date is " + recomendationDate);
 
-		Map<String, Stock> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate.toDate(),
+		Map<Long, Stock> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate.toDate(),
 				recomendationDate);
 
-		Map<String, TradingStrategy> tradingStrategies = createTradingStrategies(account, stocksMap);
+		Map<Long, TradingStrategy> tradingStrategies = createTradingStrategies(account, stocksMap);
 
 		// FIXME: rever isso aqui
 		populateTradesWithStocks(account, stocksMap);
@@ -61,28 +61,28 @@ public class RecomendationsService {
 
 	}
 
-	private void populateTradesWithStocks(Account account, Map<String, Stock> stocksMap) {
+	private void populateTradesWithStocks(Account account, Map<Long, Stock> stocksMap) {
 		for (Trade t : account.getWallet()) {
-			t.setStock(stocksMap.get(t.getStockCode()));
+			t.applyStock(stocksMap.get(t.getStockId()));
 		}
 	}
 
-	private Map<String, TradingStrategy> createTradingStrategies(Account account, Map<String, Stock> stocksMap) {
-		Map<String, TradingStrategy> tradingStrategies = new HashMap<>();
+	private Map<Long, TradingStrategy> createTradingStrategies(Account account, Map<Long, Stock> stocksMap) {
+		Map<Long, TradingStrategy> tradingStrategies = new HashMap<>();
 		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStock(),
-					new TradingStrategyImpl(stocksMap.get(parameter.getStock()), parameter.getId(),
+			tradingStrategies.put(parameter.getStockId(),
+					new TradingStrategyImpl(stocksMap.get(parameter.getStockId()), parameter.getId(),
 							parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(),
 							parameter.getRiskRate()));
 		}
 		return tradingStrategies;
 	}
 
-	private Map<String, Stock> loadStocksMap(List<String> stockCodes, Date beginDate, Date endDate) {
+	private Map<Long, Stock> loadStocksMap(List<String> stockCodes, Date beginDate, Date endDate) {
 		List<Stock> stocks = stocksService.loadStocks(stockCodes, beginDate, endDate);
-		Map<String, Stock> stocksMap = new HashMap<>();
+		Map<Long, Stock> stocksMap = new HashMap<>();
 		for (Stock st : stocks) {
-			stocksMap.put(st.getCode(), st);
+			stocksMap.put(st.getId(), st);
 		}
 		return stocksMap;
 	}

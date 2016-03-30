@@ -2,7 +2,6 @@ package preti.stock.system;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,12 +18,12 @@ public class TradeSystem {
 	private static final Log log = LogFactory.getLog(TradeSystem.class);
 
 	private double accountBalance;
-	private Map<String, Trade> openTrades;
-	private Map<String, TradingStrategy> tradingStrategies;
+	private Map<Long, Trade> openTrades;
+	private Map<Long, TradingStrategy> tradingStrategies;
 	private List<Stock> stocksToAnalyse;
-	private Map<String, Trade> closedTrades;
+	private Map<Long, Trade> closedTrades;
 
-	public TradeSystem(Collection<Trade> trades, Collection<Stock> stocks, Map<String, TradingStrategy> strategies,
+	public TradeSystem(Collection<Trade> trades, Collection<Stock> stocks, Map<Long, TradingStrategy> strategies,
 			double balance) {
 		this.accountBalance = balance;
 		this.tradingStrategies = strategies;
@@ -44,13 +43,13 @@ public class TradeSystem {
 			if (!t.isOpen())
 				throw new IllegalStateException();
 
-			openTrades.put(t.getStock().getCode(), t);
+			openTrades.put(t.getStockId(), t);
 		}
 
 		this.closedTrades = new HashMap<>();
 	}
 
-	public Map<String, Trade> getOpenTrades() {
+	public Map<Long, Trade> getOpenTrades() {
 		return openTrades;
 	}
 
@@ -62,21 +61,21 @@ public class TradeSystem {
 		return accountBalance;
 	}
 
-	public Map<String, Trade> getClosedTrades() {
+	public Map<Long, Trade> getClosedTrades() {
 		return closedTrades;
 	}
 
 	private Trade closeTrade(Trade trade, Date d, double sellValue) {
-		log.info(String.format("Closing trade for stock %s at date %s", trade.getStockCode(), d));
+		log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), d));
 
 		if (!trade.isOpen())
 			throw new IllegalArgumentException(
-					String.format("No open trade to close for stock %s.", trade.getStockCode()));
+					String.format("No open trade to close for stock %s.", trade.getStockId()));
 
 		trade.close(d, sellValue);
 		this.accountBalance += trade.getSize() * trade.getSellValue();
-		openTrades.remove(trade.getStockCode());
-		closedTrades.put(trade.getStockCode(), trade);
+		openTrades.remove(trade.getStockId());
+		closedTrades.put(trade.getStockId(), trade);
 		return trade;
 	}
 
@@ -84,7 +83,7 @@ public class TradeSystem {
 		log.info(String.format("Opening new trade for stock %s at date %s", stock.getCode(), d));
 
 		double openTradesValue = calculateOpenTradesValue(d);
-		TradingStrategy strategy = this.tradingStrategies.get(stock.getCode());
+		TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
 		double size = strategy.calculatePositionSize(d, openTradesValue + accountBalance);
 		if (size < 1) {
 			log.info("Postion size<1: not enough balance to enter position");
@@ -107,12 +106,12 @@ public class TradeSystem {
 		Trade newTrade = new Trade(stock, strategy.getModelId(), size, strategy.calculateStopLossPoint(d), d,
 				stockValue);
 		this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
-		openTrades.put(newTrade.getStockCode(), newTrade);
+		openTrades.put(newTrade.getStockId(), newTrade);
 		return newTrade;
 	}
 
 	private boolean isInOpenPosition(Stock s) {
-		return openTrades.containsKey(s.getCode());
+		return openTrades.containsKey(s.getId());
 	}
 
 	public List<Trade> analyzeStocks(Date recomendationDate) {
@@ -125,13 +124,13 @@ public class TradeSystem {
 				continue;
 			}
 
-			TradingStrategy strategy = this.tradingStrategies.get(stock.getCode());
+			TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
 			if (strategy == null) {
 				continue;
 			}
 
 			if (isInOpenPosition(stock)) {
-				Trade openTrade = openTrades.get(stock.getCode());
+				Trade openTrade = openTrades.get(stock.getId());
 				boolean profittable = openTrade.isProfitable(recomendationDate);
 				if ((profittable && strategy.exitPosition(recomendationDate))
 						|| (!profittable && openTrade.hasReachedStopPosition(recomendationDate))) {
@@ -167,9 +166,9 @@ public class TradeSystem {
 	}
 
 	public void closeAllOpenTrades(Date d) {
-		String[] stockCodes = openTrades.keySet().toArray(new String[] {});
-		for (String stockCode : stockCodes) {
-			Trade t = openTrades.get(stockCode);
+		Long[] stockIds = openTrades.keySet().toArray(new Long[] {});
+		for (Long stockId : stockIds) {
+			Trade t = openTrades.get(stockId);
 			if (t.isOpen())
 				closeTrade(t, d, t.getStock().getCloseValueAtDate(d));
 		}

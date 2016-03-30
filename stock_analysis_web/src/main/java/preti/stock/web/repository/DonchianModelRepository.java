@@ -33,9 +33,9 @@ public class DonchianModelRepository {
 		parameters.put("modelDate", modelDate);
 		
 		StringBuilder query = new StringBuilder();
-		query.append("select s.stock_code, dm.model_id, dme.entry_size, dme.exit_size, dme.risk_rate ");
+		query.append("select s.stock_id, dm.model_id, dme.entry_size, dme.exit_size, dme.risk_rate ");
 		query.append("from donchian_model_entry dme ");
-		query.append("inner join stock s on s.stock_id=dme.stock_id ");
+		query.append("inner join stock s on s.stock_id=dme.stock_id ");//FIXME: rever essa query, não precisa mais desse join
 		query.append("inner join model dm on dm.model_id=dme.model_id ");
 		query.append("where ");
 		query.append("dm.account_id=:accountId and dm.dat_start<=:modelDate and  dm.dat_end>=:modelDate ");
@@ -44,10 +44,10 @@ public class DonchianModelRepository {
 		
 		query = new StringBuilder();
 		query.append("select  ");
-		query.append("s.stock_code, m.model_id, 0 as entry_size, dme.exit_size, dme.risk_rate ");
+		query.append("s.stock_id, m.model_id, 0 as entry_size, dme.exit_size, dme.risk_rate ");
 		query.append("from ");
 		query.append("trade t ");
-		query.append("inner join stock s on s.stock_id=t.stock_id ");
+		query.append("inner join stock s on s.stock_id=t.stock_id ");//FIXME: rever essa query, não precisa mais desse join
 		query.append("inner join model m on m.model_id=t.model_id and m.account_id=t.account_id ");
 		query.append("inner join donchian_model_entry dme on dme.model_id=t.model_id and dme.stock_id=t.stock_id ");
 		query.append("where ");
@@ -60,7 +60,7 @@ public class DonchianModelRepository {
 		//FIXME: melhorar isso
 		outer: for(DonchianModel om : oldModel){
 			for(DonchianModel nm : newModel) {
-				if(nm.getStock().equals(om.getStock())){
+				if(nm.getStockId() == om.getStockId()){
 					continue outer;
 				}
 			}

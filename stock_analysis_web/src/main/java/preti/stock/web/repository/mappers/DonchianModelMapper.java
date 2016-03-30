@@ -11,8 +11,8 @@ public class DonchianModelMapper implements RowMapper<DonchianModel> {
 
 	@Override
 	public DonchianModel mapRow(ResultSet rs, int rowNum) throws SQLException {
-		return new DonchianModel(rs.getString("stock_code"), rs.getLong("model_id"), rs.getInt("entry_size"), rs.getInt("exit_size"),
-				rs.getDouble("risk_rate"));
+		return new DonchianModel(rs.getLong("model_id"), rs.getLong("stock_id"), rs.getInt("entry_size"),
+				rs.getInt("exit_size"), rs.getDouble("risk_rate"));
 	}
 
 }

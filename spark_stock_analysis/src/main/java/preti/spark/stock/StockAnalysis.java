@@ -3,8 +3,6 @@ package preti.spark.stock;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +21,9 @@ import preti.spark.stock.reporting.OperationsReport;
 import preti.spark.stock.reporting.StockReport;
 import preti.spark.stock.run.DonchianStrategyOptimizer;
 import preti.spark.stock.run.StocksRepository;
-import preti.spark.stock.system.StockContext;
 import preti.spark.stock.system.TradeSystemExecution;
 import preti.stock.analysismodel.donchian.DonchianModel;
 import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.Trade;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingStrategyImpl;
 
@@ -63,9 +59,9 @@ public class StockAnalysis {
 		DateTime currentInitialDate = new DateTime(initialDate.getTime()).plusMonths(trainingSize);
 		DateTime currentFinalDate = currentInitialDate.plusMonths(windowSize);
 		DonchianStrategyOptimizer optimizer = new DonchianStrategyOptimizer(sc);
-		Map<String, TradingStrategy> optimzedStrategies = new HashMap<>();
+		Map<Long, TradingStrategy> optimzedStrategies = new HashMap<>();
 		while (currentFinalDate.isBefore(finalDate.getTime() + 1)) {
-			Map<String, TradingStrategy> newStrategies = new HashMap<>();
+			Map<Long, TradingStrategy> newStrategies = new HashMap<>();
 			for (Stock s : stocks) {
 				DonchianModel optimizationResult = optimizer.optimizeParameters(s, accountInitialPosition,
 						currentInitialDate.minusMonths(trainingSize).toDate(), currentInitialDate.minusDays(1).toDate(),
@@ -73,7 +69,7 @@ public class StockAnalysis {
 						configContext.getMinDonchianExitValue(), configContext.getMaxDonchianExitValue(),
 						configContext.getRiskRate());
 				if (optimizationResult != null) {
-					newStrategies.put(s.getCode(),
+					newStrategies.put(s.getId(),
 							new TradingStrategyImpl(s, 0, optimizationResult.getEntryDonchianSize(),
 									optimizationResult.getExitDonchianSize(), optimizationResult.getRiskRate()));
 				}
@@ -103,15 +99,15 @@ public class StockAnalysis {
 
 	}
 
-	private static Map<String, TradingStrategy> mergeStrategies(Map<String, TradingStrategy> oldStrategies,
-			Map<String, TradingStrategy> newStrategies) {
-		Map<String, TradingStrategy> mergedStrategies = new HashMap<>(newStrategies);
+	private static Map<Long, TradingStrategy> mergeStrategies(Map<Long, TradingStrategy> oldStrategies,
+			Map<Long, TradingStrategy> newStrategies) {
+		Map<Long, TradingStrategy> mergedStrategies = new HashMap<>(newStrategies);
 
-		for (String code : oldStrategies.keySet()) {
-			if (!newStrategies.containsKey(code)) {
-				TradingStrategyImpl oldStrategy = (TradingStrategyImpl) oldStrategies.get(code);
-				mergedStrategies.put(code, new TradingStrategyImpl(oldStrategy.getStock(), oldStrategy.getModelId(), 0,
-						oldStrategy.getExitDonchianSize(), oldStrategy.getRiskRate()));
+		for (Long stockId : oldStrategies.keySet()) {
+			if (!newStrategies.containsKey(stockId)) {
+				TradingStrategyImpl oldStrategy = (TradingStrategyImpl) oldStrategies.get(stockId);
+				mergedStrategies.put(stockId, new TradingStrategyImpl(oldStrategy.getStock(), oldStrategy.getModelId(),
+						0, oldStrategy.getExitDonchianSize(), oldStrategy.getRiskRate()));
 			}
 		}
 

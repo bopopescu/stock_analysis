@@ -6,22 +6,34 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @SuppressWarnings("serial")
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class StockHistory implements Serializable {
+	private long id;
+	private long stockId;
 	private Date date;
 	private double high, low, close, volume;
-	
+
 	public StockHistory() {
-		
+
 	}
 
-	public StockHistory(Date date, double high, double low, double close, double volume) {
+	public StockHistory(long id, long stockId, Date date, double high, double low, double close, double volume) {
 		super();
+		this.id = id;
+		this.stockId = stockId;
 		this.date = date;
 		this.high = high;
 		this.low = low;
 		this.close = close;
 		this.volume = volume;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public long getStockId() {
+		return stockId;
 	}
 
 	public Date getDate() {
@@ -43,9 +55,10 @@ public class StockHistory implements Serializable {
 	public double getVolume() {
 		return volume;
 	}
-	
+
 	public String toString() {
-		return String.format("date=%s high=%s low=%s close=%s volume=%s", date, high, low, close, volume);
+		return String.format("stockId=%s date=%s high=%s low=%s close=%s volume=%s", stockId, date, high, low, close,
+				volume);
 	}
 
 }
