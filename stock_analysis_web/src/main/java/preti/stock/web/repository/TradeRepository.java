@@ -30,7 +30,7 @@ public class TradeRepository {
 		return jdbcTemplate.query(sql.toString(), new Object[] { accountId }, new TradeRowMapper());
 	}
 
-	public Date getOldestOpenTradeForAccount(long accountId) {
+	public Date getOldestOpenTradeBuyDateForAccount(long accountId) {
 		return jdbcTemplate.queryForObject("select min(buy_date) from trade where sell_date is null and account_id=?",
 				new Object[] { accountId }, Date.class);
 	}

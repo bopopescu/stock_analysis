@@ -31,16 +31,16 @@ public class DonchianModelRepository {
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("accountId", accountId);
 		parameters.put("modelDate", modelDate);
-		
+
 		StringBuilder query = new StringBuilder();
 		query.append("select m.model_id, dme.stock_id, dme.entry_size, dme.exit_size, dme.risk_rate ");
 		query.append("from model m ");
 		query.append("inner join donchian_model_entry dme on m.model_id=dme.model_id ");
 		query.append("where ");
 		query.append("m.account_id=:accountId and m.dat_start<=:modelDate and  m.dat_end>=:modelDate ");
-		List<DonchianModel> newModel = namedParameterjdbcTemplate.query(query.toString(), parameters, new DonchianModelMapper());
-		
-		
+		List<DonchianModel> newModel = namedParameterjdbcTemplate.query(query.toString(), parameters,
+				new DonchianModelMapper());
+
 		query = new StringBuilder();
 		query.append("select  ");
 		query.append("m.model_id, dme.stock_id, 0 as entry_size, dme.exit_size, dme.risk_rate ");
@@ -48,22 +48,28 @@ public class DonchianModelRepository {
 		query.append("inner join trade t on m.model_id=t.model_id and m.account_id=t.account_id ");
 		query.append("inner join donchian_model_entry dme on dme.model_id=t.model_id and dme.stock_id=t.stock_id ");
 		query.append("where ");
-		query.append("t.account_id=:accountId and t.buy_date<:modelDate and t.sell_date is null and m.dat_end<:modelDate ");
-		List<DonchianModel> oldModel = namedParameterjdbcTemplate.query(query.toString(), parameters, new DonchianModelMapper());
-		
+		query.append(
+				"t.account_id=:accountId and t.buy_date<:modelDate and t.sell_date is null and m.dat_end<:modelDate ");
+		List<DonchianModel> oldModel = namedParameterjdbcTemplate.query(query.toString(), parameters,
+				new DonchianModelMapper());
+
 		List<DonchianModel> resultModel = new ArrayList<>();
 		resultModel.addAll(newModel);
-		
-		//FIXME: melhorar isso
-		outer: for(DonchianModel om : oldModel){
-			for(DonchianModel nm : newModel) {
-				if(nm.getStockId() == om.getStockId()){
+
+		// FIXME: melhorar isso
+		outer: for (DonchianModel om : oldModel) {
+			for (DonchianModel nm : newModel) {
+				if (nm.getStockId() == om.getStockId()) {
 					continue outer;
 				}
 			}
 			resultModel.add(om);
 		}
-		
+
 		return resultModel;
+	}
+
+	public int getMaxDonchianChannelSize() {
+		return 100;
 	}
 }

@@ -1,9 +1,12 @@
 package preti.stock.web.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -39,26 +42,33 @@ public class RecomendationsService {
 	public List<Trade> generateRecomendations(long accountId, Date recomendationDate) {
 		Account account = loadCompleteAccount(accountId, recomendationDate);
 
-		// FIXME: preciso encontrar uma forma mais inteligente de identificar a
-		// data de inicio da procura. Preciso levar em consideração o tempo
-		// necessário para o algoritmo de análise (os canais de Donchian) e a
-		// data de compra do Trade mais antigo do Account
-		DateTime beginDate = new DateTime(recomendationDate);
-		beginDate = beginDate.minusMonths(12);
-		logger.debug("Begin date is " + beginDate.toDate() + " end date is " + recomendationDate);
+		Date beginDate = identifyBeginDate(accountId, recomendationDate);
+		logger.debug("Begin date is " + beginDate + " end date is " + recomendationDate);
 
-		Map<Long, Stock> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate.toDate(),
-				recomendationDate);
+		Map<Long, Stock> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate, recomendationDate);
+
+		// Nao estou carregando os Stocks associados aos trades quando carrego
+		// os trades do BD, entao eu preciso preencher manualmente.
+		populateTradesWithStocks(account, stocksMap);
 
 		Map<Long, TradingStrategy> tradingStrategies = createTradingStrategies(account, stocksMap);
 
-		// FIXME: rever isso aqui
-		populateTradesWithStocks(account, stocksMap);
 		TradeSystem system = new TradeSystem(account.getWallet(), stocksMap.values(), tradingStrategies,
 				account.getBalance());
 
 		return system.analyzeStocks(recomendationDate);
 
+	}
+
+	private Date identifyBeginDate(long accountId, Date recomendationDate) {
+		int maxDonchianChannelSize = modelRepository.getMaxDonchianChannelSize();
+
+		Date oldestOpenTradeBuyDate = tradeRepository.getOldestOpenTradeBuyDateForAccount(accountId);
+		long diffBetweenDates = oldestOpenTradeBuyDate != null
+				? recomendationDate.getTime() - oldestOpenTradeBuyDate.getTime() : 0;
+		int diffInDays = (int) TimeUnit.DAYS.convert(diffBetweenDates, TimeUnit.MILLISECONDS);
+
+		return new DateTime(recomendationDate).minusDays(Math.max(diffInDays, maxDonchianChannelSize)).toDate();
 	}
 
 	private void populateTradesWithStocks(Account account, Map<Long, Stock> stocksMap) {
