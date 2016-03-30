@@ -91,7 +91,7 @@ public class RecomendationsService {
 		Account account = accountRepository.getAccount(accountId);
 		account.setModel(modelRepository.getActiveModel(accountId, recomendationDate));
 		account.setStockCodesToAnalyze(accountRepository.getStocksToAnalyse(accountId));
-		account.setWallet(tradeRepository.getTrades(accountId));
+		account.setWallet(tradeRepository.getOpenTradesForAccount(accountId));
 
 		return account;
 	}

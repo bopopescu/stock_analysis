@@ -28,7 +28,7 @@ public class TradesService {
 				tradeRepository.createTrade(t, accountId);
 				balanceChange -= t.getSize() * t.getBuyValue();
 			} else {
-				tradeRepository.updateTrade(t.getId(), t.getSellDate(), t.getSellValue());
+				tradeRepository.closeTrade(t.getId(), t.getSellDate(), t.getSellValue());
 				balanceChange += t.getSize() * t.getSellValue();
 			}
 		}

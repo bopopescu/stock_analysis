@@ -21,16 +21,16 @@ public class TradeRepository {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	public List<Trade> getTrades(long accountId) {
+	public List<Trade> getOpenTradesForAccount(long accountId) {
 		StringBuilder sql = new StringBuilder();
 		sql.append(
-				"select t.trade_id, t.account_id, t.stock_id, t.model_id, s.stock_code, s.stock_name, t.buy_date, t.sell_date, t.buy_value, t.sell_value, t.size, t.stop_pos ");
-		sql.append("from trade t inner join stock s on t.stock_id=s.stock_id ");
+				"select t.trade_id, t.account_id, t.stock_id, t.model_id, t.buy_date, t.sell_date, t.buy_value, t.sell_value, t.size, t.stop_pos ");
+		sql.append("from trade t ");
 		sql.append("where t.account_id=? and t.sell_date is null");
 		return jdbcTemplate.query(sql.toString(), new Object[] { accountId }, new TradeRowMapper());
 	}
 
-	public Date getOldestOpenTradeBuyDate(long accountId) {
+	public Date getOldestOpenTradeForAccount(long accountId) {
 		return jdbcTemplate.queryForObject("select min(buy_date) from trade where sell_date is null and account_id=?",
 				new Object[] { accountId }, Date.class);
 	}
@@ -41,7 +41,7 @@ public class TradeRepository {
 				accountId, t.getStockId(), t.getModelId(), t.getBuyDate(), t.getBuyValue(), t.getSize(), t.getStopPos());
 	}
 
-	public void updateTrade(long tradeId, Date sellDate, double sellValue) {
+	public void closeTrade(long tradeId, Date sellDate, double sellValue) {
 		jdbcTemplate.update("update trade set sell_date=?, sell_value=? where trade_id=?", sellDate, sellValue,
 				tradeId);
 	}
