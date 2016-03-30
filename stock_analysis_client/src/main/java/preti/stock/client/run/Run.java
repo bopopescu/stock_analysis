@@ -121,7 +121,7 @@ public class Run {
 		Date initialDate = dateFormat.parse("2014-02-01");
 		Date finalDate = dateFormat.parse("2014-10-01");
 
-		Map<String, String> parameters = new HashMap<>();
+		Map<String, Object> parameters = new HashMap<>();
 		DateTime currentDate = new DateTime(initialDate.getTime());
 		while (currentDate.isBefore(finalDate.getTime())) {
 			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
@@ -130,8 +130,9 @@ public class Run {
 			Trade[] trades = restTemplate.getForObject("http://localhost:8080/recomendations/generate?date={date}",
 					Trade[].class, parameters);
 
-			System.out.println("Trades: " + trades.length);
-			restTemplate.postForLocation("http://localhost:8080/trades/realize", trades);
+			System.out.println("Trades: " + trades.length);			
+			parameters.put("accountId", 1l);
+			restTemplate.postForLocation("http://localhost:8080/trades/realize?accountId={accountId}", trades, parameters);
 
 			currentDate = currentDate.plusDays(1);
 		}

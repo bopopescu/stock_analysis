@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import preti.stock.coremodel.Trade;
@@ -20,9 +21,11 @@ public class TradeController {
 	private TradesService tradeService;
 
 	@RequestMapping(path = "/trades/realize", headers = "Accept=application/json")
-	public void realizetrades(@RequestBody List<Trade> trades) {
-		logger.info("Realizing trades " + trades);
-		tradeService.realizeTrades(1, trades);
+	public void realizetrades(@RequestBody List<Trade> trades,
+			@RequestParam(name = "accountId", required=true) long accountId) {
+		logger.info(String.format("Realizing trades for account [%s]: %s ", accountId, trades));
+
+		tradeService.realizeTrades(accountId, trades);
 	}
 
 }
