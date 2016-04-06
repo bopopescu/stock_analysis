@@ -1,7 +1,5 @@
 package preti.stock.web.service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +19,6 @@ import preti.stock.coremodel.Trade;
 import preti.stock.system.TradeSystem;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingStrategyImpl;
-import preti.stock.web.repository.AccountRepository;
 import preti.stock.web.repository.DonchianModelRepository;
 import preti.stock.web.repository.TradeRepository;
 
@@ -30,7 +27,7 @@ public class RecomendationsService {
 	private Logger logger = LoggerFactory.getLogger(RecomendationsService.class);
 
 	@Autowired
-	private AccountRepository accountRepository;
+	private AccountService accountService;
 	@Autowired
 	private DonchianModelRepository modelRepository;
 	@Autowired
@@ -40,7 +37,7 @@ public class RecomendationsService {
 	private StocksService stocksService;
 
 	public List<Trade> generateRecomendations(long accountId, Date recomendationDate) {
-		Account account = loadCompleteAccount(accountId, recomendationDate);
+		Account account = accountService.loadCompleteAccount(accountId, recomendationDate);
 
 		Date beginDate = identifyBeginDate(accountId, recomendationDate);
 		logger.debug("Begin date is " + beginDate + " end date is " + recomendationDate);
@@ -95,14 +92,5 @@ public class RecomendationsService {
 			stocksMap.put(st.getId(), st);
 		}
 		return stocksMap;
-	}
-
-	private Account loadCompleteAccount(long accountId, Date recomendationDate) {
-		Account account = accountRepository.getAccount(accountId);
-		account.setModel(modelRepository.getActiveModel(accountId, recomendationDate));
-		account.setStockCodesToAnalyze(accountRepository.getStocksToAnalyse(accountId));
-		account.setWallet(tradeRepository.getOpenTradesForAccount(accountId));
-
-		return account;
 	}
 }

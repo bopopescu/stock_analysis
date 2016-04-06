@@ -7,7 +7,8 @@ function build_image {
 }
 
 function run_container {
-  docker run  -v $STOCKS_FILE:/var/stock_analysis/cotacoes.txt -p 8080:8080 -p 8000:8000  --link stock_analysis_db stock_analysis_web
+  docker rm $APP_CONTAINER_NAME
+  docker run --name $APP_CONTAINER_NAME  -v $STOCKS_FILE:/var/stock_analysis/cotacoes.txt -p 8080:8080 -p 8000:8000  --link stock_analysis_db stock_analysis_web
 }
 
 function parse_command {

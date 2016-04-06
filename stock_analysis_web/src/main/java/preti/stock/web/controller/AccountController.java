@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,6 +25,7 @@ import preti.stock.coremodel.Trade;
 import preti.stock.system.TradeSystem;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingStrategyImpl;
+import preti.stock.web.service.AccountService;
 import preti.stock.web.service.StocksService;
 
 @RestController
@@ -34,8 +36,17 @@ public class AccountController {
 	@Autowired
 	private StocksService stocksService;
 
+	@Autowired
+	private AccountService accountService;
+
 	public void setStocksService(StocksService stocksService) {
 		this.stocksService = stocksService;
+	}
+
+	@RequestMapping(path = "/account/getAccountWithWallet", headers = "Accept=application/json", method = RequestMethod.GET)
+	public Account getAccountWithWallet(@RequestParam(name = "accountId", required = true) long accountId) {
+		logger.info(String.format("getAccountWithWallet accountId=%s", accountId));
+		return accountService.loadAccountWithWallet(accountId);
 	}
 
 	@RequestMapping(path = "/account/closeAllOpenTrades", headers = "Accept=application/json")

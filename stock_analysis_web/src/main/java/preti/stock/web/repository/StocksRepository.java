@@ -32,6 +32,11 @@ public class StocksRepository {
 				new Object[] { stockCode }, Integer.class) > 0;
 	}
 
+	public Stock getStock(long stockId) {
+		return jdbcTemplate.queryForObject("select stock_id, stock_code, stock_name from stock where stock_id = ?",
+				new Object[] { stockId }, new StockRowMapper());
+	}
+	
 	public Stock getStock(String stockCode) {
 		return jdbcTemplate.queryForObject("select stock_id, stock_code, stock_name from stock where stock_code = ?",
 				new Object[] { stockCode }, new StockRowMapper());

@@ -29,6 +29,10 @@ public class StocksService {
 	public void setStocksRepository(StocksRepository stocksRepository) {
 		this.stocksRepository = stocksRepository;
 	}
+	
+	public Stock getStock(long stockId) {
+		return stocksRepository.getStock(stockId);
+	}
 
 	public List<Stock> loadStocks(List<String> stockCodes, Date initialDate, Date finalDate) {
 		logger.info("Loading stocks " + stockCodes);
