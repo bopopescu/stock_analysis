@@ -24,7 +24,7 @@ public class RecomendationsController {
 	@Autowired
 	private RecomendationsService recomendationsService;
 
-	@RequestMapping(path = "/recomendations/generate", headers = "Accept=application/json")
+	@RequestMapping(path = "/recomendation/generate", headers = "Accept=application/json")
 	public List<Trade> generateRecomendations(@RequestParam String date) throws ParseException {
 		logger.info("Executing recomendations for date " + date);
 		DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);

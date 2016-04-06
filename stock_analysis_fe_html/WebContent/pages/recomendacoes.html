@@ -16,6 +16,50 @@
     	<link href="../dist/css/sb-admin-2.css" rel="stylesheet">
 	</head>
 	
+	<script type="text/javascript" src="http://stockanalysis.com.br/dist/js/jquery-1.4.3.min.js"></script>
+	<script type="text/javascript">
+		generateRecomendations = function () {
+			$.ajax(
+				{
+					type: 'GET',
+					dataType: 'json',
+					url: 'http://stockanalysis.com.br/recomendation/generate?date='+document.getElementById('input_date').value,
+					async: false,
+					contentType: "application/json",
+					success: function (recomendationsData) {
+						var html='';
+						for (var i in recomendationsData) {
+							$.ajax(
+									{
+										type: 'GET',
+										dataType: 'json',
+										url: 'http://stockanalysis.com.br/stock?stockId='+recomendationsData[i].stockId,
+										async: false,
+										contentType: "application/json",
+										success: function (stockdata) {
+											html += '<tr>';
+											html += '<td><input type="checkbox" value=""></td>';
+											html += '<td>'+stockdata.code+'</td>';
+											html += '<td>'+stockdata.name+'</td>';
+											html += '<td class="right">'+recomendationsData[i].buyDate+'</td>';
+											html += '<td class="right">'+recomendationsData[i].buyValue+'</td>';
+											html += '<td class="right">'+recomendationsData[i].size+'</td>';
+											html += '<td class="right">'+recomendationsData[i].size*recomendationsData[i].buyValue+'</td>';
+											html += '</tr>';
+										}
+									}
+							);
+						}
+						$(var_recomendations_table).html(html);
+					},
+					error: function (recomendationsData) {
+						
+					}
+				}
+			);
+		}
+	</script>
+	
 	<body>
 	
 		<!-- Navigation -->
@@ -60,10 +104,11 @@
             <div class="row">
             	<div class="col-lg-3">
             		<div class="form-group">
-						<label>Data</label>
-						<input class="form-control">
-                        <p class="help-block">Data para qual serão geradas as recomendações</p>
-                        <button type="submit" class="btn btn-default">Gerar recomendações</button>
+            				<label>Data</label>
+							<input class="form-control" id="input_date" type="text">
+                        	<p class="help-block">Data para qual serão geradas as recomendações</p>
+                        	<button class="btn btn-default" onclick="generateRecomendations()">Gerar recomendações</button>
+						
 					</div>
             	</div>
             </div>
@@ -89,29 +134,8 @@
                                             <th>Valor total</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr class="odd gradeX">
-                                        	<td>
-                                        		<input type="checkbox" value="">
-                                        	</td>
-                                            <td>PETR4</td>
-                                            <td>Petrobrás</td>
-                                            <td class="right">25/03/2014</td>
-                                            <td class="right">R$ 10,00</td>
-                                            <td class="right">3</td>
-                                            <td class="right">R$ 30,00</td>
-                                        </tr>
-                                        <tr class="even gradeC">
-                                        	<td>
-                                        		<input type="checkbox" value="">
-                                        	</td>
-                                            <td>ITUS4</td>
-                                            <td>Itaú</td>
-                                            <td class="right">25/03/2014</td>
-                                            <td class="right">R$ 10,00</td>
-                                            <td class="right">3</td>
-                                            <td class="right">R$ 30,00</td>
-                                        </tr>
+                                    <tbody id="var_recomendations_table">
+
                                     </tbody>
                                 </table>
                             </div>
