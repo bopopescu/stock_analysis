@@ -39,6 +39,30 @@
 					
 					$(var_balance).html(data.balance)
 					$(var_balance).formatCurrency({region: 'pt-BR'});
+					
+					var html='';
+					for (var i in data.wallet) {
+						$.ajax(
+								{
+									type: 'GET',
+									dataType: 'json',
+									url: 'http://stockanalysis.com.br/stock?stockId='+data.wallet[i].stockId,
+									async: false,
+									contentType: "application/json",
+									success: function (stockdata) {
+										html += '<tr>';
+										html += '<td>'+stockdata.code+'</td>';
+										html += '<td>'+stockdata.name+'</td>';
+										html += '<td class="right">'+data.wallet[i].buyDate+'</td>';
+										html += '<td class="right">'+data.wallet[i].buyValue+'</td>';
+										html += '<td class="right">'+data.wallet[i].size+'</td>';
+										html += '<td class="right">'+(data.wallet[i].size*data.wallet[i].buyValue)+'</td>';
+										html += '</tr>';
+									}
+								}
+						);
+					}
+					$(var_wallet).html(html);
 				}
 	   		}
 	   );
@@ -157,7 +181,7 @@
                                             <th>Valor total</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="var_wallet">
                                         <tr class="odd gradeX">
                                             <td>PETR4</td>
                                             <td>Petrobrás</td>
