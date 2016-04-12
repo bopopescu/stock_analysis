@@ -127,12 +127,12 @@ public class Run {
 			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
 
 			parameters.put("date", dateFormat.format(currentDate.toDate()));
-			Trade[] trades = restTemplate.getForObject("http://localhost:8080/recomendations/generate?date={date}",
+			Trade[] trades = restTemplate.getForObject("http://localhost:8080/recomendation/generate?date={date}",
 					Trade[].class, parameters);
 
 			System.out.println("Trades: " + trades.length);			
 			parameters.put("accountId", 1l);
-			restTemplate.postForLocation("http://localhost:8080/trades/realize?accountId={accountId}", trades, parameters);
+			restTemplate.postForLocation("http://localhost:8080/trade/realize?accountId={accountId}", trades, parameters);
 
 			currentDate = currentDate.plusDays(1);
 		}

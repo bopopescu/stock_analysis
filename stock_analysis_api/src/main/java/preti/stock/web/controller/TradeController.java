@@ -20,7 +20,7 @@ public class TradeController {
 	@Autowired
 	private TradesService tradeService;
 
-	@RequestMapping(path = "/trades/realize", headers = "Accept=application/json")
+	@RequestMapping(path = "/trade/realize", headers = "Accept=application/json")
 	public void realizetrades(@RequestBody List<Trade> trades,
 			@RequestParam(name = "accountId", required=true) long accountId) {
 		logger.info(String.format("Realizing trades for account [%s]: %s ", accountId, trades));
