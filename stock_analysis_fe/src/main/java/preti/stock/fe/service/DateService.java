@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class DateService {
 
 	public Date getCurrentSystemDate() {
-		// return new Date();
+		//FIXME: está retornando sempre 01/01/2015 para efeitos de testes
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date d;
 		try {
