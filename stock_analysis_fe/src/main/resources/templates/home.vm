@@ -66,30 +66,30 @@
             </div>
             <!-- /.row -->
             <div class="row">
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-7">
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <div class="row">
-                                <div class="col-xs-9 text-right">
-	                                <div class="col-xs-3">
+                                <div class="col-xs-12 text-right">
+	                                <div class="col-xs-12">
 	                                    <i class="fa fa-tasks fa-5x"></i>
 	                                </div>
-                                    <div class="huge" id="var_initialPosition">$homeVO.accountInitialPosition</div>
+                                    <div class="huge" id="var_initialPosition">$numberTool.currency($homeVO.accountInitialPosition)</div>
                                     <div>Saldo inicial</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-7">
                     <div class="panel panel-green">
                         <div class="panel-heading">
                             <div class="row">
-                                <div class="col-xs-3">
+                                <div class="col-xs-12">
                                     <i class="fa fa-tasks fa-5x"></i>
                                 </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge" id="var_balance">$homeVO.accountBalance</div>
+                                <div class="col-xs-12 text-right">
+                                    <div class="huge" id="var_balance">$numberTool.currency($homeVO.accountBalance)</div>
                                     <div>Saldo atual</div>
                                 </div>
                             </div>
@@ -97,16 +97,16 @@
                        
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-7">
                     <div class="panel panel-yellow">
                         <div class="panel-heading">
                             <div class="row">
-                                <div class="col-xs-3">
+                                <div class="col-xs-12">
                                     <i class="fa fa-shopping-cart fa-5x"></i>
                                 </div>
-                                <div class="col-xs-9 text-right">
-                                    <div class="huge">TODO</div>
-                                    <div>Valor da carteira</div>
+                                <div class="col-xs-12 text-right">
+                                    <div class="huge">$numberTool.currency($homeVO.walletTotalValue)</div>
+                                    <div>Valor estimado da carteira</div>
                                 </div>
                             </div>
                         </div>
@@ -133,7 +133,9 @@
                                             <th>Data compra</th>
                                             <th>Valor compra</th>
                                             <th>Quantidade</th>
-                                            <th>Valor total</th>
+                                            <th>Valor total compra</th>
+                                            <th>Valor atual</th>
+                                            <th>Valor total atual</th>
                                         </tr>
                                     </thead>
                                     <tbody id="var_wallet">
@@ -141,10 +143,12 @@
                                     		<tr class="odd gradeX">
                                     			<td>$trade.stockCode</td>
                                     			<td>$trade.stockName</td>
-                                    			<td class="right">$trade.buyDate</td>
+                                    			<td class="right">$dateTool.format($trade.buyDate)</td>
                                     			<td class="right">$trade.buyValue</td>
                                     			<td class="right">$trade.size</td>
                                     			<td class="right">$trade.totalBuyValue</td>
+                                    			<td class="right">$trade.sellValue</td>
+                                    			<td class="right">$trade.totalSellValue</td>
                                     		</tr>	
                                     	#end
                                     </tbody>

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.InputDataEntry;
 import preti.stock.coremodel.Stock;
+import preti.stock.coremodel.StockHistory;
 import preti.stock.web.repository.StocksRepository;
 
 @Service
@@ -47,6 +48,10 @@ public class StocksService {
 		}
 
 		return stocks;
+	}
+	
+	public List<StockHistory> getStockHistory(long stockId, Date initialDate, Date finalDate) {
+		return stocksRepository.getStockHistory(stockId, initialDate, finalDate);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRES_NEW)

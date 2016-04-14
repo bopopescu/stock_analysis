@@ -76,4 +76,14 @@ public class StocksRepository {
 		return jdbcTemplate.query(sql.toString(), new Object[] { stockCode, initialDate, finalDate },
 				new StockHistoryMapper());
 	}
+	
+	public List<StockHistory> getStockHistory(long stockId, Date initialDate, Date finalDate) {
+		StringBuilder sql = new StringBuilder();
+		sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
+		sql.append("from stock_history sh ");
+		sql.append("inner join stock s on s.stock_id=sh.stock_id ");
+		sql.append("where s.stock_id = ? and sh.date >= ? and sh.date <= ?");
+		return jdbcTemplate.query(sql.toString(), new Object[] { stockId, initialDate, finalDate },
+				new StockHistoryMapper());
+	}
 }

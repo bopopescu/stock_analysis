@@ -1,0 +1,14 @@
+<toolbox>
+	<tool>
+		<key>numberTool</key>
+		<scope>application</scope>
+		<class>org.apache.velocity.tools.generic.NumberTool</class>
+		<parameter name="locale" value="pt_BR" />
+	</tool>
+	<tool>
+		<key>dateTool</key>
+		<scope>application</scope>
+		<class>org.apache.velocity.tools.generic.DateTool</class>
+		<parameter name="format" value="dd/MM/yyyy" />
+	</tool>
+</toolbox>

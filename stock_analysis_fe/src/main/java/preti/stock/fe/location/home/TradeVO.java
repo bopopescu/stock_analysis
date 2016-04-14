@@ -76,4 +76,8 @@ public class TradeVO implements Serializable {
 		return buyValue * size;
 	}
 
+	public double getTotalSellValue() {
+		return sellValue * size;
+	}
+
 }

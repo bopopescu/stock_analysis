@@ -34,5 +34,16 @@ public class HomeVO implements Serializable {
 	public List<TradeVO> getTrades() {
 		return trades;
 	}
+	
+	public double getWalletTotalValue() {
+		if(trades==null || trades.isEmpty())
+			return 0;
+		
+		double totalValue = 0;
+		for(TradeVO t : trades)
+			totalValue += t.getTotalSellValue();
+		
+		return totalValue;
+	}
 
 }
