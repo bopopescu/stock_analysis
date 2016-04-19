@@ -1,8 +1,5 @@
 package preti.stock.fe.location.home;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,11 +16,11 @@ import preti.stock.coremodel.Trade;
 import preti.stock.fe.facade.AccountFacade;
 import preti.stock.fe.facade.RemoteApiException;
 import preti.stock.fe.facade.StockFacade;
+import preti.stock.fe.location.TradeVO;
 import preti.stock.fe.service.DateService;
 
 @Service
 public class HomeService {
-	private final String DATE_FORMAT = "yyyy-MM-dd";
 
 	@Autowired
 	private AccountFacade accountFacade;
@@ -44,6 +41,7 @@ public class HomeService {
 	private List<TradeVO> createTradesForAccount(Account account) throws RemoteApiException {
 		List<TradeVO> trades = new ArrayList<>();
 
+		//FIXME: 20 dias fixo
 		Date today = dateService.getCurrentSystemDate();
 		Date initialHistoryDate = new DateTime(today.getTime()).minusDays(20).toDate();
 

@@ -1,4 +1,4 @@
-package preti.stock.fe.location.home;
+package preti.stock.fe.location;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -59,6 +59,10 @@ public class TradeVO implements Serializable {
 	public Date getBuyDate() {
 		return buyDate;
 	}
+	
+	public String getFormatedBuyDate() {
+	    return PresentationTools.formatDate(buyDate);
+	}
 
 	public Date getSellDate() {
 		return sellDate;
@@ -67,6 +71,10 @@ public class TradeVO implements Serializable {
 	public double getBuyValue() {
 		return buyValue;
 	}
+	
+	public String getFormatedBuyValue() {
+	    return PresentationTools.formatCurrency(buyValue);
+	}
 
 	public double getSellValue() {
 		return sellValue;
@@ -74,6 +82,10 @@ public class TradeVO implements Serializable {
 
 	public double getTotalBuyValue() {
 		return buyValue * size;
+	}
+	
+	public String getFormatedTotalBuyValue() {
+	    return PresentationTools.formatCurrency(getTotalBuyValue());
 	}
 
 	public double getTotalSellValue() {

@@ -3,6 +3,8 @@ package preti.stock.fe.location.home;
 import java.io.Serializable;
 import java.util.List;
 
+import preti.stock.fe.location.TradeVO;
+
 @SuppressWarnings("serial")
 public class HomeVO implements Serializable {
 
