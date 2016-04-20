@@ -18,26 +18,33 @@
 	
 	<script type="text/javascript" src="js/jquery-1.4.3.min.js"></script>
 	<script type="text/javascript">
+		converteNumero = function(val){
+			return val.replace("R$","").replace(".","").replace(",",".").replace(" ", "")
+		}
+		
 		generateRecomendations = function () {
 			$.ajax(
 				{
 					type: 'GET',
 					dataType: 'json',
-					url: 'recomendations/generate?recDate='+document.getElementById('input_date').value+'&accountId=1',
+					url: 'recomendations/generate?recDate='+document.getElementById('input_date').value+'&accountId=$accountId',
 					async: false,
 					contentType: "application/json",
 					success: function (recData) {
+						console.log(recData)
 						var html='';
 						for (var i in recData.trades) {
 							rec = recData.trades[i]
 							html += '<tr>';
-							html += '<td><input type="checkbox" value=""></td>';
-							html += '<td>'+rec.stockCode+'</td>';
+							html += '<input type="hidden" id="modelId_'+i+'" value="'+rec.modelId+'">';
+							html += '<input type="hidden" id="stockId_'+i+'" value="'+rec.stockId+'">';
+							html += '<td> <input type="checkbox" id="check_'+i+'" value="'+i+'">  </td>';
+							html += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
 							html += '<td>'+rec.stockName+'</td>';
-							html += '<td class="right">'+rec.formatedBuyDate+'</td>';
-							html += '<td class="right">'+rec.formatedBuyValue+'</td>';
-							html += '<td class="right">'+rec.size+'</td>';
-							html += '<td class="right">'+rec.formatedTotalBuyValue+'</td>';
+							html += '<td class="right" value="'+rec.buyDate+'" > <input type="text" name="buyDate_'+i+'" size=10 value="'    +rec.formattedBuyDate+'"/> </td>';
+							html += '<td class="right" value="'+rec.buyValue+'"> <input type="text" name="buyValue_'+i+'" size=10 value="'+rec.formattedBuyValue+'"/> </td>';
+							html += '<td class="right" value="'+rec.size+'"> <input type="text" name="size_'+i+'" size=10 value="'+rec.size+'" /> </td>';
+							html += '<td class="right" value="'+rec.stopPos+'"> <input type="text" name="stopPos_'+i+'" size=10 value="'+rec.formattedStopPos+'" /> </td>';
 							html += '</tr>';
 						}
 						$(var_recomendations_table).html(html);
@@ -47,6 +54,50 @@
 					}
 				}
 			);
+		}
+		
+		executeTrades = function () {
+			var trades = []
+			$.each($("input[id^='check_']"), function() {
+					if(!$(this).attr('checked'))
+						return;
+					
+					var element = $(this).attr('value')
+					var tradeVO = {
+						"stockId": $("#stockId_"+element).attr('value'),
+						"modelId": $("#modelId_"+element).attr('value'),
+						"size": converteNumero( $("input[name='size_"+element+"'").attr('value') ),
+						"formattedBuyDate":  $("input[name='buyDate_"+element+"'").attr('value') ,
+						"buyValue": converteNumero( $("input[name='buyValue_"+element+"'").attr('value') ),
+						"stopPos": converteNumero( $("input[name='stopPos_"+element+"'").attr('value'))
+					}
+					trades.push(tradeVO)
+				})
+				
+				$.ajax(
+						{
+							type: 'POST',
+							dataType: 'json',
+							data: JSON.stringify(trades),
+							url: 'recomendations/realizeTrades?accountId=$accountId',
+							async: false,
+							contentType: "application/json",
+							success: function (data) {
+								console.log(data)
+								alert('Trades executados.')
+								$.each($("input[id^='check_']"), function() {
+									if(!$(this).attr('checked'))
+										return;
+									
+									$(this).attr('disabled', true);
+								})
+							},
+							error: function (data) {
+								alert(data);
+							}
+						}
+					);
+			
 		}
 	</script>
 	
@@ -103,13 +154,18 @@
                                             <th>Data compra</th>
                                             <th>Valor compra</th>
                                             <th>Quantidade</th>
-                                            <th>Valor total</th>
+                                            <th>stop</th>
                                         </tr>
                                     </thead>
                                     <tbody id="var_recomendations_table">
 
                                     </tbody>
                                 </table>
+                                <div class="row">
+                                	<div class="col-lg-offset-10">
+            							<button class="btn btn-primary" onclick="executeTrades()">Enviar trades</button>
+            						</div>
+                                </div>
                             </div>
                         </div>
                         <!-- /.panel-body -->

@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +17,21 @@ import preti.stock.coremodel.Trade;
 import preti.stock.fe.facade.RecomendationFacade;
 import preti.stock.fe.facade.RemoteApiException;
 import preti.stock.fe.facade.StockFacade;
+import preti.stock.fe.facade.TradeFacade;
 import preti.stock.fe.location.TradeVO;
 
 @Service
 public class RecomendationsService {
+    private Logger logger = LoggerFactory.getLogger(RecomendationsService.class);
 
     @Autowired
     private RecomendationFacade recomendationFacade;
 
     @Autowired
     private StockFacade stockFacade;
+
+    @Autowired
+    private TradeFacade tradeFacade;
 
     public RecomendationsVO generateRecomendations(long accountId, Date recomendationsDate) throws RemoteApiException {
         List<Trade> recTrades = recomendationFacade.generateRecomendations(accountId, recomendationsDate);
@@ -41,11 +48,16 @@ public class RecomendationsService {
                     recomendationsDate);
             stock.setHistory(Arrays.asList(history));
 
-            trades.add(new TradeVO(t.getId(), stock.getId(), stock.getCode(), stock.getName(), t.getSize(),
-                    t.getStopPos(), t.getBuyDate(), t.getSellDate(), t.getBuyValue(),
+            trades.add(new TradeVO(t.getId(), stock.getId(), t.getModelId(), stock.getCode(), stock.getName(),
+                    t.getSize(), t.getStopPos(), t.getBuyDate(), t.getSellDate(), t.getBuyValue(),
                     stock.getCloseValueAtDate(recomendationsDate)));
         }
 
         return new RecomendationsVO(accountId, trades);
+    }
+
+    public void executeTrades(long accountId, List<TradeVO> trades) {
+        logger.info(String.format("Execution %s trades for account %s", trades.size(), accountId));
+        tradeFacade.realizetrades(accountId, trades);
     }
 }
