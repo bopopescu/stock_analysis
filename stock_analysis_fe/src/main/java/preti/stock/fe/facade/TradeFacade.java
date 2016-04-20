@@ -15,7 +15,7 @@ import preti.stock.fe.location.TradeVO;
 
 @Service
 public class TradeFacade extends AbstractApiFacade {
-    
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -24,8 +24,8 @@ public class TradeFacade extends AbstractApiFacade {
         return "trade";
     }
 
-    //FIXME: mostrar a mensagem de erro, caso não haja saldo suficiente
-    public void realizetrades(long accountId, List<TradeVO> tradesVO) {        
+    // FIXME: mostrar a mensagem de erro, caso não haja saldo suficiente
+    public void realizetrades(long accountId, List<TradeVO> tradesVO) {
         URL resourceUrl = getResourceEndpoint("/realize?accountId={accountId}");
 
         Map<String, Object> parameters = new HashMap<>();
@@ -37,9 +37,10 @@ public class TradeFacade extends AbstractApiFacade {
             trades[i] = new Trade(vo.getStockId(), vo.getModelId(), vo.getSize(), vo.getStopPos(), vo.getBuyDate(),
                     vo.getBuyValue());
         }
-        
-        ResponseEntity<Void> response = restTemplate.postForEntity(resourceUrl.toString(), trades, Void.class, parameters);
-        System.out.println(response);
+
+        ResponseEntity<Void> response = restTemplate.postForEntity(resourceUrl.toString(), trades, Void.class,
+                parameters);
+
     }
 
 }
