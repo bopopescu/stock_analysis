@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.coremodel.Trade;
-import preti.stock.web.exception.InvalidOperationException;
+import preti.stock.web.ApiError;
+import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.repository.AccountRepository;
 import preti.stock.web.repository.TradeRepository;
 
@@ -22,8 +23,8 @@ public class TradesService {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor=InvalidOperationException.class)
-    public void realizeTrades(long accountId, List<Trade> trades) throws InvalidOperationException {
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = ApiValidationException.class)
+    public void realizeTrades(long accountId, List<Trade> trades) throws ApiValidationException {
         double balanceChange = 0;
         for (Trade t : trades) {
             if (t.isOpen()) {
@@ -37,7 +38,7 @@ public class TradesService {
 
         Account account = accountRepository.getAccount(accountId);
         if (account.getBalance() + balanceChange < 0) {
-            throw new InvalidOperationException("Insufficient balance");
+            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
         }
 
         accountRepository.updateBalance(accountId, balanceChange);

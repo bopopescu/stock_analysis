@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -14,7 +15,9 @@ import preti.stock.fe.location.TradeVO;
 
 @Service
 public class TradeFacade extends AbstractApiFacade {
-    private RestTemplate restTemplate = new RestTemplate();
+    
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     protected String getApiPath() {
@@ -22,7 +25,7 @@ public class TradeFacade extends AbstractApiFacade {
     }
 
     //FIXME: mostrar a mensagem de erro, caso não haja saldo suficiente
-    public void realizetrades(long accountId, List<TradeVO> tradesVO) {
+    public void realizetrades(long accountId, List<TradeVO> tradesVO) {        
         URL resourceUrl = getResourceEndpoint("/realize?accountId={accountId}");
 
         Map<String, Object> parameters = new HashMap<>();

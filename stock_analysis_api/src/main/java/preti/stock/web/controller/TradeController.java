@@ -11,22 +11,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import preti.stock.coremodel.Trade;
-import preti.stock.web.exception.InvalidOperationException;
+import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.service.TradesService;
 
 @RestController
 public class TradeController {
-	private Logger logger = LoggerFactory.getLogger(TradeController.class);
+    private Logger logger = LoggerFactory.getLogger(TradeController.class);
 
-	@Autowired
-	private TradesService tradeService;
+    @Autowired
+    private TradesService tradeService;
 
-	@RequestMapping(path = "/trade/realize", headers = "Accept=application/json")
-	public void realizetrades(@RequestBody List<Trade> trades,
-			@RequestParam(name = "accountId", required=true) long accountId) throws InvalidOperationException {
-		logger.info(String.format("Realizing trades for account [%s]: %s ", accountId, trades));
+    @RequestMapping(path = "/trade/realize", headers = "Accept=application/json")
+    public void realizetrades(@RequestBody List<Trade> trades,
+            @RequestParam(name = "accountId", required = true) long accountId) throws ApiValidationException {
+        logger.info(String.format("Realizing trades for account [%s]: %s ", accountId, trades));
 
-		tradeService.realizeTrades(accountId, trades);
-	}
+        tradeService.realizeTrades(accountId, trades);
+    }
 
 }

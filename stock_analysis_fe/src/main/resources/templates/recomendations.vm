@@ -73,7 +73,7 @@
 					}
 					trades.push(tradeVO)
 				})
-				
+				console.log(JSON.stringify(trades))
 				$.ajax(
 						{
 							type: 'POST',
