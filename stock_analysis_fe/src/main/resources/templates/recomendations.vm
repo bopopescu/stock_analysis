@@ -49,8 +49,8 @@
 						}
 						$(var_recomendations_table).html(html);
 					},
-					error: function (recomendationsData) {
-						alert(recomendationsData);
+					error: function (data) {
+						alert(data);
 					}
 				}
 			);
@@ -92,8 +92,8 @@
 									$(this).attr('disabled', true);
 								})
 							},
-							error: function (data) {
-								alert(data);
+							error: function (result) {
+								alert(result.getResponseHeader('Error-Validation-Code'));
 							}
 						}
 					);

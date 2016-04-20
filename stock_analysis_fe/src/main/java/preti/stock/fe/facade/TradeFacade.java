@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import preti.stock.api.ApiHeader;
 import preti.stock.coremodel.Trade;
 import preti.stock.fe.location.TradeVO;
 
@@ -40,6 +42,9 @@ public class TradeFacade extends AbstractApiFacade {
 
         ResponseEntity<Void> response = restTemplate.postForEntity(resourceUrl.toString(), trades, Void.class,
                 parameters);
+        if(response.getStatusCode()!=HttpStatus.OK){
+            throw new FacadeValidationException(response.getStatusCode(), response.getHeaders().getFirst(ApiHeader.ERROR_VALIDATION_CODE.headerName));
+        }
 
     }
 
