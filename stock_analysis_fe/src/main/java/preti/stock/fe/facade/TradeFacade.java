@@ -36,14 +36,19 @@ public class TradeFacade extends AbstractApiFacade {
         Trade[] trades = new Trade[tradesVO.size()];
         for (int i = 0; i < tradesVO.size(); i++) {
             TradeVO vo = tradesVO.get(i);
-            trades[i] = new Trade(vo.getStockId(), vo.getModelId(), vo.getSize(), vo.getStopPos(), vo.getBuyDate(),
-                    vo.getBuyValue());
+            if (vo.isBuyTrade())
+                trades[i] = new Trade(vo.getStockId(), vo.getModelId(), vo.getSize(), vo.getStopPos(), vo.getBuyDate(),
+                        vo.getBuyValue());
+            else
+                trades[i] = new Trade(vo.getTradeId(), vo.getStockId(), vo.getModelId(), vo.getSize(), vo.getStopPos(),
+                        vo.getBuyDate(), vo.getSellDate(), vo.getBuyValue(), vo.getSellValue());
         }
 
         ResponseEntity<Void> response = restTemplate.postForEntity(resourceUrl.toString(), trades, Void.class,
                 parameters);
-        if(response.getStatusCode()!=HttpStatus.OK){
-            throw new FacadeValidationException(response.getStatusCode(), response.getHeaders().getFirst(ApiHeader.ERROR_VALIDATION_CODE.headerName));
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new FacadeValidationException(response.getStatusCode(),
+                    response.getHeaders().getFirst(ApiHeader.ERROR_VALIDATION_CODE.headerName));
         }
 
     }

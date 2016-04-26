@@ -75,7 +75,18 @@ public class TradeVO implements Serializable {
     }
 
     public String getFormattedBuyDate() {
-        return PresentationTools.formatDate(buyDate);
+        if (buyDate != null)
+            return PresentationTools.formatDate(buyDate);
+        else
+            return "";
+
+    }
+
+    public String getFormattedSellDate() {
+        if (sellDate != null)
+            return PresentationTools.formatDate(sellDate);
+        else
+            return "";
     }
 
     public Date getSellDate() {
@@ -88,6 +99,10 @@ public class TradeVO implements Serializable {
 
     public String getFormattedBuyValue() {
         return PresentationTools.formatCurrency(buyValue);
+    }
+
+    public String getFormattedSellValue() {
+        return PresentationTools.formatCurrency(sellValue);
     }
 
     public double getSellValue() {
@@ -141,6 +156,10 @@ public class TradeVO implements Serializable {
     public void setFormattedBuyDate(String buyDate) {
         this.buyDate = PresentationTools.parseDate(buyDate);
     }
+    
+    public void setFormattedSellDate(String sellDate) {
+        this.sellDate = PresentationTools.parseDate(sellDate);
+    }
 
     public void setSellDate(Date sellDate) {
         this.sellDate = sellDate;
@@ -152,6 +171,10 @@ public class TradeVO implements Serializable {
 
     public void setSellValue(double sellValue) {
         this.sellValue = sellValue;
+    }
+
+    public boolean isBuyTrade() {
+        return tradeId == 0;
     }
 
 }

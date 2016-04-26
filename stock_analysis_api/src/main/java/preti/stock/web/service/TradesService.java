@@ -27,11 +27,14 @@ public class TradesService {
     public void realizeTrades(long accountId, List<Trade> trades) throws ApiValidationException {
         double balanceChange = 0;
         for (Trade t : trades) {
-            if (t.isOpen()) {
+            if (t.getId() == 0) {
+                validateNewTrade(accountId, t);
                 tradeRepository.createTrade(t, accountId);
                 balanceChange -= t.getSize() * t.getBuyValue();
             } else {
+                validateExistentTrade(t.getId());
                 tradeRepository.closeTrade(t.getId(), t.getSellDate(), t.getSellValue());
+                t = tradeRepository.getTrade(t.getId());
                 balanceChange += t.getSize() * t.getSellValue();
             }
         }
@@ -42,5 +45,21 @@ public class TradesService {
         }
 
         accountRepository.updateBalance(accountId, balanceChange);
+    }
+
+    private void validateNewTrade(long accountId, Trade t) throws ApiValidationException {
+        List<Trade> existentTrades = tradeRepository.getOpenTrades(accountId, t.getStockId());
+        if (!existentTrades.isEmpty()) {
+            throw new ApiValidationException(ApiError.TRADE_ALREADY_OPEN);
+        }
+    }
+
+    private void validateExistentTrade(long tradeId) throws ApiValidationException {
+        Trade existentTrade = tradeRepository.getTrade(tradeId);
+        if (existentTrade == null)
+            throw new ApiValidationException(ApiError.TRADE_NOT_FOUND);
+
+        if (!existentTrade.isOpen())
+            throw new ApiValidationException(ApiError.TRADE_ALREADY_CLOSED);
     }
 }
