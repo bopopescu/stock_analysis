@@ -11,167 +11,187 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import preti.stock.coremodel.BuyOrder;
+import preti.stock.coremodel.Order;
+import preti.stock.coremodel.SellOrder;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.Trade;
 
 public class TradeSystem {
-	private static final Log log = LogFactory.getLog(TradeSystem.class);
+    private static final Log log = LogFactory.getLog(TradeSystem.class);
 
-	private double accountBalance;
-	private Map<Long, Trade> openTrades;
-	private Map<Long, TradingStrategy> tradingStrategies;
-	private List<Stock> stocksToAnalyse;
-	private Map<Long, Trade> closedTrades;
+    private double accountBalance;
+    private Map<Long, Trade> openTrades;
+    private Map<Long, TradingStrategy> tradingStrategies;
+    private List<Stock> stocksToAnalyse;
+    private Map<Long, Trade> closedTrades;
 
-	public TradeSystem(Collection<Trade> trades, Collection<Stock> stocks, Map<Long, TradingStrategy> strategies,
-			double balance) {
-		this.accountBalance = balance;
-		this.tradingStrategies = strategies;
+    public TradeSystem(Collection<Trade> trades, Collection<Stock> stocks, Map<Long, TradingStrategy> strategies,
+            double balance) {
+        this.accountBalance = balance;
+        this.tradingStrategies = strategies;
 
-		this.stocksToAnalyse = new ArrayList<>();
-		this.stocksToAnalyse.addAll(stocks);
-		this.stocksToAnalyse.sort(new Comparator<Stock>() {
+        this.stocksToAnalyse = new ArrayList<>();
+        this.stocksToAnalyse.addAll(stocks);
+        this.stocksToAnalyse.sort(new Comparator<Stock>() {
 
-			@Override
-			public int compare(Stock o1, Stock o2) {
-				return o1.getCode().compareTo(o2.getCode());
-			}
-		});
+            @Override
+            public int compare(Stock o1, Stock o2) {
+                return o1.getCode().compareTo(o2.getCode());
+            }
+        });
 
-		openTrades = new HashMap<>();
-		for (Trade t : trades) {
-			if (!t.isOpen())
-				throw new IllegalStateException();
+        openTrades = new HashMap<>();
+        for (Trade t : trades) {
+            if (!t.isOpen())
+                throw new IllegalStateException();
 
-			openTrades.put(t.getStockId(), t);
-		}
+            openTrades.put(t.getStockId(), t);
+        }
 
-		this.closedTrades = new HashMap<>();
-	}
+        this.closedTrades = new HashMap<>();
+    }
 
-	public Map<Long, Trade> getOpenTrades() {
-		return openTrades;
-	}
+    public Map<Long, Trade> getOpenTrades() {
+        return openTrades;
+    }
 
-	public Collection<Trade> getAllOpenTrades() {
-		return openTrades.values();
-	}
+    public Collection<Trade> getAllOpenTrades() {
+        return openTrades.values();
+    }
 
-	public double getAccountBalance() {
-		return accountBalance;
-	}
+    public double getAccountBalance() {
+        return accountBalance;
+    }
 
-	public Map<Long, Trade> getClosedTrades() {
-		return closedTrades;
-	}
+    public Map<Long, Trade> getClosedTrades() {
+        return closedTrades;
+    }
 
-	private Trade closeTrade(Trade trade, Date d, double sellValue) {
-		log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), d));
+    private SellOrder createSellOrder(Trade trade, Date d, double sellValue) {
+        log.info(String.format("Creating sell order for stock %s at date %s", trade.getStockId(), d));
 
-		if (!trade.isOpen())
-			throw new IllegalArgumentException(
-					String.format("No open trade to close for stock %s.", trade.getStockId()));
+        if (!trade.isOpen())
+            throw new IllegalArgumentException(
+                    String.format("No open trade to close for stock %s.", trade.getStockId()));
 
-		trade.close(d, sellValue);
-		this.accountBalance += trade.getSize() * trade.getSellValue();
-		openTrades.remove(trade.getStockId());
-		closedTrades.put(trade.getStockId(), trade);
-		return trade;
-	}
+        return new SellOrder(trade.getStock(), trade.getModelId(), trade.getSize(), d, sellValue);
+    }
 
-	private Trade openNewTrade(Stock stock, Date d) {
-		log.info(String.format("Opening new trade for stock %s at date %s", stock.getCode(), d));
+    private Trade closeTrade(Trade trade, SellOrder order) {
+        log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), order.getDate()));
 
-		double openTradesValue = calculateOpenTradesValue(d);
-		TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
-		double size = strategy.calculatePositionSize(d, openTradesValue + accountBalance);
-		if (size < 1) {
-			log.info("Postion size<1: not enough balance to enter position");
-			return null;
-		}
+        trade.close(order.getOrderId(), order.getDate(), order.getValue());
+        this.accountBalance += trade.getSize() * trade.getSellValue();
+        openTrades.remove(trade.getStockId());
+        closedTrades.put(trade.getStockId(), trade);
+        return trade;
+    }
 
-		double stockValue = stock.getCloseValueAtDate(d);
-		while ((size * stockValue) > this.accountBalance && size > 1) {
-			size--;
-		}
-		if (size < 1) {
-			log.warn(String.format("Not enough balance to enter position for stock %s at date %d", stock.getCode(), d));
-			return null;
-		}
+    private BuyOrder createBuyOrder(Stock stock, Date d) {
+        log.info(String.format("Creating buy order for stock %s at date %s", stock.getCode(), d));
 
-		if (isInOpenPosition(stock)) {
-			throw new IllegalArgumentException(
-					String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
-		}
-		Trade newTrade = new Trade(stock, strategy.getModelId(), size, strategy.calculateStopLossPoint(d), d,
-				stockValue);
-		this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
-		openTrades.put(newTrade.getStockId(), newTrade);
-		return newTrade;
-	}
+        double openTradesValue = calculateOpenTradesValue(d);
+        TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
+        double size = strategy.calculatePositionSize(d, openTradesValue + accountBalance);
+        if (size < 1) {
+            log.info("Postion size<1: not enough balance to enter position");
+            return null;
+        }
 
-	private boolean isInOpenPosition(Stock s) {
-		return openTrades.containsKey(s.getId());
-	}
+        double stockValue = stock.getCloseValueAtDate(d);
+        while ((size * stockValue) > this.accountBalance && size > 1) {
+            size--;
+        }
+        if (size < 1) {
+            log.warn(String.format("Not enough balance to enter position for stock %s at date %d", stock.getCode(), d));
+            return null;
+        }
 
-	public List<Trade> analyzeStocks(Date recomendationDate) {
-		List<Trade> updatedTrades = new ArrayList<>();
+        if (isInOpenPosition(stock)) {
+            throw new IllegalArgumentException(
+                    String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
+        }
+        return new BuyOrder(stock, strategy.getModelId(), size, d, stockValue, strategy.calculateStopLossPoint(d));
 
-		for (Stock stock : stocksToAnalyse) {
-			log.info(String.format("Analysing stock %s at date %s", stock.getCode(), recomendationDate));
-			if (!stock.hasHistoryAtDate(recomendationDate)) {
-				log.info("No data to analyze");
-				continue;
-			}
+    }
 
-			TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
-			if (strategy == null) {
-				continue;
-			}
+    private Trade openNewTrade(BuyOrder order, Date d) {
+        log.info(String.format("Opening new trade for stock %s at date %s", order.getStock().getCode(), d));
 
-			if (isInOpenPosition(stock)) {
-				Trade openTrade = openTrades.get(stock.getId());
-				boolean profittable = openTrade.isProfitable(recomendationDate);
-				if ((profittable && strategy.exitPosition(recomendationDate))
-						|| (!profittable && openTrade.hasReachedStopPosition(recomendationDate))) {
-					Trade t = closeTrade(openTrade, recomendationDate, stock.getCloseValueAtDate(recomendationDate));
-					if (t != null) {
-						updatedTrades.add(t);
-					}
-				}
+        Trade newTrade = new Trade(order.getStock(), order.getModelId(), order.getSize(), order.getStopPos(),
+                order.getOrderId(), d, order.getValue());
+        this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
+        openTrades.put(newTrade.getStockId(), newTrade);
+        return newTrade;
+    }
 
-			} else {
-				if (strategy.enterPosition(recomendationDate)) {
-					Trade t = openNewTrade(stock, recomendationDate);
-					if (t != null) {
-						updatedTrades.add(t);
-					}
-				}
-			}
-		}
+    private boolean isInOpenPosition(Stock s) {
+        return openTrades.containsKey(s.getId());
+    }
 
-		return updatedTrades;
-	}
+    public List<Order> analyzeStocks(Date recomendationDate) {
+        List<Order> orders = new ArrayList<>();
 
-	private double calculateOpenTradesValue(Date d) {
-		double value = 0;
-		for (Trade t : getAllOpenTrades()) {
-			if (!t.isOpen())
-				continue;
+        for (Stock stock : stocksToAnalyse) {
+            log.info(String.format("Analysing stock %s at date %s", stock.getCode(), recomendationDate));
+            if (!stock.hasHistoryAtDate(recomendationDate)) {
+                log.info("No data to analyze");
+                continue;
+            }
 
-			value += t.getTotalValue(d);
-		}
+            TradingStrategy strategy = this.tradingStrategies.get(stock.getId());
+            if (strategy == null) {
+                continue;
+            }
 
-		return value;
-	}
+            if (isInOpenPosition(stock)) {
+                Trade openTrade = openTrades.get(stock.getId());
+                boolean profittable = openTrade.isProfitable(recomendationDate);
+                if ((profittable && strategy.exitPosition(recomendationDate))
+                        || (!profittable && openTrade.hasReachedStopPosition(recomendationDate))) {
+                    SellOrder order = createSellOrder(openTrade, recomendationDate,
+                            stock.getCloseValueAtDate(recomendationDate));
+                    closeTrade(openTrade, order);
+                    orders.add(order);
+                }
 
-	public void closeAllOpenTrades(Date d) {
-		Long[] stockIds = openTrades.keySet().toArray(new Long[] {});
-		for (Long stockId : stockIds) {
-			Trade t = openTrades.get(stockId);
-			if (t.isOpen())
-				closeTrade(t, d, t.getStock().getCloseValueAtDate(d));
-		}
-	}
+            } else {
+                if (strategy.enterPosition(recomendationDate)) {
+                    BuyOrder order = createBuyOrder(stock, recomendationDate);
+
+                    if (order != null) {
+                        openNewTrade(order, recomendationDate);
+                        orders.add(order);
+                    }
+                }
+            }
+        }
+
+        return orders;
+    }
+
+    private double calculateOpenTradesValue(Date d) {
+        double value = 0;
+        for (Trade t : getAllOpenTrades()) {
+            if (!t.isOpen())
+                continue;
+
+            value += t.getTotalValue(d);
+        }
+
+        return value;
+    }
+
+    public void closeAllOpenTrades(Date d) {
+        Long[] stockIds = openTrades.keySet().toArray(new Long[] {});
+        for (Long stockId : stockIds) {
+            Trade t = openTrades.get(stockId);
+            if (t.isOpen()) {
+                SellOrder order = createSellOrder(t, d, t.getStock().getCloseValueAtDate(d));
+                closeTrade(t, order);
+            }
+        }
+    }
 
 }

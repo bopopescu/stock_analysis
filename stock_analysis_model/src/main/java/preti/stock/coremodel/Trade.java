@@ -9,194 +9,219 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @SuppressWarnings("serial")
 @JsonIgnoreProperties(value = { "profitable" }, ignoreUnknown = true)
 public class Trade implements Serializable {
-	private long id;
-	private long stockId;
-	private long modelId;
-	private double size;
-	private double stopPos;
-	private Date buyDate;
-	private Date sellDate;
-	private double buyValue;
-	private double sellValue;
+    private long id;
+    private long stockId;
+    private long modelId;
+    private double size;
+    private double stopPos;
+    private long buyOrderId;
+    private long sellOrderId;
+    private Date buyDate;
+    private Date sellDate;
+    private double buyValue;
+    private double sellValue;
 
-	private Stock stock;
+    private Stock stock;
 
-	public Trade() {
+    public Trade() {
 
-	}
+    }
 
-	public Trade(Stock stock, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
-		this(stock.getId(), modelId, size, stopPos, buyDate, buyValue);
-		applyStock(stock);
-	}
+    public Trade(Stock stock, long modelId, double size, double stopPos, long buyOrderId, Date buyDate,
+            double buyValue) {
+        this(stock.getId(), modelId, size, stopPos, buyOrderId, buyDate, buyValue);
+        applyStock(stock);
+    }
 
-	public Trade(long stockId, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
-		this(0, stockId, modelId, size, stopPos, buyDate, null, buyValue, 0);
-	}
+    public Trade(long stockId, long modelId, double size, double stopPos, long buyOrderId, Date buyDate,
+            double buyValue) {
+        this(0, stockId, modelId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
+    }
 
-	public Trade(long id, long stockId, long modelId, double size, double stopPos, Date buyDate, double buyValue) {
-		this(id, stockId, modelId, size, stopPos, buyDate, null, buyValue, 0);
-	}
+    public Trade(long id, long stockId, long modelId, double size, double stopPos, long buyOrderId, Date buyDate,
+            double buyValue) {
+        this(id, stockId, modelId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
+    }
 
-	public Trade(long id, long stockId, long modelId, double size, double stopPos, Date buyDate, Date sellDate,
-			double buyValue, double sellValue) {
-		super();
-		this.id = id;
-		this.stockId = stockId;
-		this.modelId = modelId;
-		this.size = size;
-		this.stopPos = stopPos;
-		this.buyDate = buyDate;
-		this.sellDate = sellDate;
-		this.buyValue = buyValue;
-		this.sellValue = sellValue;
-	}
+    public Trade(long id, long stockId, long modelId, double size, double stopPos, long buyOrderId, long sellOrderId,
+            Date buyDate, Date sellDate, double buyValue, double sellValue) {
+        super();
+        this.id = id;
+        this.stockId = stockId;
+        this.modelId = modelId;
+        this.size = size;
+        this.stopPos = stopPos;
+        this.buyOrderId = buyOrderId;
+        this.sellOrderId = sellOrderId;
+        this.buyDate = buyDate;
+        this.sellDate = sellDate;
+        this.buyValue = buyValue;
+        this.sellValue = sellValue;
+    }
 
-	public void applyStock(Stock s) {
-		this.stock = s;
-	}
+    public void applyStock(Stock s) {
+        this.stock = s;
+    }
 
-	@JsonIgnore
-	public Stock getStock() {
-		return this.stock;
-	}
+    @JsonIgnore
+    public Stock getStock() {
+        return this.stock;
+    }
 
-	public long getId() {
-		return id;
-	}
+    public long getId() {
+        return id;
+    }
 
-	public void setId(long id) {
-		this.id = id;
-	}
+    public void setId(long id) {
+        this.id = id;
+    }
 
-	public long getStockId() {
-		return stockId;
-	}
+    public long getStockId() {
+        return stockId;
+    }
 
-	public void setStockId(long stockId) {
-		this.stockId = stockId;
-	}
+    public void setStockId(long stockId) {
+        this.stockId = stockId;
+    }
 
-	public void setSize(double size) {
-		this.size = size;
-	}
+    public void setSize(double size) {
+        this.size = size;
+    }
 
-	public void setStopPos(double stopPos) {
-		this.stopPos = stopPos;
-	}
+    public void setStopPos(double stopPos) {
+        this.stopPos = stopPos;
+    }
 
-	public void setBuyDate(Date buyDate) {
-		this.buyDate = buyDate;
-	}
+    public void setBuyOrderId(long buyOrderId) {
+        this.buyOrderId = buyOrderId;
+    }
 
-	public void setSellDate(Date sellDate) {
-		this.sellDate = sellDate;
-	}
+    public void setSellOrderId(long sellOrderId) {
+        this.sellOrderId = sellOrderId;
+    }
 
-	public long getModelId() {
-		return modelId;
-	}
+    public void setBuyDate(Date buyDate) {
+        this.buyDate = buyDate;
+    }
 
-	public void setModelId(long modelId) {
-		this.modelId = modelId;
-	}
+    public void setSellDate(Date sellDate) {
+        this.sellDate = sellDate;
+    }
 
-	public double getSize() {
-		return size;
-	}
+    public long getModelId() {
+        return modelId;
+    }
 
-	public double getStopPos() {
-		return stopPos;
-	}
+    public void setModelId(long modelId) {
+        this.modelId = modelId;
+    }
 
-	public Date getBuyDate() {
-		return buyDate;
-	}
+    public double getSize() {
+        return size;
+    }
 
-	public Date getSellDate() {
-		return sellDate;
-	}
+    public double getStopPos() {
+        return stopPos;
+    }
 
-	public void setBuyValue(double buyValue) {
-		this.buyValue = buyValue;
-	}
+    public long getBuyOrderId() {
+        return buyOrderId;
+    }
 
-	public void setSellValue(double sellValue) {
-		this.sellValue = sellValue;
-	}
+    public long getSellOrderId() {
+        return sellOrderId;
+    }
 
-	public boolean isOpen() {
-		return sellDate == null;
-	}
+    public Date getBuyDate() {
+        return buyDate;
+    }
 
-	public boolean isOpen(Date d) {
-		return (buyDate != null && sellDate != null && d.compareTo(buyDate) >= 0 && d.compareTo(sellDate) < 0);
-	}
+    public Date getSellDate() {
+        return sellDate;
+    }
 
-	public void close(Date d, double sellValue) {
-		this.sellDate = d;
-		this.sellValue = sellValue;
-	}
+    public void setBuyValue(double buyValue) {
+        this.buyValue = buyValue;
+    }
 
-	public double getProfit(Date d) {
-		if (buyDate == null) {
-			throw new IllegalArgumentException("Trade invalid: buyDate is empty.");
-		}
+    public void setSellValue(double sellValue) {
+        this.sellValue = sellValue;
+    }
 
-		if (d == null && isOpen()) {
-			throw new IllegalArgumentException("Trade not closed and no date informed to calculate profits.");
-		}
+    public boolean isOpen() {
+        return sellDate == null;
+    }
 
-		if (d != null) {
-			return size * (stock.getCloseValueAtDate(d) - buyValue);
-		} else {
-			return size * (sellValue - buyValue);
-		}
-	}
+    public boolean isOpen(Date d) {
+        return (buyDate != null && sellDate != null && d.compareTo(buyDate) >= 0 && d.compareTo(sellDate) < 0);
+    }
 
-	@JsonIgnore
-	public double getProfit() {
-		return getProfit(null);
-	}
+    public void close(long orderId, Date d, double sellValue) {
+        this.sellOrderId = orderId;
+        this.sellDate = d;
+        this.sellValue = sellValue;
+    }
 
-	@JsonIgnore
-	public boolean isProfitable(Date d) {
-		return getProfit(d) > 0;
-	}
+    public double getProfit(Date d) {
+        if (buyDate == null) {
+            throw new IllegalArgumentException("Trade invalid: buyDate is empty.");
+        }
 
-	@JsonIgnore
-	public boolean isProfitable() {
-		return getProfit(null) > 0;
-	}
+        if (d == null && isOpen()) {
+            throw new IllegalArgumentException("Trade not closed and no date informed to calculate profits.");
+        }
 
-	public double getBuyValue() {
-		return this.buyValue;
-	}
+        if (d != null) {
+            return size * (stock.getCloseValueAtDate(d) - buyValue);
+        } else {
+            return size * (sellValue - buyValue);
+        }
+    }
 
-	public double getSellValue() {
-		return this.sellValue;
-	}
+    @JsonIgnore
+    public double getProfit() {
+        return getProfit(null);
+    }
 
-	public boolean hasReachedStopPosition(Date d) {
-		if (!isOpen())
-			throw new IllegalArgumentException("Trade is not opened.");
+    @JsonIgnore
+    public boolean isProfitable(Date d) {
+        return getProfit(d) > 0;
+    }
 
-		return stock.getCloseValueAtDate(d) <= stopPos;
-	}
+    @JsonIgnore
+    public boolean isProfitable() {
+        return getProfit(null) > 0;
+    }
 
-	public double getTotalValue(Date d) {
-		return stock.getCloseValueAtDate(d) * size;
-	}
+    public double getBuyValue() {
+        return this.buyValue;
+    }
 
-	public String toString() {
-		if (isOpen()) {
-			return String.format("stockId=%s size=%s buyValue=%s stopPos=%s buy=Date%s", stockId, size,
-					getBuyValue(), stopPos, buyDate);
-		} else {
-			return String.format("stockId=%s size=%s buyValue=%s stopPos=%s buy=Date%s sellDate=%s sellValue=%s",
-					stockId, size, getBuyValue(), stopPos, buyDate, sellDate, sellValue);
-		}
+    public double getSellValue() {
+        return this.sellValue;
+    }
 
-	}
+    public boolean hasReachedStopPosition(Date d) {
+        if (!isOpen())
+            throw new IllegalArgumentException("Trade is not opened.");
+
+        return stock.getCloseValueAtDate(d) <= stopPos;
+    }
+
+    public double getTotalValue(Date d) {
+        return stock.getCloseValueAtDate(d) * size;
+    }
+
+    public String toString() {
+        if (isOpen()) {
+            return String.format("stockId=%s size=%s buyValue=%s stopPos=%s buyOrderId=%s buy=Date%s", stockId, size,
+                    getBuyValue(), stopPos, buyOrderId, buyDate);
+        } else {
+            return String.format(
+                    "stockId=%s size=%s buyValue=%s stopPos=%s buyOrderId=%s sellOrderId=%s buy=Date%s sellDate=%s sellValue=%s",
+                    stockId, size, getBuyValue(), stopPos, buyOrderId, sellOrderId, buyDate, sellDate, sellValue);
+        }
+
+    }
 
 }
