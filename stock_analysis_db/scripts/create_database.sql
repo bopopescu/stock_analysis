@@ -62,12 +62,42 @@ alter table donchian_model_entry add unique index (model_id, stock_id);
 alter table donchian_model_entry add constraint fk_donchian_model_entry_stock foreign key (stock_id) references stock (stock_id);
 alter table donchian_model_entry add constraint fk_donchian_model_entry_model foreign key (model_id) references model (model_id);
 
+create table op_order (
+	order_id BIGINT NOT NULL AUTO_INCREMENT,
+	account_id BIGINT NOT NULL,
+	type ENUM('B', 'S') NOT NULL,
+	stock_id INT NOT NULL,
+	model_id BIGINT,
+	size decimal(10, 2) not null,
+	creation_date DATE NOT NULL,
+	primary key (order_id)
+) ENGINE=InnoDB;
+alter table op_order add constraint fk_order_account foreign key (account_id) references account (account_id);
+alter table op_order add constraint fk_order_stock foreign key (stock_id) references stock (stock_id);
+alter table op_order add constraint fk_order_model foreign key (account_id, model_id) references model (account_id, model_id);
+
+create table buy_order (
+	order_id BIGINT NOT NULL AUTO_INCREMENT,
+	value decimal(10, 2) not null,
+	stop_pos decimal(10, 2) not null,
+	primary key (order_id)
+) ENGINE=InnoDB;
+alter table buy_order add constraint fk_buy_order_order foreign key (order_id) references op_order (order_id);
+
+create table sell_order (
+	order_id BIGINT NOT NULL AUTO_INCREMENT,
+	value decimal(10, 2) not null,
+	primary key (order_id)
+) ENGINE=InnoDB;
+alter table sell_order add constraint fk_sell_order_order foreign key (order_id) references op_order (order_id);
+
 create table trade (
 	trade_id BIGINT NOT NULL AUTO_INCREMENT,
 	account_id BIGINT NOT NULL,
 	stock_id INT NOT NULL,
-	model_id BIGINT,
+	buy_order_id BIGINT NOT NULL,
 	buy_date DATE NOT NULL,
+	sell_order_id BIGINT,
 	sell_date DATE,
 	buy_value decimal(10,2) not null,
 	sell_value decimal(10,2),
@@ -77,5 +107,6 @@ create table trade (
 ) ENGINE=InnoDB;
 alter table trade add constraint fk_trade_stock foreign key (stock_id) references stock (stock_id);
 alter table trade add constraint fk_trade_account foreign key (account_id) references account (account_id);
-alter table trade add constraint fk_trade_model foreign key (account_id, model_id) references model (account_id, model_id);
+alter table trade add constraint fk_trade_buy_order_id foreign key (buy_order_id) references buy_order (order_id);
+alter table trade add constraint fk_trade_sell_order_id foreign key (sell_order_id) references sell_order (order_id);
 alter table trade add index (buy_date);
