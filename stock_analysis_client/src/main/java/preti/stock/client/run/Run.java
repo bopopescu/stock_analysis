@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Order;
 import preti.stock.coremodel.Trade;
 
 public class Run {
@@ -127,12 +128,18 @@ public class Run {
 			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
 
 			parameters.put("date", dateFormat.format(currentDate.toDate()));
-			Trade[] trades = restTemplate.getForObject("http://localhost:8080/recomendation/generate?date={date}",
-					Trade[].class, parameters);
-
-			System.out.println("Trades: " + trades.length);			
+			parameters.put("accountId", 1);
+			Order[] orders = restTemplate.getForObject("http://localhost:8080/recomendation/generate?accountId={accountId}&date={date}",
+			        Order[].class, parameters);
+			System.out.println(orders.length + " recomendations generated");
+			
+			orders = restTemplate.postForObject("http://localhost:8080/order/create", orders, Order[].class);
+			System.out.println(orders.length + " orders created");
+			
 			parameters.put("accountId", 1l);
-			restTemplate.postForLocation("http://localhost:8080/trade/realize?accountId={accountId}", trades, parameters);
+			parameters.put("execDate", dateFormat.format(currentDate.toDate()));
+			Trade[] trades = restTemplate.postForObject("http://localhost:8080/order/execute?executionDate={execDate}&accountId={accountId}", orders, Trade[].class, parameters);
+            System.out.println(trades.length + " trades executed");
 
 			currentDate = currentDate.plusDays(1);
 		}
