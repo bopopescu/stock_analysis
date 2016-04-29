@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.coremodel.Order;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.Trade;
 import preti.stock.system.TradeSystem;
@@ -36,7 +37,7 @@ public class RecomendationsService {
 	@Autowired
 	private StocksService stocksService;
 
-	public List<Trade> generateRecomendations(long accountId, Date recomendationDate) {
+	public List<Order> generateRecomendations(long accountId, Date recomendationDate) {
 		Account account = accountService.loadCompleteAccount(accountId, recomendationDate);
 
 		Date beginDate = identifyBeginDate(accountId, recomendationDate);
@@ -51,7 +52,7 @@ public class RecomendationsService {
 		Map<Long, TradingStrategy> tradingStrategies = createTradingStrategies(account, stocksMap);
 
 		TradeSystem system = new TradeSystem(account.getWallet(), stocksMap.values(), tradingStrategies,
-				account.getBalance());
+				account.getBalance(), accountId);
 
 		return system.analyzeStocks(recomendationDate);
 

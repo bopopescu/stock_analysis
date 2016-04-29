@@ -4,32 +4,44 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @SuppressWarnings("serial")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({ @Type(value = BuyOrder.class, name = "BUY"), @Type(value = SellOrder.class, name = "SELL") })
 public abstract class Order implements Serializable {
     private long orderId;
     private OrderType type;
+    private long accountId;
     private long stockId;
     private long modelId;
     private double size;
     private Date date;
 
     private Stock stock;
+    
+    public Order() {
+        
+    }
 
-    public Order(long orderId, OrderType type, long stockId, long modelId, double size, Date date) {
+    public Order(long orderId, OrderType type, long accountId, long stockId, long modelId, double size, Date date) {
         super();
         this.orderId = orderId;
         this.type = type;
+        this.accountId = accountId;
         this.stockId = stockId;
         this.modelId = modelId;
         this.size = size;
         this.date = date;
     }
 
-    public Order(Stock stock, OrderType type, long modelId, double size, Date date) {
+    public Order(Stock stock, OrderType type, long accountId, long modelId, double size, Date date) {
         super();
         this.stock = stock;
         this.type = type;
+        this.accountId = accountId;
         this.stockId = stock.getId();
         this.modelId = modelId;
         this.size = size;
@@ -59,6 +71,14 @@ public abstract class Order implements Serializable {
 
     public void setType(OrderType type) {
         this.type = type;
+    }
+
+    public long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(long accountId) {
+        this.accountId = accountId;
     }
 
     public long getStockId() {

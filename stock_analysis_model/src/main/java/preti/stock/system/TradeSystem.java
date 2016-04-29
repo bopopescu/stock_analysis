@@ -19,7 +19,7 @@ import preti.stock.coremodel.Trade;
 
 public class TradeSystem {
     private static final Log log = LogFactory.getLog(TradeSystem.class);
-
+    private long accountId;
     private double accountBalance;
     private Map<Long, Trade> openTrades;
     private Map<Long, TradingStrategy> tradingStrategies;
@@ -27,10 +27,10 @@ public class TradeSystem {
     private Map<Long, Trade> closedTrades;
 
     public TradeSystem(Collection<Trade> trades, Collection<Stock> stocks, Map<Long, TradingStrategy> strategies,
-            double balance) {
+            double balance, long accountId) {
         this.accountBalance = balance;
         this.tradingStrategies = strategies;
-
+        this.accountId = accountId;
         this.stocksToAnalyse = new ArrayList<>();
         this.stocksToAnalyse.addAll(stocks);
         this.stocksToAnalyse.sort(new Comparator<Stock>() {
@@ -75,9 +75,12 @@ public class TradeSystem {
             throw new IllegalArgumentException(
                     String.format("No open trade to close for stock %s.", trade.getStockId()));
 
-        return new SellOrder(trade.getStock(), trade.getModelId(), trade.getSize(), d, sellValue);
+        TradingStrategy strategy = this.tradingStrategies.get(trade.getStockId());
+        return new SellOrder(trade.getStock(), trade.getAccountId(), strategy.getModelId(), trade.getSize(), d,
+                sellValue);
     }
 
+    // FIXME: nesse método estou assumindo que o valor executado do trade é sempre igual ao da ordem.
     private Trade closeTrade(Trade trade, SellOrder order) {
         log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), order.getDate()));
 
@@ -112,14 +115,15 @@ public class TradeSystem {
             throw new IllegalArgumentException(
                     String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
         }
-        return new BuyOrder(stock, strategy.getModelId(), size, d, stockValue, strategy.calculateStopLossPoint(d));
+        return new BuyOrder(stock, accountId, strategy.getModelId(), size, d, stockValue,
+                strategy.calculateStopLossPoint(d));
 
     }
 
     private Trade openNewTrade(BuyOrder order, Date d) {
         log.info(String.format("Opening new trade for stock %s at date %s", order.getStock().getCode(), d));
 
-        Trade newTrade = new Trade(order.getStock(), order.getModelId(), order.getSize(), order.getStopPos(),
+        Trade newTrade = new Trade(order.getStock(), order.getAccountId(), order.getSize(), order.getStopPos(),
                 order.getOrderId(), d, order.getValue());
         this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
         openTrades.put(newTrade.getStockId(), newTrade);

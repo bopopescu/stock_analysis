@@ -75,13 +75,13 @@ public class AccountController {
 							parameter.getRiskRate()));
 		}
 
-		// TODO: Ter que repopular esses trades aqui não é um bom sinal, acho
-		// que meu modelo não está bom
+		// TODO: Ter que repopular esses trades aqui nï¿½o ï¿½ um bom sinal, acho
+		// que meu modelo nï¿½o estï¿½ bom
 		// FIXME: rever isso aqui
 		for (Trade t : account.getWallet()) {
 			t.applyStock(stocksMap.get(t.getStockId()));
 		}
-		TradeSystem system = new TradeSystem(account.getWallet(), stocks, tradingStrategies, account.getBalance());
+		TradeSystem system = new TradeSystem(account.getWallet(), stocks, tradingStrategies, account.getBalance(), account.getId());
 		system.closeAllOpenTrades(closeDate);
 
 		account.setWallet(system.getAllOpenTrades());
