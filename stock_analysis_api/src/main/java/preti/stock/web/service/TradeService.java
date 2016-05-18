@@ -99,4 +99,8 @@ public class TradeService {
         if (!existentTrade.isOpen())
             throw new ApiValidationException(ApiError.TRADE_ALREADY_CLOSED);
     }
+
+    public List<Trade> getOpenTrades(long accountId, long stockId) {
+        return tradeRepository.getOpenTrades(accountId, stockId);
+    }
 }

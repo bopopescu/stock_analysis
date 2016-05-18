@@ -51,7 +51,7 @@ public class HomeService {
 			stock.setHistory(Arrays.asList(history));
 
 			trades.add(
-					new TradeVO(t.getId(), stock.getId(), t.getModelId(), stock.getCode(), stock.getName(), t.getSize(), t.getStopPos(),
+					new TradeVO(t.getId(), stock.getId(), t.getBuyOrderId(), t.getSellOrderId(), stock.getCode(), stock.getName(), t.getSize(), t.getStopPos(),
 							t.getBuyDate(), t.getSellDate(), t.getBuyValue(), stock.getCloseValueAtDate(today)));
 		}
 

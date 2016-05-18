@@ -8,7 +8,7 @@ public class TradeVO implements Serializable {
 
     private long tradeId;
     private long stockId;
-    private long modelId;
+    private long buyOrderId, sellOrderId;
     private String stockCode;
     private String stockName;
     private double size;
@@ -22,12 +22,13 @@ public class TradeVO implements Serializable {
 
     }
 
-    public TradeVO(long tradeId, long stockId, long modelId, String stockCode, String stockName, double size,
-            double stopPos, Date buyDate, Date sellDate, double buyValue, double sellValue) {
+    public TradeVO(long tradeId, long stockId, long buyOrderId, long sellOrderId, String stockCode, String stockName,
+            double size, double stopPos, Date buyDate, Date sellDate, double buyValue, double sellValue) {
         super();
         this.tradeId = tradeId;
         this.stockId = stockId;
-        this.modelId = modelId;
+        this.buyOrderId = buyOrderId;
+        this.sellOrderId = sellOrderId;
         this.stockCode = stockCode;
         this.stockName = stockName;
         this.size = size;
@@ -46,8 +47,12 @@ public class TradeVO implements Serializable {
         return stockId;
     }
 
-    public long getModelId() {
-        return modelId;
+    public long getBuyOrderId() {
+        return buyOrderId;
+    }
+
+    public long getSellOrderId() {
+        return sellOrderId;
     }
 
     public String getStockCode() {
@@ -129,8 +134,12 @@ public class TradeVO implements Serializable {
         this.stockId = stockId;
     }
 
-    public void setModelId(long modelId) {
-        this.modelId = modelId;
+    public void setBuyOrderId(long buyOrderId) {
+        this.buyOrderId = buyOrderId;
+    }
+
+    public void setSellOrderId(long sellOrderId) {
+        this.sellOrderId = sellOrderId;
     }
 
     public void setStockCode(String stockCode) {
@@ -156,7 +165,7 @@ public class TradeVO implements Serializable {
     public void setFormattedBuyDate(String buyDate) {
         this.buyDate = PresentationTools.parseDate(buyDate);
     }
-    
+
     public void setFormattedSellDate(String sellDate) {
         this.sellDate = PresentationTools.parseDate(sellDate);
     }

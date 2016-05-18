@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import preti.stock.coremodel.Trade;
+import preti.stock.coremodel.Order;
 
 @Service
 public class RecomendationFacade extends AbstractApiFacade {
@@ -23,14 +23,14 @@ public class RecomendationFacade extends AbstractApiFacade {
         return "recomendation";
     }
 
-    public List<Trade> generateRecomendations(long accountId, Date recomendationsDate) throws RemoteApiException {
+    public List<Order> generateRecomendations(long accountId, Date recomendationsDate) throws RemoteApiException {
         URL resourceUrl = getResourceEndpoint("/generate?accountId={accountId}&date={date}");
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("accountId", accountId);
         parameters.put("date", formatDate(recomendationsDate));
 
-        ResponseEntity<Trade[]> response = restTemplate.getForEntity(resourceUrl.toString(), Trade[].class, parameters);
+        ResponseEntity<Order[]> response = restTemplate.getForEntity(resourceUrl.toString(), Order[].class, parameters);
         if (response.getStatusCode() != HttpStatus.OK) {
             throw new RemoteApiException(response.getStatusCode());
         }

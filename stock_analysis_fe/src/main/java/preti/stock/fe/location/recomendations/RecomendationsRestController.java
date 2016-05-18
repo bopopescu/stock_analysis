@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import preti.stock.fe.facade.RemoteApiException;
 import preti.stock.fe.location.AbstractController;
+import preti.stock.fe.location.OrderVO;
 import preti.stock.fe.location.TradeVO;
 
 @RestController
@@ -29,10 +30,10 @@ public class RecomendationsRestController extends AbstractController {
         return recomendationsService.generateRecomendations(accountId, parseDate(recDate));
     }
 
-    @RequestMapping(path = "/recomendations/realizeTrades", headers = "Accept=application/json", method = RequestMethod.POST)
-    public void executeTrades(@RequestBody List<TradeVO> trades,
+    @RequestMapping(path = "/recomendations/createOrders", headers = "Accept=application/json", method = RequestMethod.POST)
+    public void createOrders(@RequestBody List<OrderVO> orders,
             @RequestParam(name = "accountId", required = true) long accountId) {
-        recomendationsService.executeTrades(accountId, trades);
+        recomendationsService.createOrders(accountId, orders);
     }
 
 }
