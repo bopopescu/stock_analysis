@@ -35,42 +35,43 @@
 					contentType: "application/json",
 					success: function (recData) {					
 						console.log(recData)
-						var html='';
+						var buyHtml='';
+						var sellHtml='';
 						
 						for (var i in recData.orders) {
 							rec = recData.orders[i]
 							
-							html += '<tr>';
-							
 							if(rec.buyOrder) {
-								html += '<input type="hidden" id="buy_modelId_'+i+'" value="'+rec.modelId+'">';
-								html += '<input type="hidden" id="buy_stockId_'+i+'" value="'+rec.stockId+'">';
-								html += '<td> <input type="checkbox" id="buy_check_'+i+'" value="'+i+'">  </td>';
-								html += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
-								html += '<td>'+rec.stockName+'</td>';
+								buyHtml += '<tr>';
+								buyHtml += '<input type="hidden" id="buy_modelId_'+i+'" value="'+rec.modelId+'">';
+								buyHtml += '<input type="hidden" id="buy_stockId_'+i+'" value="'+rec.stockId+'">';
+								buyHtml += '<td> <input type="checkbox" id="buy_check_'+i+'" value="'+i+'">  </td>';
+								buyHtml += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
+								buyHtml += '<td>'+rec.stockName+'</td>';
 								
-								html += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="buyDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
-								html += '<td class="right" value="'+rec.value+'"> <input type="text" name="buyValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
-								html += '<td class="right" value="'+rec.size+'"> <input type="text" name="buySize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
-								html += '<td class="right" value="'+rec.stopPos+'"> <input type="text" name="buyStopPos_'+i+'" size=10 value="'+rec.formattedStopPos+'" /> </td>';
-								html += '</tr>';
+								buyHtml += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="buyDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
+								buyHtml += '<td class="right" value="'+rec.value+'"> <input type="text" name="buyValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
+								buyHtml += '<td class="right" value="'+rec.size+'"> <input type="text" name="buySize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
+								buyHtml += '<td class="right" value="'+rec.stopPos+'"> <input type="text" name="buyStopPos_'+i+'" size=10 value="'+rec.formattedStopPos+'" /> </td>';
+								buyHtml += '</tr>';
 								
-								$(var_rec_buy_table).html(html);
+								$(var_rec_buy_table).html(buyHtml);
 							} else {
-								html += '<input type="hidden" id="sell_modelId_'+i+'" value="'+rec.modelId+'">';
-								html += '<input type="hidden" id="sell_stockId_'+i+'" value="'+rec.stockId+'">';
-								html += '<td> <input type="checkbox" id="sell_check_'+i+'" value="'+i+'">  </td>';
-								html += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
-								html += '<td>'+rec.stockName+'</td>';
+								sellHtml += '<tr>';
+								sellHtml += '<input type="hidden" id="sell_modelId_'+i+'" value="'+rec.modelId+'">';
+								sellHtml += '<input type="hidden" id="sell_stockId_'+i+'" value="'+rec.stockId+'">';
+								sellHtml += '<td> <input type="checkbox" id="sell_check_'+i+'" value="'+i+'">  </td>';
+								sellHtml += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
+								sellHtml += '<td>'+rec.stockName+'</td>';
 								
-								html += '<td class="right" > '+rec.formattedPreviousBuyDate+' </td>';
-								html += '<td class="right" > '+rec.formattedPreviousBuyValue+' </td>';
-								html += '<td class="right" value="'+rec.size+'"> <input type="text" name="sellSize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
-								html += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="sellDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
-								html += '<td class="right" value="'+rec.value+'"> <input type="text" name="sellValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
-								html += '</tr>';
+								sellHtml += '<td class="right" > '+rec.formattedPreviousBuyDate+' </td>';
+								sellHtml += '<td class="right" > '+rec.formattedPreviousBuyValue+' </td>';
+								sellHtml += '<td class="right" value="'+rec.size+'"> <input type="text" name="sellSize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
+								sellHtml += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="sellDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
+								sellHtml += '<td class="right" value="'+rec.value+'"> <input type="text" name="sellValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
+								sellHtml += '</tr>';
 								
-								$(var_rec_sell_table).html(html);
+								$(var_rec_sell_table).html(sellHtml);
 							}
 							
 							
