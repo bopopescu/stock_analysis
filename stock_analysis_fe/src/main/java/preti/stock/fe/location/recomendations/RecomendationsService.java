@@ -11,10 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import preti.stock.coremodel.BuyOrder;
 import preti.stock.coremodel.Order;
 import preti.stock.coremodel.OrderType;
-import preti.stock.coremodel.SellOrder;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.StockHistory;
 import preti.stock.coremodel.Trade;
@@ -57,17 +55,16 @@ public class RecomendationsService {
             stock.setHistory(Arrays.asList(history));
             switch (o.getType()) {
             case BUY:
-                BuyOrder bo = (BuyOrder) o;
                 orders.add(new OrderVO(o.getOrderId(), o.getAccountId(), OrderType.BUY, o.getStockId(), stock.getCode(),
-                        stock.getName(), o.getModelId(), o.getSize(), o.getDate(), bo.getValue(), bo.getStopPos()));
+                        stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(),
+                        o.getStopPos()));
                 break;
             case SELL:
-                SellOrder so = (SellOrder) o;
-                List<Trade> openTrades = tradeFacade.getOpenTrades(accountId, so.getStockId());
+                List<Trade> openTrades = tradeFacade.getOpenTrades(accountId, o.getStockId());
                 Trade lastOpenTrade = openTrades.get(0);
                 orders.add(new OrderVO(o.getOrderId(), o.getAccountId(), OrderType.SELL, o.getStockId(),
-                        stock.getCode(), stock.getName(), o.getModelId(), o.getSize(), o.getDate(), so.getValue(),
-                        lastOpenTrade.getBuyValue(), lastOpenTrade.getBuyDate()));
+                        stock.getCode(), stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(),
+                        o.getValue(), lastOpenTrade.getBuyValue(), lastOpenTrade.getBuyDate()));
                 break;
             }
         }
@@ -81,12 +78,12 @@ public class RecomendationsService {
         for (OrderVO oVo : ordersVO) {
             switch (oVo.getType()) {
             case SELL:
-                orders.add(new SellOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(), oVo.getModelId(),
-                        oVo.getSize(), oVo.getCreationDate(), oVo.getValue()));
+                orders.add(Order.createSellOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
+                        oVo.getModelId(), oVo.getSize(), oVo.getCreationDate(), oVo.getValue()));
                 break;
             case BUY:
-                orders.add(new BuyOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(), oVo.getModelId(),
-                        oVo.getSize(), oVo.getCreationDate(), oVo.getValue(), oVo.getStopPos()));
+                orders.add(Order.createBuyOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
+                        oVo.getModelId(), oVo.getSize(), oVo.getCreationDate(), oVo.getValue(), oVo.getStopPos()));
                 break;
             }
         }

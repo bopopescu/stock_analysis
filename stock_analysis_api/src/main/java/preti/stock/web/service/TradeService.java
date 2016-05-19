@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.analysismodel.donchian.Account;
-import preti.stock.coremodel.BuyOrder;
 import preti.stock.coremodel.Order;
-import preti.stock.coremodel.SellOrder;
 import preti.stock.coremodel.Trade;
 import preti.stock.web.ApiError;
 import preti.stock.web.exception.ApiValidationException;
@@ -66,7 +64,10 @@ public class TradeService {
     }
 
     public Trade executeBuyOrder(long accountId, long orderId, Date executionDate) throws ApiValidationException {
-        BuyOrder order = orderRepository.getBuyOrder(orderId);
+        Order order = orderRepository.getOrder(orderId);
+        if (!order.isBuyOrder())
+            throw new IllegalArgumentException(
+                    String.format("Can't execute buy order: order %s is of type %s", orderId, order.getType()));
 
         Trade t = new Trade(order.getStockId(), accountId, order.getSize(), order.getStopPos(), order.getOrderId(),
                 executionDate, order.getValue());
@@ -77,7 +78,11 @@ public class TradeService {
     }
 
     public Trade executeSellOrder(long accountId, long orderId, Date executionDate) throws ApiValidationException {
-        SellOrder order = orderRepository.getSellOrder(orderId);
+        Order order = orderRepository.getOrder(orderId);
+        if (!order.isSellOrder())
+            throw new IllegalArgumentException(
+                    String.format("Can't execute sell order: order %s is of type %s", orderId, order.getType()));
+
         Trade t = tradeRepository.getOpenTradeForSellOrder(orderId);
         validateExistentTrade(t.getId());
         tradeRepository.closeTrade(t.getId(), executionDate, order.getValue(), order.getOrderId());
