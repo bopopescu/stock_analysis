@@ -4,48 +4,63 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @SuppressWarnings("serial")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({ @Type(value = BuyOrder.class, name = "BUY"), @Type(value = SellOrder.class, name = "SELL") })
-public abstract class Order implements Serializable {
+public class Order implements Serializable {
     private long orderId;
     private OrderType type;
     private long accountId;
     private long stockId;
     private long modelId;
     private double size;
-    private Date date;
+    private Date creationDate;
+    private double value;
+    private double stopPos;
 
     private Stock stock;
-    
+
     public Order() {
-        
+
     }
 
-    public Order(long orderId, OrderType type, long accountId, long stockId, long modelId, double size, Date date) {
-        super();
+    public Order(long orderId, OrderType type, long accountId, long stockId, long modelId, double size, Date date,
+            double value, double stopPos) {
         this.orderId = orderId;
         this.type = type;
         this.accountId = accountId;
         this.stockId = stockId;
         this.modelId = modelId;
         this.size = size;
-        this.date = date;
+        this.creationDate = date;
+        this.value = value;
+        this.stopPos = stopPos;
     }
 
-    public Order(Stock stock, OrderType type, long accountId, long modelId, double size, Date date) {
-        super();
-        this.stock = stock;
-        this.type = type;
-        this.accountId = accountId;
-        this.stockId = stock.getId();
-        this.modelId = modelId;
-        this.size = size;
-        this.date = date;
+    private static Order createOrder(Stock stock, OrderType type, long accountId, long modelId, double size, Date date,
+            double value, double stopPos) {
+        Order order = new Order(0, type, accountId, stock.getId(), modelId, size, date, value, stopPos);
+        order.applyStock(stock);
+        return order;
+    }
+
+    public static Order createBuyOrder(long orderId, long accountId, long stockId, long modelId, double size, Date date,
+            double value, double stopPos) {
+        return new Order(orderId, OrderType.BUY, accountId, stockId, modelId, size, date, value, stopPos);
+    }
+
+    public static Order createBuyOrder(Stock stock, long accountId, long modelId, double size, Date date, double value,
+            double stopPos) {
+        return createOrder(stock, OrderType.BUY, accountId, modelId, size, date, value, stopPos);
+    }
+
+    public static Order createSellOrder(long orderId, long accountId, long stockId, long modelId, double size,
+            Date date, double value) {
+        return new Order(orderId, OrderType.SELL, accountId, stockId, modelId, size, date, value, 0);
+    }
+
+    public static Order createSellOrder(Stock stock, long accountId, long modelId, double size, Date date,
+            double value) {
+        return createOrder(stock, OrderType.SELL, accountId, modelId, size, date, value, 0);
     }
 
     public void applyStock(Stock s) {
@@ -71,6 +86,16 @@ public abstract class Order implements Serializable {
 
     public void setType(OrderType type) {
         this.type = type;
+    }
+
+    @JsonIgnore
+    public boolean isBuyOrder() {
+        return type == OrderType.BUY;
+    }
+
+    @JsonIgnore
+    public boolean isSellOrder() {
+        return type == OrderType.SELL;
     }
 
     public long getAccountId() {
@@ -105,12 +130,28 @@ public abstract class Order implements Serializable {
         this.size = size;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setCreationDate(Date date) {
+        this.creationDate = date;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public double getStopPos() {
+        return stopPos;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public void setStopPos(double stopPos) {
+        this.stopPos = stopPos;
     }
 
 }

@@ -11,9 +11,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import preti.stock.coremodel.BuyOrder;
 import preti.stock.coremodel.Order;
-import preti.stock.coremodel.SellOrder;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.Trade;
 
@@ -68,7 +66,7 @@ public class TradeSystem {
         return closedTrades;
     }
 
-    private SellOrder createSellOrder(Trade trade, Date d, double sellValue) {
+    private Order createSellOrder(Trade trade, Date d, double sellValue) {
         log.info(String.format("Creating sell order for stock %s at date %s", trade.getStockId(), d));
 
         if (!trade.isOpen())
@@ -76,22 +74,22 @@ public class TradeSystem {
                     String.format("No open trade to close for stock %s.", trade.getStockId()));
 
         TradingStrategy strategy = this.tradingStrategies.get(trade.getStockId());
-        return new SellOrder(trade.getStock(), trade.getAccountId(), strategy.getModelId(), trade.getSize(), d,
+        return Order.createSellOrder(trade.getStock(), trade.getAccountId(), strategy.getModelId(), trade.getSize(), d,
                 sellValue);
     }
 
     // FIXME: nesse método estou assumindo que o valor executado do trade é sempre igual ao da ordem.
-    private Trade closeTrade(Trade trade, SellOrder order) {
-        log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), order.getDate()));
+    private Trade closeTrade(Trade trade, Order order) {
+        log.info(String.format("Closing trade for stock %s at date %s", trade.getStockId(), order.getCreationDate()));
 
-        trade.close(order.getOrderId(), order.getDate(), order.getValue());
+        trade.close(order.getOrderId(), order.getCreationDate(), order.getValue());
         this.accountBalance += trade.getSize() * trade.getSellValue();
         openTrades.remove(trade.getStockId());
         closedTrades.put(trade.getStockId(), trade);
         return trade;
     }
 
-    private BuyOrder createBuyOrder(Stock stock, Date d) {
+    private Order createBuyOrder(Stock stock, Date d) {
         log.info(String.format("Creating buy order for stock %s at date %s", stock.getCode(), d));
 
         double openTradesValue = calculateOpenTradesValue(d);
@@ -115,12 +113,13 @@ public class TradeSystem {
             throw new IllegalArgumentException(
                     String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
         }
-        return new BuyOrder(stock, accountId, strategy.getModelId(), size, d, stockValue,
+
+        return Order.createBuyOrder(stock, accountId, strategy.getModelId(), size, d, stockValue,
                 strategy.calculateStopLossPoint(d));
 
     }
 
-    private Trade openNewTrade(BuyOrder order, Date d) {
+    private Trade openNewTrade(Order order, Date d) {
         log.info(String.format("Opening new trade for stock %s at date %s", order.getStock().getCode(), d));
 
         Trade newTrade = new Trade(order.getStock(), order.getAccountId(), order.getSize(), order.getStopPos(),
@@ -154,7 +153,7 @@ public class TradeSystem {
                 boolean profittable = openTrade.isProfitable(recomendationDate);
                 if ((profittable && strategy.exitPosition(recomendationDate))
                         || (!profittable && openTrade.hasReachedStopPosition(recomendationDate))) {
-                    SellOrder order = createSellOrder(openTrade, recomendationDate,
+                    Order order = createSellOrder(openTrade, recomendationDate,
                             stock.getCloseValueAtDate(recomendationDate));
                     closeTrade(openTrade, order);
                     orders.add(order);
@@ -162,7 +161,7 @@ public class TradeSystem {
 
             } else {
                 if (strategy.enterPosition(recomendationDate)) {
-                    BuyOrder order = createBuyOrder(stock, recomendationDate);
+                    Order order = createBuyOrder(stock, recomendationDate);
 
                     if (order != null) {
                         openNewTrade(order, recomendationDate);
@@ -192,7 +191,7 @@ public class TradeSystem {
         for (Long stockId : stockIds) {
             Trade t = openTrades.get(stockId);
             if (t.isOpen()) {
-                SellOrder order = createSellOrder(t, d, t.getStock().getCloseValueAtDate(d));
+                Order order = createSellOrder(t, d, t.getStock().getCloseValueAtDate(d));
                 closeTrade(t, order);
             }
         }

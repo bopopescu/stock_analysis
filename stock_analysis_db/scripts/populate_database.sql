@@ -1,3 +1,10 @@
+delete from trade;
+delete from op_order;
+delete from donchian_model_entry;
+delete from model;
+delete from account_analyse_stock;
+delete from account;
+
 insert into account (balance, initial_position) values (10000,10000);
 update account set account_id=1;
 
