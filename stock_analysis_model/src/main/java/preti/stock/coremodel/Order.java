@@ -16,6 +16,9 @@ public class Order implements Serializable {
     private Date creationDate;
     private double value;
     private double stopPos;
+    
+    private Date executionDate;
+    private double executionValue;
 
     private Stock stock;
 
@@ -153,5 +156,23 @@ public class Order implements Serializable {
     public void setStopPos(double stopPos) {
         this.stopPos = stopPos;
     }
+
+    public Date getExecutionDate() {
+        return executionDate;
+    }
+
+    public void setExecutionDate(Date executionDate) {
+        this.executionDate = executionDate;
+    }
+
+    public double getExecutionValue() {
+        return executionValue;
+    }
+
+    public void setExecutionValue(double executionValue) {
+        this.executionValue = executionValue;
+    }
+    
+    
 
 }

@@ -3,6 +3,7 @@ package preti.stock.web.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -22,6 +23,7 @@ import preti.stock.web.repository.mappers.OrderMapper;
 public class OrderRepository {
 
     private JdbcTemplate jdbcTemplate;
+    private final String ORDER_SELECT = "select o.order_id, o.account_id, o.type, o.stock_id, o.model_id, o.size, o.creation_date, o.value, o.stop_pos from op_order o ";
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -30,11 +32,7 @@ public class OrderRepository {
 
     public Order getOrder(long orderId) {
         StringBuilder sql = new StringBuilder();
-        sql.append("select ");
-        sql.append(
-                "    o.order_id, o.account_id, o.type, o.stock_id, o.model_id, o.size, o.creation_date, o.value, o.stop_pos ");
-        sql.append("from ");
-        sql.append("     op_order o ");
+        sql.append(ORDER_SELECT);
         sql.append("where ");
         sql.append("    o.order_id=? ");
 
@@ -65,6 +63,17 @@ public class OrderRepository {
         }, keyHolder);
 
         return keyHolder.getKey().longValue();
+    }
+
+    public List<Order> getAllOpenOrders(long accountId) {
+        StringBuilder sql = new StringBuilder();
+        sql.append(ORDER_SELECT);
+        sql.append(" where ");
+        sql.append("    o.account_id=? ");
+        sql.append("    and not exists (select 1 from trade t where t.sell_order_id=o.order_id) ");
+        sql.append("    and not exists (select 1 from trade t where t.buy_order_id=o.order_id) ");
+
+        return jdbcTemplate.query(sql.toString(), new Object[] { accountId }, new OrderMapper());
     }
 
 }

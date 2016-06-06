@@ -20,6 +20,9 @@
                 <li>
                     <a href="recomendations?accountId=$accountId">Recomendações</a>
                 </li>
+                <li>
+                    <a href="orders?accountId=$accountId">Ordens</a>
+                </li>
             </ul>
         </div>
         <!-- /.sidebar-collapse -->

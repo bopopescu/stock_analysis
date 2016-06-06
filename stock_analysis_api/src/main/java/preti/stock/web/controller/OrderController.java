@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,11 +35,15 @@ public class OrderController {
 
     @RequestMapping(path = "/order/execute", headers = "Accept=application/json")
     public List<Trade> executeOrders(@RequestBody List<Order> orders,
-            @RequestParam(name = "executionDate", required = true) String executionDate,
             @RequestParam(name = "accountId", required = true) long accountId)
             throws ParseException, ApiValidationException {
-        logger.info(String.format("Executing orders accountId=%s executionDate=%s", accountId, executionDate));
-        return tradeService.executeOrders(accountId, ControllerTools.parseDate(executionDate), orders);
+        logger.info(String.format("Executing orders for accountId=%s", accountId));
+        return tradeService.executeOrders(accountId, orders);
+    }
+
+    @RequestMapping(path = "/order/getOpen", headers = "Accept=application/json", method = RequestMethod.GET)
+    public List<Order> getAllOpenOrders(@RequestParam(name = "accountId", required = true) long accountId) {
+        return orderService.getAllOpenOrders(accountId);
     }
 
     // @RequestMapping(path = "/trade/realize", headers = "Accept=application/json")

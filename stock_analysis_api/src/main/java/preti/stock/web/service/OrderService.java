@@ -32,4 +32,8 @@ public class OrderService {
         long key = orderRepository.createOrder(order);
         return orderRepository.getOrder(key);
     }
+
+    public List<Order> getAllOpenOrders(long accountId) {
+        return orderRepository.getAllOpenOrders(accountId);
+    }
 }

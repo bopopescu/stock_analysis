@@ -159,6 +159,10 @@ public class OrderVO implements Serializable {
     public boolean isBuyOrder() {
         return OrderType.BUY.equals(type);
     }
+    
+    public boolean isSellOrder() {
+        return OrderType.SELL.equals(type);
+    }
 
     public String getFormattedPreviousBuyValue() {
         if (previousBuyValue != 0)

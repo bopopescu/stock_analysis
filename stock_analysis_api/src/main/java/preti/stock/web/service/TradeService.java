@@ -31,20 +31,20 @@ public class TradeService {
     private OrderRepository orderRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = ApiValidationException.class)
-    public List<Trade> executeOrders(long accountId, Date executionDate, List<Order> orders)
-            throws ApiValidationException {
+    public List<Trade> executeOrders(long accountId, List<Order> orders) throws ApiValidationException {
         List<Trade> trades = new ArrayList<>();
 
         double balanceChange = 0;
         for (Order order : orders) {
             Trade t;
-            switch (order.getType()) {
+            Order dbOrder = orderRepository.getOrder(order.getOrderId());
+            switch (dbOrder.getType()) {
             case BUY:
-                t = executeBuyOrder(accountId, order.getOrderId(), executionDate);
+                t = executeBuyOrder(accountId, dbOrder, order.getExecutionDate(), order.getExecutionValue());
                 balanceChange -= t.getSize() * t.getBuyValue();
                 break;
             case SELL:
-                t = executeSellOrder(accountId, order.getOrderId(), executionDate);
+                t = executeSellOrder(accountId, dbOrder, order.getExecutionDate(), order.getExecutionValue());
                 balanceChange += t.getSize() * t.getSellValue();
                 break;
             default:
@@ -63,29 +63,29 @@ public class TradeService {
         return trades;
     }
 
-    public Trade executeBuyOrder(long accountId, long orderId, Date executionDate) throws ApiValidationException {
-        Order order = orderRepository.getOrder(orderId);
+    public Trade executeBuyOrder(long accountId, Order order, Date executionDate, double executionValue)
+            throws ApiValidationException {
         if (!order.isBuyOrder())
-            throw new IllegalArgumentException(
-                    String.format("Can't execute buy order: order %s is of type %s", orderId, order.getType()));
+            throw new IllegalArgumentException(String.format("Can't execute buy order: order %s is of type %s",
+                    order.getOrderId(), order.getType()));
 
         Trade t = new Trade(order.getStockId(), accountId, order.getSize(), order.getStopPos(), order.getOrderId(),
-                executionDate, order.getValue());
+                executionDate, executionValue);
         validateNewTrade(accountId, t);
         long tradeId = tradeRepository.createTrade(t);
 
         return tradeRepository.getTrade(tradeId);
     }
 
-    public Trade executeSellOrder(long accountId, long orderId, Date executionDate) throws ApiValidationException {
-        Order order = orderRepository.getOrder(orderId);
+    public Trade executeSellOrder(long accountId, Order order, Date executionDate, double executionValue)
+            throws ApiValidationException {
         if (!order.isSellOrder())
-            throw new IllegalArgumentException(
-                    String.format("Can't execute sell order: order %s is of type %s", orderId, order.getType()));
+            throw new IllegalArgumentException(String.format("Can't execute sell order: order %s is of type %s",
+                    order.getOrderId(), order.getType()));
 
-        Trade t = tradeRepository.getOpenTradeForSellOrder(orderId);
+        Trade t = tradeRepository.getOpenTradeForSellOrder(order.getOrderId());
         validateExistentTrade(t.getId());
-        tradeRepository.closeTrade(t.getId(), executionDate, order.getValue(), order.getOrderId());
+        tradeRepository.closeTrade(t.getId(), executionDate, executionValue, order.getOrderId());
         return tradeRepository.getTrade(t.getId());
     }
 

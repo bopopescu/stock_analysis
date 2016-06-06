@@ -138,6 +138,10 @@ public class Run {
 			
 			parameters.put("accountId", 1l);
 			parameters.put("execDate", dateFormat.format(currentDate.toDate()));
+			for(Order o : orders){
+			    o.setExecutionDate(currentDate.toDate());
+			    o.setExecutionValue(o.getValue());
+			}
 			Trade[] trades = restTemplate.postForObject("http://localhost:8080/order/execute?executionDate={execDate}&accountId={accountId}", orders, Trade[].class, parameters);
             System.out.println(trades.length + " trades executed");
 
