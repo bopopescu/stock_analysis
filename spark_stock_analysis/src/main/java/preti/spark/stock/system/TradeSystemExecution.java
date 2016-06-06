@@ -114,7 +114,7 @@ public class TradeSystemExecution implements Serializable {
 			allDates.addAll(st.getStock().getAllHistoryDates());
 		}
 
-		// Identifica todas as ações
+		// Identifica todas as aï¿½ï¿½es
 		Collection<Stock> stocks = getStocks();
 
 		// Verifica se foi especificado uma data inicial
@@ -128,7 +128,7 @@ public class TradeSystemExecution implements Serializable {
 		}
 
 		for (Date date : allDates) {
-			TradeSystem tradeSystem = new TradeSystem(identifyOpenTrades(), stocks, tradingStrategies, accountBalance);
+			TradeSystem tradeSystem = new TradeSystem(identifyOpenTrades(), stocks, tradingStrategies, accountBalance, 1l);
 			tradeSystem.analyzeStocks(date);
 			updateWallet(tradeSystem.getOpenTrades(), tradeSystem.getClosedTrades());
 
@@ -139,7 +139,7 @@ public class TradeSystemExecution implements Serializable {
 
 	public void closeAllOpenTrades(Date d) {
 		TradeSystem system = new TradeSystem(identifyOpenTrades(), getStocks(), this.tradingStrategies,
-				this.accountBalance);
+				this.accountBalance, 1l);
 		system.closeAllOpenTrades(d);
 		this.accountBalance = system.getAccountBalance();
 		balanceHistory.put(d, this.accountBalance);
