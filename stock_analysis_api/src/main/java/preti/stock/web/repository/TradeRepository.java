@@ -100,10 +100,6 @@ public class TradeRepository {
         sql.append(" inner join model sm on sm.model_id=so.model_id and sm.account_id=bm.account_id ");
         sql.append("");
         sql.append(" where so.order_id=? and t.sell_order_id is null ");
-        
-        
-//        sql.append("join op_order o on t.stock_id=o.stock_id and t.account_id=o.account_id ");
-//        sql.append("where t.sell_date is null and o.order_id=?");
 
         List<Trade> result = jdbcTemplate.query(sql.toString(), new Object[] { orderId }, new TradeRowMapper());
 
