@@ -20,7 +20,7 @@ public class OrderRestController extends AbstractController {
     private OrderService orderService;
 
     @RequestMapping(path = "/orders/executeOrders", headers = "Accept=application/json", method = RequestMethod.POST)
-    public void createOrders(@RequestBody List<OrderVO> orders,
+    public void executeOrders(@RequestBody List<OrderVO> orders,
             @RequestParam(name = "accountId", required = true) long accountId) throws RemoteApiException {
         orderService.executeOrders(orders, accountId);
     }

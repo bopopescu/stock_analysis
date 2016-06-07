@@ -49,7 +49,7 @@
 								buyHtml += '<td id="stockCode_'+i+'" value="'+rec.stockCode+'">'+rec.stockCode+'</td>';
 								buyHtml += '<td>'+rec.stockName+'</td>';
 								
-								buyHtml += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="buyDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
+								buyHtml += '<td class="right" value="'+rec.date+'" > <input type="text" name="buyDate_'+i+'" size=10 value="'    +rec.formattedDate+'"/> </td>';
 								buyHtml += '<td class="right" value="'+rec.value+'"> <input type="text" name="buyValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
 								buyHtml += '<td class="right" value="'+rec.size+'"> <input type="text" name="buySize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
 								buyHtml += '<td class="right" value="'+rec.stopPos+'"> <input type="text" name="buyStopPos_'+i+'" size=10 value="'+rec.formattedStopPos+'" /> </td>';
@@ -67,7 +67,7 @@
 								sellHtml += '<td class="right" > '+rec.formattedPreviousBuyDate+' </td>';
 								sellHtml += '<td class="right" > '+rec.formattedPreviousBuyValue+' </td>';
 								sellHtml += '<td class="right" value="'+rec.size+'"> <input type="text" name="sellSize_'+i+'" size=10 value="'+rec.size+'" /> </td>';
-								sellHtml += '<td class="right" value="'+rec.creationDate+'" > <input type="text" name="sellDate_'+i+'" size=10 value="'    +rec.formattedCreationDate+'"/> </td>';
+								sellHtml += '<td class="right" value="'+rec.date+'" > <input type="text" name="sellDate_'+i+'" size=10 value="'    +rec.formattedDate+'"/> </td>';
 								sellHtml += '<td class="right" value="'+rec.value+'"> <input type="text" name="sellValue_'+i+'" size=10 value="'+rec.formattedValue+'"/> </td>';
 								sellHtml += '</tr>';
 								
@@ -98,7 +98,7 @@
 						"stockId": $("#buy_stockId_"+element).attr('value'),
 						"modelId": $("#buy_modelId_"+element).attr('value'),
 						"size": converteNumero( $("input[name='buySize_"+element+"'").attr('value') ),
-						"formattedCreationDate":  $("input[name='buyDate_"+element+"'").attr('value') ,
+						"formattedDate":  $("input[name='buyDate_"+element+"'").attr('value') ,
 						"value": converteNumero( $("input[name='buyValue_"+element+"'").attr('value') ),
 						"stopPos": converteNumero( $("input[name='buyStopPos_"+element+"'").attr('value'))
 					}
@@ -145,7 +145,7 @@
 						"stockId": $("#sell_stockId_"+element).attr('value'),
 						"modelId": $("#sell_modelId_"+element).attr('value'),
 						"size": converteNumero( $("input[name='sellSize_"+element+"'").attr('value') ),
-						"formattedCreationDate":  $("input[name='sellDate_"+element+"'").attr('value') ,
+						"formattedDate":  $("input[name='sellDate_"+element+"'").attr('value') ,
 						"value": converteNumero( $("input[name='sellValue_"+element+"'").attr('value') )
 					}
 					orders.push(orderVO)

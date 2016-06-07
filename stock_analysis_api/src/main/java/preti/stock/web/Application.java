@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ImportResource;
 public class Application {
 
 	public static void main(String[] args){
-		ApplicationContext ctx = SpringApplication.run(Application.class, args);
+		@SuppressWarnings("unused")
+        ApplicationContext ctx = SpringApplication.run(Application.class, args);
 	}
 }

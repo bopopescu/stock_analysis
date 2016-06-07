@@ -79,11 +79,11 @@ public class RecomendationsService {
             switch (oVo.getType()) {
             case SELL:
                 orders.add(Order.createSellOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
-                        oVo.getModelId(), oVo.getSize(), oVo.getCreationDate(), oVo.getValue()));
+                        oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue()));
                 break;
             case BUY:
                 orders.add(Order.createBuyOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
-                        oVo.getModelId(), oVo.getSize(), oVo.getCreationDate(), oVo.getValue(), oVo.getStopPos()));
+                        oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue(), oVo.getStopPos()));
                 break;
             }
         }

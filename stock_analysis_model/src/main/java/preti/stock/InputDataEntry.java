@@ -11,8 +11,6 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.management.RuntimeErrorException;
-
 @SuppressWarnings("serial")
 public class InputDataEntry implements Serializable {
 

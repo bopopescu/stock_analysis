@@ -20,9 +20,6 @@ import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.Trade;
-import preti.spark.stock.system.StockContext;
-import preti.spark.stock.system.TradeSystemExecution;
-import preti.stock.system.TradeSystem;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingStrategyImpl;
 
@@ -60,8 +57,8 @@ public class Recomendations {
 					parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
 		}
 
-		// TODO: Ter que repopular esses trades aqui não é um bom sinal, acho
-		// que meu modelo não está bom
+		// TODO: Ter que repopular esses trades aqui nï¿½o ï¿½ um bom sinal, acho
+		// que meu modelo nï¿½o estï¿½ bom
 		// FIXME: rever isso aqui
 		for (Trade t : account.getWallet()) {
 			t.applyStock(stocksMap.get(t.getStock().getCode()));

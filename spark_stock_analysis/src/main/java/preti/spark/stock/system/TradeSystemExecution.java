@@ -23,7 +23,8 @@ import preti.stock.system.TradingStrategy;
 
 @SuppressWarnings("serial")
 public class TradeSystemExecution implements Serializable {
-	private static final Log log = LogFactory.getLog(TradeSystemExecution.class);
+	@SuppressWarnings("unused")
+    private static final Log log = LogFactory.getLog(TradeSystemExecution.class);
 
 	private Collection<StockContext> wallet;
 	private double accountInitialPosition;

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.coremodel.Order;
+import preti.stock.coremodel.OrderExecutionData;
 import preti.stock.coremodel.Trade;
 import preti.stock.web.ApiError;
 import preti.stock.web.exception.ApiValidationException;
@@ -31,24 +32,25 @@ public class TradeService {
     private OrderRepository orderRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = ApiValidationException.class)
-    public List<Trade> executeOrders(long accountId, List<Order> orders) throws ApiValidationException {
+    public List<Trade> executeOrders(long accountId, List<OrderExecutionData> ordersExecData)
+            throws ApiValidationException {
         List<Trade> trades = new ArrayList<>();
 
         double balanceChange = 0;
-        for (Order order : orders) {
+        for (OrderExecutionData orderData : ordersExecData) {
             Trade t;
-            Order dbOrder = orderRepository.getOrder(order.getOrderId());
+            Order dbOrder = orderRepository.getOrder(orderData.getOrderId());
             switch (dbOrder.getType()) {
             case BUY:
-                t = executeBuyOrder(accountId, dbOrder, order.getExecutionDate(), order.getExecutionValue());
+                t = executeBuyOrder(accountId, dbOrder, orderData.getExecutionDate(), orderData.getExecutionValue());
                 balanceChange -= t.getSize() * t.getBuyValue();
                 break;
             case SELL:
-                t = executeSellOrder(accountId, dbOrder, order.getExecutionDate(), order.getExecutionValue());
+                t = executeSellOrder(accountId, dbOrder, orderData.getExecutionDate(), orderData.getExecutionValue());
                 balanceChange += t.getSize() * t.getSellValue();
                 break;
             default:
-                throw new RuntimeException(String.format("Invalid order type: %s ", order.getType()));
+                throw new RuntimeException(String.format("Invalid order type: %s ", dbOrder.getType()));
             }
             trades.add(t);
         }

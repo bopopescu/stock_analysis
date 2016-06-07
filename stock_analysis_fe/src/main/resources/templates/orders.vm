@@ -26,7 +26,7 @@
 			var orders = []
 			var orderVO = {
 					"orderId": orderId,
-					"formattedCreationDate":  $("input[name='date_"+orderId+"'").attr('value') ,
+					"formattedDate":  $("input[name='date_"+orderId+"'").attr('value') ,
 					"value": converteNumero( $("input[name='value_"+orderId+"'").attr('value') )
 				}
 			orders.push(orderVO)
@@ -97,8 +97,8 @@
 											<tr>
 												<td>$order.stockCode</td>
 												<td>$order.stockName</td>
-												<td>$order.formattedCreationDate</td>
-												<td><input type="text" name="date_$order.orderId" size=10 value="$order.formattedCreationDate"/></td>
+												<td>$order.formattedDate</td>
+												<td><input type="text" name="date_$order.orderId" size=10 value="$order.formattedDate"/></td>
 												<td>$order.formattedValue</td>
 												<td><input type="text" name="value_$order.orderId" size=10 value="$order.formattedValue"/></td>
 												<td>$order.size</td>
@@ -144,8 +144,8 @@
 											<tr>
 												<td>$order.stockCode</td>
 												<td>$order.stockName</td>
-												<td>$order.formattedCreationDate</td>
-												<td><input type="text" name="date_$order.orderId" size=10 value="$order.formattedCreationDate"/></td>
+												<td>$order.formattedDate</td>
+												<td><input type="text" name="date_$order.orderId" size=10 value="$order.formattedDate"/></td>
 												<td>$order.formattedValue</td>
 												<td><input type="text" name="value_$order.orderId" size=10 value="$order.formattedValue"/></td>
 												<td>$order.size</td>

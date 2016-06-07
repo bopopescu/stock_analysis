@@ -84,7 +84,8 @@ public class TradingStrategyImpl implements TradingStrategy {
 		return new HighestValueIndicator(maxPrice, entryDonchianSize);
 	}
 
-	@Override
+	@SuppressWarnings("deprecation")
+    @Override
 	public boolean enterPosition(Date d) {
 		if (entryDonchianSize == 0) {
 			log.info("Skiping at date " + d);

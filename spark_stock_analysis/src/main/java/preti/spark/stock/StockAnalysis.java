@@ -152,7 +152,7 @@ public class StockAnalysis {
                 "LAME4", "LIXC4", "MGEL4", "MTSA4", "MWET4", "PCAR4", "PETR4", "POMO4", "RAPT4", "RCSL4", "SAPR4",
                 "SHUL4", "SLED4", "TEKA4", "TOYB4", "TRPL4" };
 
-        outer: for (int trainingSize : trainingSizes) {
+        for (int trainingSize : trainingSizes) {
             for (int windowSize : windowSizes) {
                 for (double riskRate : riskRates) {
                     String initialDate;

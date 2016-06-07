@@ -16,7 +16,7 @@ public class OrderVO implements Serializable {
     private String stockName;
     private long modelId;
     private double size;
-    private Date creationDate;
+    private Date date;
 
     private double value;
     private double stopPos;
@@ -29,7 +29,7 @@ public class OrderVO implements Serializable {
     }
 
     public OrderVO(long orderId, long accountId, OrderType type, long stockId, String stockCode, String stockName,
-            long modelId, double size, Date creationDate, double value, double stopPos) {
+            long modelId, double size, Date date, double value, double stopPos) {
         super();
         this.orderId = orderId;
         this.accountId = accountId;
@@ -39,14 +39,13 @@ public class OrderVO implements Serializable {
         this.stockName = stockName;
         this.modelId = modelId;
         this.size = size;
-        this.creationDate = creationDate;
+        this.date = date;
         this.value = value;
         this.stopPos = stopPos;
     }
 
     public OrderVO(long orderId, long accountId, OrderType type, long stockId, String stockCode, String stockName,
-            long modelId, double size, Date creationDate, double value, double previousBuyValue,
-            Date previousBuyDate) {
+            long modelId, double size, Date creationDate, double value, double previousBuyValue, Date previousBuyDate) {
         this(orderId, accountId, type, stockId, stockCode, stockName, modelId, size, creationDate, value, 0);
         this.previousBuyValue = previousBuyValue;
         this.previousBuyDate = previousBuyDate;
@@ -112,24 +111,24 @@ public class OrderVO implements Serializable {
         this.size = size;
     }
 
-    public Date getCreationDate() {
-        return creationDate;
+    public Date getDate() {
+        return date;
     }
 
-    public String getFormattedCreationDate() {
-        if (creationDate != null)
-            return PresentationTools.formatDate(creationDate);
+    public String getFormattedDate() {
+        if (date != null)
+            return PresentationTools.formatDate(date);
         else
             return "";
 
     }
 
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
-    public void setFormattedCreationDate(String date) {
-        setCreationDate(PresentationTools.parseDate(date));
+    public void setFormattedDate(String date) {
+        setDate(PresentationTools.parseDate(date));
     }
 
     public double getValue() {
@@ -159,7 +158,7 @@ public class OrderVO implements Serializable {
     public boolean isBuyOrder() {
         return OrderType.BUY.equals(type);
     }
-    
+
     public boolean isSellOrder() {
         return OrderType.SELL.equals(type);
     }

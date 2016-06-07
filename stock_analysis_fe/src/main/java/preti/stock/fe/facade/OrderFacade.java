@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import preti.stock.api.ApiHeader;
 import preti.stock.coremodel.Order;
+import preti.stock.coremodel.OrderExecutionData;
 import preti.stock.coremodel.Trade;
 
 @Service
@@ -55,12 +56,12 @@ public class OrderFacade extends AbstractApiFacade {
         return Arrays.asList(response.getBody());
     }
 
-    public List<Trade> executeOrders(List<Order> orders, long accountId) throws RemoteApiException {
+    public List<Trade> executeOrders(List<OrderExecutionData> ordersData, long accountId) throws RemoteApiException {
         URL resourceUrl = getResourceEndpoint("/execute?accountId={accountId}");
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("accountId", accountId);
         
-        ResponseEntity<Trade[]> response = restTemplate.postForEntity(resourceUrl.toString(), orders.toArray(new Order[]{}), Trade[].class, parameters);
+        ResponseEntity<Trade[]> response = restTemplate.postForEntity(resourceUrl.toString(), ordersData.toArray(new OrderExecutionData[]{}), Trade[].class, parameters);
         if (response.getStatusCode() != HttpStatus.OK) {
             throw new RemoteApiException(response.getStatusCode());
         }

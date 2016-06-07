@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import preti.stock.coremodel.Order;
+import preti.stock.coremodel.OrderExecutionData;
 import preti.stock.coremodel.Trade;
 import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.service.OrderService;
@@ -34,11 +35,11 @@ public class OrderController {
     }
 
     @RequestMapping(path = "/order/execute", headers = "Accept=application/json")
-    public List<Trade> executeOrders(@RequestBody List<Order> orders,
+    public List<Trade> executeOrders(@RequestBody List<OrderExecutionData> ordersExecData,
             @RequestParam(name = "accountId", required = true) long accountId)
             throws ParseException, ApiValidationException {
         logger.info(String.format("Executing orders for accountId=%s", accountId));
-        return tradeService.executeOrders(accountId, orders);
+        return tradeService.executeOrders(accountId, ordersExecData);
     }
 
     @RequestMapping(path = "/order/getOpen", headers = "Accept=application/json", method = RequestMethod.GET)

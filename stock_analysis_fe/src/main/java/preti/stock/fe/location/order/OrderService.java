@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import preti.stock.coremodel.Order;
+import preti.stock.coremodel.OrderExecutionData;
 import preti.stock.coremodel.Stock;
 import preti.stock.coremodel.Trade;
 import preti.stock.fe.facade.OrderFacade;
@@ -45,15 +46,11 @@ public class OrderService {
     public List<Trade> executeOrders(List<OrderVO> ordersVO, long accountId) throws RemoteApiException {
         logger.info(String.format("Execution %s orders for account %s", ordersVO.size(), accountId));
         
-        List<Order> orders = new ArrayList<>();
+        List<OrderExecutionData> ordersExecData = new ArrayList<>();
         for(OrderVO o : ordersVO) {
-            Order newOrder = new Order();
-            newOrder.setOrderId(o.getOrderId());
-            newOrder.setExecutionDate(o.getCreationDate());
-            newOrder.setExecutionValue(o.getValue());
-            orders.add(newOrder);
+            ordersExecData.add(new OrderExecutionData(o.getOrderId(), o.getDate(), o.getValue()));
         }
-        return orderFacade.executeOrders(orders, accountId);
+        return orderFacade.executeOrders(ordersExecData, accountId);
     }
 
 }
