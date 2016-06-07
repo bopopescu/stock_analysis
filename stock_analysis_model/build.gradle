@@ -1,0 +1,6 @@
+dependencies {
+    compileOnly "com.fasterxml.jackson.core:jackson-annotations:2.7.2"
+    compile "org.apache.commons:commons-math3:3.5"
+    compile "eu.verdelhan:ta4j:0.7"
+    compile "commons-logging:commons-logging:1.1.1"
+}

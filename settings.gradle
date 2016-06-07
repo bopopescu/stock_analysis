@@ -1,0 +1,1 @@
+include 'stock_analysis_api', 'stock_analysis_client', 'stock_analysis_fe', 'stock_analysis_model'

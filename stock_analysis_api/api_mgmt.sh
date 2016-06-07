@@ -3,7 +3,7 @@ APP_CONTAINER_NAME="stock_analysis_api"
 STOCKS_FILE="/var/stock_analysis/cotacoes.txt"
 
 function build_image {
-  docker build -t $APP_CONTAINER_NAME --build-arg app_jar="target/stock_analysis_api-1.0-SNAPSHOT.jar" .
+  docker build -t $APP_CONTAINER_NAME --build-arg app_jar="build/libs/stock_analysis_api-1.0-SNAPSHOT.jar" .
 }
 
 function run_container {

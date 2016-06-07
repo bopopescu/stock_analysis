@@ -3,7 +3,7 @@ APP_CONTAINER_NAME="stock_analysis_fe"
 WORKING_DIR=$(pwd)
 
 function build_image {
-  docker build -t $APP_CONTAINER_NAME --build-arg app_jar="target/stock_analysis_fe-1.0-SNAPSHOT.jar" .
+  docker build -t $APP_CONTAINER_NAME --build-arg app_jar="build/libs/stock_analysis_fe-1.0-SNAPSHOT.jar" .
 }
 
 function run_container {
