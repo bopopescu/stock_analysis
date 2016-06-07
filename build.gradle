@@ -1,5 +1,6 @@
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'eclipse'
     group = 'preti.stock'
     version = '1.0-SNAPSHOT'
 
