@@ -61,7 +61,7 @@ public class StocksService {
 		Date lastStockDate = stocksRepository.getLastStocksDate();
 		String.format("Last stock date is %s", lastStockDate);
 
-		// FIXME: verificar se de fato n„o h· leak aqui.
+		// FIXME: verificar se de fato n√£o h√° leak aqui.
 		@SuppressWarnings("resource")
 		Stream<String> lines = Files.lines(Paths.get(stockFile));
 
