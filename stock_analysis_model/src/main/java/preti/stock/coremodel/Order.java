@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Order implements Serializable {
     private long orderId;
     private OrderType type;
-    private long accountId;
     private long stockId;
     private long modelId;
     private double size;
@@ -26,11 +25,10 @@ public class Order implements Serializable {
 
     }
 
-    public Order(long orderId, OrderType type, long accountId, long stockId, long modelId, double size, Date date,
+    public Order(long orderId, OrderType type, long stockId, long modelId, double size, Date date,
             double value, double stopPos) {
         this.orderId = orderId;
         this.type = type;
-        this.accountId = accountId;
         this.stockId = stockId;
         this.modelId = modelId;
         this.size = size;
@@ -39,31 +37,31 @@ public class Order implements Serializable {
         this.stopPos = stopPos;
     }
 
-    private static Order createOrder(Stock stock, OrderType type, long accountId, long modelId, double size, Date date,
+    private static Order createOrder(Stock stock, OrderType type, long modelId, double size, Date date,
             double value, double stopPos) {
-        Order order = new Order(0, type, accountId, stock.getId(), modelId, size, date, value, stopPos);
+        Order order = new Order(0, type, stock.getId(), modelId, size, date, value, stopPos);
         order.applyStock(stock);
         return order;
     }
 
-    public static Order createBuyOrder(long orderId, long accountId, long stockId, long modelId, double size, Date date,
+    public static Order createBuyOrder(long orderId, long stockId, long modelId, double size, Date date,
             double value, double stopPos) {
-        return new Order(orderId, OrderType.BUY, accountId, stockId, modelId, size, date, value, stopPos);
+        return new Order(orderId, OrderType.BUY, stockId, modelId, size, date, value, stopPos);
     }
 
-    public static Order createBuyOrder(Stock stock, long accountId, long modelId, double size, Date date, double value,
+    public static Order createBuyOrder(Stock stock, long modelId, double size, Date date, double value,
             double stopPos) {
-        return createOrder(stock, OrderType.BUY, accountId, modelId, size, date, value, stopPos);
+        return createOrder(stock, OrderType.BUY, modelId, size, date, value, stopPos);
     }
 
-    public static Order createSellOrder(long orderId, long accountId, long stockId, long modelId, double size,
+    public static Order createSellOrder(long orderId, long stockId, long modelId, double size,
             Date date, double value) {
-        return new Order(orderId, OrderType.SELL, accountId, stockId, modelId, size, date, value, 0);
+        return new Order(orderId, OrderType.SELL, stockId, modelId, size, date, value, 0);
     }
 
-    public static Order createSellOrder(Stock stock, long accountId, long modelId, double size, Date date,
+    public static Order createSellOrder(Stock stock, long modelId, double size, Date date,
             double value) {
-        return createOrder(stock, OrderType.SELL, accountId, modelId, size, date, value, 0);
+        return createOrder(stock, OrderType.SELL, modelId, size, date, value, 0);
     }
 
     public void applyStock(Stock s) {
@@ -99,14 +97,6 @@ public class Order implements Serializable {
     @JsonIgnore
     public boolean isSellOrder() {
         return type == OrderType.SELL;
-    }
-
-    public long getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(long accountId) {
-        this.accountId = accountId;
     }
 
     public long getStockId() {

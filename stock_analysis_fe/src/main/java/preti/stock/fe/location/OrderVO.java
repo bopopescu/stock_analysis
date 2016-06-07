@@ -9,7 +9,6 @@ import preti.stock.coremodel.OrderType;
 public class OrderVO implements Serializable {
 
     private long orderId;
-    private long accountId;
     private OrderType type;
     private long stockId;
     private String stockCode;
@@ -28,11 +27,10 @@ public class OrderVO implements Serializable {
 
     }
 
-    public OrderVO(long orderId, long accountId, OrderType type, long stockId, String stockCode, String stockName,
+    public OrderVO(long orderId, OrderType type, long stockId, String stockCode, String stockName,
             long modelId, double size, Date date, double value, double stopPos) {
         super();
         this.orderId = orderId;
-        this.accountId = accountId;
         this.type = type;
         this.stockId = stockId;
         this.stockCode = stockCode;
@@ -44,9 +42,9 @@ public class OrderVO implements Serializable {
         this.stopPos = stopPos;
     }
 
-    public OrderVO(long orderId, long accountId, OrderType type, long stockId, String stockCode, String stockName,
+    public OrderVO(long orderId, OrderType type, long stockId, String stockCode, String stockName,
             long modelId, double size, Date creationDate, double value, double previousBuyValue, Date previousBuyDate) {
-        this(orderId, accountId, type, stockId, stockCode, stockName, modelId, size, creationDate, value, 0);
+        this(orderId, type, stockId, stockCode, stockName, modelId, size, creationDate, value, 0);
         this.previousBuyValue = previousBuyValue;
         this.previousBuyDate = previousBuyDate;
     }
@@ -57,14 +55,6 @@ public class OrderVO implements Serializable {
 
     public void setOrderId(long orderId) {
         this.orderId = orderId;
-    }
-
-    public long getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(long accountId) {
-        this.accountId = accountId;
     }
 
     public OrderType getType() {

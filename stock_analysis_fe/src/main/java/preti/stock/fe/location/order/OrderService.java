@@ -36,7 +36,7 @@ public class OrderService {
         List<OrderVO> ordersVO = new ArrayList<>();
         for (Order o : orders) {
             Stock stock = stockFacade.getStock(o.getStockId());
-            ordersVO.add(new OrderVO(o.getOrderId(), o.getAccountId(), o.getType(), o.getStockId(), stock.getCode(),
+            ordersVO.add(new OrderVO(o.getOrderId(), o.getType(), o.getStockId(), stock.getCode(),
                     stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(), o.getStopPos()));
         }
 

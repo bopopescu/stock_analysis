@@ -74,8 +74,7 @@ public class TradeSystem {
                     String.format("No open trade to close for stock %s.", trade.getStockId()));
 
         TradingStrategy strategy = this.tradingStrategies.get(trade.getStockId());
-        return Order.createSellOrder(trade.getStock(), trade.getAccountId(), strategy.getModelId(), trade.getSize(), d,
-                sellValue);
+        return Order.createSellOrder(trade.getStock(), strategy.getModelId(), trade.getSize(), d, sellValue);
     }
 
     // FIXME: nesse método estou assumindo que o valor executado do trade é sempre igual ao da ordem.
@@ -114,7 +113,7 @@ public class TradeSystem {
                     String.format("Can't open a new trade for stock %s with one already opened.", stock.getCode()));
         }
 
-        return Order.createBuyOrder(stock, accountId, strategy.getModelId(), size, d, stockValue,
+        return Order.createBuyOrder(stock, strategy.getModelId(), size, d, stockValue,
                 strategy.calculateStopLossPoint(d));
 
     }
@@ -122,8 +121,8 @@ public class TradeSystem {
     private Trade openNewTrade(Order order, Date d) {
         log.info(String.format("Opening new trade for stock %s at date %s", order.getStock().getCode(), d));
 
-        Trade newTrade = new Trade(order.getStock(), order.getAccountId(), order.getSize(), order.getStopPos(),
-                order.getOrderId(), d, order.getValue());
+        Trade newTrade = new Trade(order.getStock(), 0, order.getSize(), order.getStopPos(), order.getOrderId(), d,
+                order.getValue());
         this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
         openTrades.put(newTrade.getStockId(), newTrade);
         return newTrade;

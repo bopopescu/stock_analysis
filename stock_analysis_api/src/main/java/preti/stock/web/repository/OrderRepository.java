@@ -23,7 +23,7 @@ import preti.stock.web.repository.mappers.OrderMapper;
 public class OrderRepository {
 
     private JdbcTemplate jdbcTemplate;
-    private final String ORDER_SELECT = "select o.order_id, o.account_id, o.type, o.stock_id, o.model_id, o.size, o.creation_date, o.value, o.stop_pos from op_order o ";
+    private final String ORDER_SELECT = "select o.order_id, o.type, o.stock_id, o.model_id, o.size, o.creation_date, o.value, o.stop_pos from op_order o ";
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -47,16 +47,15 @@ public class OrderRepository {
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                 PreparedStatement ps = con.prepareStatement(
-                        "insert into op_order (account_id, type, stock_id, model_id, size, creation_date, value, stop_pos) values (?, ?, ?, ?, ?, ?, ?, ?)",
+                        "insert into op_order (type, stock_id, model_id, size, creation_date, value, stop_pos) values (?, ?, ?, ?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS);
-                ps.setLong(1, order.getAccountId());
-                ps.setString(2, order.getType().type);
-                ps.setLong(3, order.getStockId());
-                ps.setLong(4, order.getModelId());
-                ps.setDouble(5, order.getSize());
-                ps.setDate(6, new java.sql.Date(order.getCreationDate().getTime()));
-                ps.setDouble(7, order.getValue());
-                ps.setDouble(8, order.getStopPos());
+                ps.setString(1, order.getType().type);
+                ps.setLong(2, order.getStockId());
+                ps.setLong(3, order.getModelId());
+                ps.setDouble(4, order.getSize());
+                ps.setDate(5, new java.sql.Date(order.getCreationDate().getTime()));
+                ps.setDouble(6, order.getValue());
+                ps.setDouble(7, order.getStopPos());
 
                 return ps;
             }
@@ -68,8 +67,9 @@ public class OrderRepository {
     public List<Order> getAllOpenOrders(long accountId) {
         StringBuilder sql = new StringBuilder();
         sql.append(ORDER_SELECT);
+        sql.append(" inner join model m on m.model_id=o.model_id ");
         sql.append(" where ");
-        sql.append("    o.account_id=? ");
+        sql.append("    m.account_id=? ");
         sql.append("    and not exists (select 1 from trade t where t.sell_order_id=o.order_id) ");
         sql.append("    and not exists (select 1 from trade t where t.buy_order_id=o.order_id) ");
 

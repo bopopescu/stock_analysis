@@ -94,8 +94,16 @@ public class TradeRepository {
     public Trade getOpenTradeForSellOrder(long orderId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
-        sql.append("join op_order o on t.stock_id=o.stock_id and t.account_id=o.account_id ");
-        sql.append("where t.sell_date is null and o.order_id=?");
+        sql.append(" inner join op_order bo on t.buy_order_id=bo.order_id ");
+        sql.append(" inner join model bm on bo.model_id=bm.model_id ");
+        sql.append(" inner join op_order so ");
+        sql.append(" inner join model sm on sm.model_id=so.model_id and sm.account_id=bm.account_id ");
+        sql.append("");
+        sql.append(" where so.order_id=? and t.sell_order_id is null ");
+        
+        
+//        sql.append("join op_order o on t.stock_id=o.stock_id and t.account_id=o.account_id ");
+//        sql.append("where t.sell_date is null and o.order_id=?");
 
         List<Trade> result = jdbcTemplate.query(sql.toString(), new Object[] { orderId }, new TradeRowMapper());
 

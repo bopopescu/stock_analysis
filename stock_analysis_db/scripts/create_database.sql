@@ -64,7 +64,6 @@ alter table donchian_model_entry add constraint fk_donchian_model_entry_model fo
 
 create table op_order (
 	order_id BIGINT NOT NULL AUTO_INCREMENT,
-	account_id BIGINT NOT NULL,
 	type ENUM('B', 'S') NOT NULL,
 	stock_id INT NOT NULL,
 	model_id BIGINT,

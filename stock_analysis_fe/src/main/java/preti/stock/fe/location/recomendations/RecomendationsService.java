@@ -55,14 +55,14 @@ public class RecomendationsService {
             stock.setHistory(Arrays.asList(history));
             switch (o.getType()) {
             case BUY:
-                orders.add(new OrderVO(o.getOrderId(), o.getAccountId(), OrderType.BUY, o.getStockId(), stock.getCode(),
+                orders.add(new OrderVO(o.getOrderId(), OrderType.BUY, o.getStockId(), stock.getCode(),
                         stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(),
                         o.getStopPos()));
                 break;
             case SELL:
                 List<Trade> openTrades = tradeFacade.getOpenTrades(accountId, o.getStockId());
                 Trade lastOpenTrade = openTrades.get(0);
-                orders.add(new OrderVO(o.getOrderId(), o.getAccountId(), OrderType.SELL, o.getStockId(),
+                orders.add(new OrderVO(o.getOrderId(), OrderType.SELL, o.getStockId(),
                         stock.getCode(), stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(),
                         o.getValue(), lastOpenTrade.getBuyValue(), lastOpenTrade.getBuyDate()));
                 break;
@@ -78,11 +78,11 @@ public class RecomendationsService {
         for (OrderVO oVo : ordersVO) {
             switch (oVo.getType()) {
             case SELL:
-                orders.add(Order.createSellOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
+                orders.add(Order.createSellOrder(oVo.getOrderId(), oVo.getStockId(),
                         oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue()));
                 break;
             case BUY:
-                orders.add(Order.createBuyOrder(oVo.getOrderId(), oVo.getAccountId(), oVo.getStockId(),
+                orders.add(Order.createBuyOrder(oVo.getOrderId(), oVo.getStockId(),
                         oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue(), oVo.getStopPos()));
                 break;
             }

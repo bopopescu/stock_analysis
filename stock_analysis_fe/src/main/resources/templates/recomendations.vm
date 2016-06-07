@@ -93,7 +93,6 @@
 					
 					var element = $(this).attr('value')
 					var orderVO = {
-						"accountId": '$accountId',
 						"typeStr": 'BUY',
 						"stockId": $("#buy_stockId_"+element).attr('value'),
 						"modelId": $("#buy_modelId_"+element).attr('value'),
@@ -140,7 +139,6 @@
 					
 					var element = $(this).attr('value')
 					var orderVO = {
-						"accountId": '$accountId',
 						"typeStr": 'SELL',
 						"stockId": $("#sell_stockId_"+element).attr('value'),
 						"modelId": $("#sell_modelId_"+element).attr('value'),
