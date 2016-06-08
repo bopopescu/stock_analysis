@@ -23,7 +23,7 @@ import preti.stock.web.repository.mappers.TradeRowMapper;
 @Repository
 public class TradeRepository {
     private JdbcTemplate jdbcTemplate;
-    private final String TRADE_SELECT = "select t.trade_id, t.account_id, t.stock_id, t.buy_date, t.sell_date, t.buy_value, t.sell_value, t.size, t.stop_pos from trade t ";
+    private final String TRADE_SELECT = "select t.trade_id, t.stock_id, t.buy_date, t.sell_date, t.buy_value, t.sell_value, t.size, t.stop_pos from trade t ";
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -33,13 +33,22 @@ public class TradeRepository {
     public List<Trade> getOpenTradesForAccount(long accountId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
-        sql.append("where t.account_id=? and t.sell_date is null");
+        sql.append(" inner join op_order buyorder on t.buy_order_id=buyorder.order_id ");
+        sql.append(" inner join model m on m.model_id=buyorder.model_id ");
+        sql.append(" where m.account_id=? and t.sell_order_id is null");
+
         return jdbcTemplate.query(sql.toString(), new Object[] { accountId }, new TradeRowMapper());
     }
 
     public Date getOldestOpenTradeBuyDateForAccount(long accountId) {
-        return jdbcTemplate.queryForObject("select min(buy_date) from trade where sell_date is null and account_id=?",
-                new Object[] { accountId }, Date.class);
+        StringBuilder sql = new StringBuilder();
+        sql.append("select min(buy_date) ");
+        sql.append(" from trade t ");
+        sql.append(" inner join op_order buyorder on t.buy_order_id=buyorder.order_id ");
+        sql.append(" inner join model m on m.model_id=buyorder.model_id ");
+        sql.append(" where m.account_id=? and t.sell_order_id is null");
+
+        return jdbcTemplate.queryForObject(sql.toString(), new Object[] { accountId }, Date.class);
     }
 
     public long createTrade(Trade t) {
@@ -50,15 +59,14 @@ public class TradeRepository {
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                 PreparedStatement ps = con.prepareStatement(
-                        "insert into trade (account_id, stock_id, buy_order_id, buy_date, buy_value, size, stop_pos) values (?, ?, ?, ?, ?, ?, ?) ",
+                        "insert into trade (stock_id, buy_order_id, buy_date, buy_value, size, stop_pos) values (?, ?, ?, ?, ?, ?) ",
                         Statement.RETURN_GENERATED_KEYS);
-                ps.setLong(1, t.getAccountId());
-                ps.setLong(2, t.getStockId());
-                ps.setLong(3, t.getBuyOrderId());
-                ps.setDate(4, new java.sql.Date(t.getBuyDate().getTime()));
-                ps.setDouble(5, t.getBuyValue());
-                ps.setDouble(6, t.getSize());
-                ps.setDouble(7, t.getStopPos());
+                ps.setLong(1, t.getStockId());
+                ps.setLong(2, t.getBuyOrderId());
+                ps.setDate(3, new java.sql.Date(t.getBuyDate().getTime()));
+                ps.setDouble(4, t.getBuyValue());
+                ps.setDouble(5, t.getSize());
+                ps.setDouble(6, t.getStopPos());
 
                 return ps;
             }
@@ -87,7 +95,10 @@ public class TradeRepository {
     public List<Trade> getOpenTrades(long accountId, long stockId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
-        sql.append("where t.account_id=? and t.stock_id=? and t.sell_date is null");
+        sql.append(" inner join op_order buyorder on t.buy_order_id=buyorder.order_id ");
+        sql.append(" inner join model m on m.model_id=buyorder.model_id ");
+        sql.append("where m.account_id=? and t.stock_id=? and t.sell_order_id is null");
+        
         return jdbcTemplate.query(sql.toString(), new Object[] { accountId, stockId }, new TradeRowMapper());
     }
 

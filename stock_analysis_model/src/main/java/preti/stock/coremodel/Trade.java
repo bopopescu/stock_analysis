@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Trade implements Serializable {
     private long id;
     private long stockId;
-    private long accountId;
     private double size;
     private double stopPos;
     private long buyOrderId;
@@ -27,28 +26,27 @@ public class Trade implements Serializable {
 
     }
 
-    public Trade(Stock stock, long accountId, double size, double stopPos, long buyOrderId, Date buyDate,
+    public Trade(Stock stock, double size, double stopPos, long buyOrderId, Date buyDate,
             double buyValue) {
-        this(stock.getId(), accountId, size, stopPos, buyOrderId, buyDate, buyValue);
+        this(stock.getId(), size, stopPos, buyOrderId, buyDate, buyValue);
         applyStock(stock);
     }
 
-    public Trade(long stockId, long accountId, double size, double stopPos, long buyOrderId, Date buyDate,
+    public Trade(long stockId, double size, double stopPos, long buyOrderId, Date buyDate,
             double buyValue) {
-        this(0, stockId, accountId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
+        this(0, stockId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
     }
 
-    public Trade(long id, long stockId, long accountId, double size, double stopPos, long buyOrderId, Date buyDate,
+    public Trade(long id, long stockId, double size, double stopPos, long buyOrderId, Date buyDate,
             double buyValue) {
-        this(id, stockId, accountId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
+        this(id, stockId, size, stopPos, buyOrderId, 0, buyDate, null, buyValue, 0);
     }
 
-    public Trade(long id, long stockId, long accountId, double size, double stopPos, long buyOrderId, long sellOrderId,
+    public Trade(long id, long stockId, double size, double stopPos, long buyOrderId, long sellOrderId,
             Date buyDate, Date sellDate, double buyValue, double sellValue) {
         super();
         this.id = id;
         this.stockId = stockId;
-        this.accountId = accountId;
         this.size = size;
         this.stopPos = stopPos;
         this.buyOrderId = buyOrderId;
@@ -82,14 +80,6 @@ public class Trade implements Serializable {
 
     public void setStockId(long stockId) {
         this.stockId = stockId;
-    }
-
-    public long getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(long accountId) {
-        this.accountId = accountId;
     }
 
     public void setSize(double size) {

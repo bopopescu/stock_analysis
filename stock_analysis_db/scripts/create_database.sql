@@ -79,7 +79,6 @@ alter table op_order add constraint fk_order_model foreign key (account_id, mode
 
 create table trade (
 	trade_id BIGINT NOT NULL AUTO_INCREMENT,
-	account_id BIGINT NOT NULL,
 	stock_id INT NOT NULL,
 	buy_order_id BIGINT NOT NULL,
 	buy_date DATE NOT NULL,
@@ -94,7 +93,6 @@ create table trade (
 	unique key (sell_order_id)
 ) ENGINE=InnoDB;
 alter table trade add constraint fk_trade_stock foreign key (stock_id) references stock (stock_id);
-alter table trade add constraint fk_trade_account foreign key (account_id) references account (account_id);
 alter table trade add constraint fk_trade_buy_order_id foreign key (buy_order_id) references op_order (order_id);
 alter table trade add constraint fk_trade_sell_order_id foreign key (sell_order_id) references op_order (order_id);
 alter table trade add index (buy_date);

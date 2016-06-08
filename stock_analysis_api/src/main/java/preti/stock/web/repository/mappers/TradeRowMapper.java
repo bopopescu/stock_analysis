@@ -15,7 +15,6 @@ public class TradeRowMapper implements RowMapper<Trade> {
         Trade trade = new Trade();
         trade.setId(rs.getLong("trade_id"));
         trade.setStockId(rs.getLong("stock_id"));
-        trade.setAccountId(rs.getLong("account_id"));
         trade.setBuyDate(rs.getDate("buy_date"));
         trade.setSellDate(rs.getDate("sell_date"));
         trade.setBuyValue(rs.getDouble("buy_value"));

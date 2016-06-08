@@ -43,11 +43,11 @@ public class DonchianModelRepository {
         query.append("m.model_id, dme.stock_id, 0 as entry_size, dme.exit_size, dme.risk_rate ");
         query.append("from model m ");
         query.append("inner join op_order o on o.model_id=m.model_id ");
-        query.append("inner join trade t on t.buy_order_id=o.order_id and m.account_id=t.account_id ");
+        query.append("inner join trade t on t.buy_order_id=o.order_id ");
         query.append("inner join donchian_model_entry dme on dme.model_id=o.model_id and dme.stock_id=t.stock_id ");
         query.append("where ");
         query.append(
-                "t.account_id=:accountId and t.buy_date<:modelDate and t.sell_date is null and m.dat_end<:modelDate ");
+                "m.account_id=:accountId and t.buy_date<:modelDate and t.sell_date is null and m.dat_end<:modelDate ");
         List<DonchianModel> oldModel = namedParameterjdbcTemplate.query(query.toString(), parameters,
                 new DonchianModelMapper());
 

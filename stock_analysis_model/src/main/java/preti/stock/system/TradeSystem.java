@@ -121,7 +121,7 @@ public class TradeSystem {
     private Trade openNewTrade(Order order, Date d) {
         log.info(String.format("Opening new trade for stock %s at date %s", order.getStock().getCode(), d));
 
-        Trade newTrade = new Trade(order.getStock(), 0, order.getSize(), order.getStopPos(), order.getOrderId(), d,
+        Trade newTrade = new Trade(order.getStock(), order.getSize(), order.getStopPos(), order.getOrderId(), d,
                 order.getValue());
         this.accountBalance -= newTrade.getSize() * newTrade.getBuyValue();
         openTrades.put(newTrade.getStockId(), newTrade);

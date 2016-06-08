@@ -71,7 +71,7 @@ public class TradeService {
             throw new IllegalArgumentException(String.format("Can't execute buy order: order %s is of type %s",
                     order.getOrderId(), order.getType()));
 
-        Trade t = new Trade(order.getStockId(), accountId, order.getSize(), order.getStopPos(), order.getOrderId(),
+        Trade t = new Trade(order.getStockId(), order.getSize(), order.getStopPos(), order.getOrderId(),
                 executionDate, executionValue);
         validateNewTrade(accountId, t);
         long tradeId = tradeRepository.createTrade(t);
