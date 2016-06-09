@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import com.mysql.jdbc.Statement;
 
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.TradeDBEntity;
 import preti.stock.web.repository.mappers.TradeRowMapper;
 
 @Repository
@@ -30,7 +30,7 @@ public class TradeRepository {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public List<Trade> getOpenTradesForAccount(long accountId) {
+    public List<TradeDBEntity> getOpenTradesForAccount(long accountId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
         sql.append(" inner join op_order buyorder on t.buy_order_id=buyorder.order_id ");
@@ -51,7 +51,7 @@ public class TradeRepository {
         return jdbcTemplate.queryForObject(sql.toString(), new Object[] { accountId }, Date.class);
     }
 
-    public long createTrade(Trade t) {
+    public long createTrade(TradeDBEntity t) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(new PreparedStatementCreator() {
@@ -80,11 +80,11 @@ public class TradeRepository {
                 sellValue, sellOrderId, tradeId);
     }
 
-    public Trade getTrade(long tradeId) {
+    public TradeDBEntity getTrade(long tradeId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
         sql.append("where t.trade_id=?");
-        List<Trade> result = jdbcTemplate.query(sql.toString(), new Object[] { tradeId }, new TradeRowMapper());
+        List<TradeDBEntity> result = jdbcTemplate.query(sql.toString(), new Object[] { tradeId }, new TradeRowMapper());
 
         if (result.isEmpty())
             return null;
@@ -92,7 +92,7 @@ public class TradeRepository {
         return result.get(0);
     }
 
-    public List<Trade> getOpenTrades(long accountId, long stockId) {
+    public List<TradeDBEntity> getOpenTrades(long accountId, long stockId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
         sql.append(" inner join op_order buyorder on t.buy_order_id=buyorder.order_id ");
@@ -102,17 +102,17 @@ public class TradeRepository {
         return jdbcTemplate.query(sql.toString(), new Object[] { accountId, stockId }, new TradeRowMapper());
     }
 
-    public Trade getOpenTradeForSellOrder(long orderId) {
+    public TradeDBEntity getOpenTradeForSellOrder(long orderId) {
         StringBuilder sql = new StringBuilder();
         sql.append(TRADE_SELECT);
         sql.append(" inner join op_order bo on t.buy_order_id=bo.order_id ");
         sql.append(" inner join model bm on bo.model_id=bm.model_id ");
-        sql.append(" inner join op_order so ");
+        sql.append(" inner join op_order so on so.stock_id=bo.stock_id ");
         sql.append(" inner join model sm on sm.model_id=so.model_id and sm.account_id=bm.account_id ");
         sql.append("");
         sql.append(" where so.order_id=? and t.sell_order_id is null ");
 
-        List<Trade> result = jdbcTemplate.query(sql.toString(), new Object[] { orderId }, new TradeRowMapper());
+        List<TradeDBEntity> result = jdbcTemplate.query(sql.toString(), new Object[] { orderId }, new TradeRowMapper());
 
         if (result.isEmpty())
             return null;

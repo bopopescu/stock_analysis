@@ -5,17 +5,17 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.OrderType;
+import preti.stock.db.model.OrderDBEntity;
+import preti.stock.db.model.OrderDBEntityType;
 
-public class OrderMapper implements RowMapper<Order> {
+public class OrderMapper implements RowMapper<OrderDBEntity> {
 
     @Override
-    public Order mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public OrderDBEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-        return new Order(rs.getLong("order_id"), OrderType.getFromValue(rs.getString("type")), rs.getLong("stock_id"),
-                rs.getLong("model_id"), rs.getDouble("size"), rs.getDate("creation_date"), rs.getDouble("value"),
-                rs.getDouble("stop_pos"));
+        return new OrderDBEntity(rs.getLong("order_id"), OrderDBEntityType.getFromValue(rs.getString("type")),
+                rs.getLong("stock_id"), rs.getLong("model_id"), rs.getDouble("size"), rs.getDate("creation_date"),
+                rs.getDouble("value"), rs.getDouble("stop_pos"));
     }
 
 }

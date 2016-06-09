@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.InputDataEntry;
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
+import preti.stock.db.model.StockDBEntity;
+import preti.stock.db.model.StockHistoryDBEntity;
 import preti.stock.web.repository.StocksRepository;
 
 @Service
@@ -31,26 +31,23 @@ public class StocksService {
         this.stocksRepository = stocksRepository;
     }
 
-    public Stock getStock(long stockId) {
+    public StockDBEntity getStock(long stockId) {
         return stocksRepository.getStock(stockId);
     }
 
-    public List<Stock> loadStocks(List<String> stockCodes, Date initialDate, Date finalDate) {
+    public List<StockDBEntity> loadStocks(List<String> stockCodes) {
         logger.info("Loading stocks " + stockCodes);
 
-        List<Stock> stocks = new ArrayList<>();
+        List<StockDBEntity> stocks = new ArrayList<>();
         for (String stockCode : stockCodes) {
             logger.debug("Parsing " + stockCode);
-
-            Stock s = stocksRepository.getStock(stockCode);
-            s.setHistory(stocksRepository.getStockHistory(stockCode, initialDate, finalDate));
-            stocks.add(s);
+            stocks.add(stocksRepository.getStock(stockCode));
         }
 
         return stocks;
     }
 
-    public List<StockHistory> getStockHistory(long stockId, Date initialDate, Date finalDate) {
+    public List<StockHistoryDBEntity> getStockHistory(long stockId, Date initialDate, Date finalDate) {
         return stocksRepository.getStockHistory(stockId, initialDate, finalDate);
     }
 

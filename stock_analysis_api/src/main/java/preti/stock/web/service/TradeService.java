@@ -10,9 +10,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import preti.stock.analysismodel.donchian.Account;
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.OrderExecutionData;
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.OrderDBEntity;
+import preti.stock.db.model.OrderExecutionData;
+import preti.stock.db.model.TradeDBEntity;
 import preti.stock.web.ApiError;
 import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.repository.AccountRepository;
@@ -32,14 +32,14 @@ public class TradeService {
     private OrderRepository orderRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = ApiValidationException.class)
-    public List<Trade> executeOrders(long accountId, List<OrderExecutionData> ordersExecData)
+    public List<TradeDBEntity> executeOrders(long accountId, List<OrderExecutionData> ordersExecData)
             throws ApiValidationException {
-        List<Trade> trades = new ArrayList<>();
+        List<TradeDBEntity> trades = new ArrayList<>();
 
         double balanceChange = 0;
         for (OrderExecutionData orderData : ordersExecData) {
-            Trade t;
-            Order dbOrder = orderRepository.getOrder(orderData.getOrderId());
+            TradeDBEntity t;
+            OrderDBEntity dbOrder = orderRepository.getOrder(orderData.getOrderId());
             switch (dbOrder.getType()) {
             case BUY:
                 t = executeBuyOrder(accountId, dbOrder, orderData.getExecutionDate(), orderData.getExecutionValue());
@@ -56,50 +56,50 @@ public class TradeService {
         }
 
         Account account = accountRepository.getAccount(accountId);
-        if (account.getBalance() + balanceChange < 0) {
-            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
-        }
+//        if (account.getBalance() + balanceChange < 0) {
+//            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
+//        }
 
         accountRepository.updateBalance(accountId, balanceChange);
 
         return trades;
     }
 
-    public Trade executeBuyOrder(long accountId, Order order, Date executionDate, double executionValue)
+    public TradeDBEntity executeBuyOrder(long accountId, OrderDBEntity order, Date executionDate, double executionValue)
             throws ApiValidationException {
         if (!order.isBuyOrder())
             throw new IllegalArgumentException(String.format("Can't execute buy order: order %s is of type %s",
                     order.getOrderId(), order.getType()));
 
-        Trade t = new Trade(order.getStockId(), order.getSize(), order.getStopPos(), order.getOrderId(),
-                executionDate, executionValue);
+        TradeDBEntity t = new TradeDBEntity(order.getStockId(), order.getSize(), order.getStopPos(), order.getOrderId(), 
+                executionDate, null, executionValue);
         validateNewTrade(accountId, t);
         long tradeId = tradeRepository.createTrade(t);
 
         return tradeRepository.getTrade(tradeId);
     }
 
-    public Trade executeSellOrder(long accountId, Order order, Date executionDate, double executionValue)
+    public TradeDBEntity executeSellOrder(long accountId, OrderDBEntity order, Date executionDate, double executionValue)
             throws ApiValidationException {
         if (!order.isSellOrder())
             throw new IllegalArgumentException(String.format("Can't execute sell order: order %s is of type %s",
                     order.getOrderId(), order.getType()));
 
-        Trade t = tradeRepository.getOpenTradeForSellOrder(order.getOrderId());
+        TradeDBEntity t = tradeRepository.getOpenTradeForSellOrder(order.getOrderId());
         validateExistentTrade(t.getId());
         tradeRepository.closeTrade(t.getId(), executionDate, executionValue, order.getOrderId());
         return tradeRepository.getTrade(t.getId());
     }
 
-    private void validateNewTrade(long accountId, Trade t) throws ApiValidationException {
-        List<Trade> existentTrades = tradeRepository.getOpenTrades(accountId, t.getStockId());
+    private void validateNewTrade(long accountId, TradeDBEntity t) throws ApiValidationException {
+        List<TradeDBEntity> existentTrades = tradeRepository.getOpenTrades(accountId, t.getStockId());
         if (!existentTrades.isEmpty()) {
             throw new ApiValidationException(ApiError.TRADE_ALREADY_OPEN);
         }
     }
 
     private void validateExistentTrade(long tradeId) throws ApiValidationException {
-        Trade existentTrade = tradeRepository.getTrade(tradeId);
+        TradeDBEntity existentTrade = tradeRepository.getTrade(tradeId);
         if (existentTrade == null)
             throw new ApiValidationException(ApiError.TRADE_NOT_FOUND);
 
@@ -107,7 +107,7 @@ public class TradeService {
             throw new ApiValidationException(ApiError.TRADE_ALREADY_CLOSED);
     }
 
-    public List<Trade> getOpenTrades(long accountId, long stockId) {
+    public List<TradeDBEntity> getOpenTrades(long accountId, long stockId) {
         return tradeRepository.getOpenTrades(accountId, stockId);
     }
 }

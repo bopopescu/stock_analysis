@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.TradeDBEntity;
 
 @SuppressWarnings("serial")
 public class Account implements Serializable {
@@ -12,7 +12,7 @@ public class Account implements Serializable {
 	private List<DonchianModel> model;
 	private double balance;
 	private double initialPosition;
-	private Collection<Trade> wallet;
+	private Collection<TradeDBEntity> wallet;
 	private List<String> stockCodesToAnalyze;
 
 	public long getId() {
@@ -39,11 +39,11 @@ public class Account implements Serializable {
 		this.balance = balance;
 	}
 
-	public Collection<Trade> getWallet() {
+	public Collection<TradeDBEntity> getWallet() {
 		return wallet;
 	}
 
-	public void setWallet(Collection<Trade> wallet) {
+	public void setWallet(Collection<TradeDBEntity> wallet) {
 		this.wallet = wallet;
 	}
 

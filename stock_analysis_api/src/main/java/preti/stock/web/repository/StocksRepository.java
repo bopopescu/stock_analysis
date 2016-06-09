@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
+import preti.stock.db.model.StockDBEntity;
+import preti.stock.db.model.StockHistoryDBEntity;
 import preti.stock.web.repository.mappers.StockHistoryMapper;
 import preti.stock.web.repository.mappers.StockRowMapper;
 
@@ -32,12 +32,12 @@ public class StocksRepository {
                 new Object[] { stockCode }, Integer.class) > 0;
     }
 
-    public Stock getStock(long stockId) {
+    public StockDBEntity getStock(long stockId) {
         return jdbcTemplate.queryForObject("select stock_id, stock_code, stock_name from stock where stock_id = ?",
                 new Object[] { stockId }, new StockRowMapper());
     }
 
-    public Stock getStock(String stockCode) {
+    public StockDBEntity getStock(String stockCode) {
         return jdbcTemplate.queryForObject("select stock_id, stock_code, stock_name from stock where stock_code = ?",
                 new Object[] { stockCode }, new StockRowMapper());
     }
@@ -58,7 +58,7 @@ public class StocksRepository {
                 new Object[] { stockId, date, high, low, close, open, volume });
     }
 
-    public List<StockHistory> getStockHistory(String stockCode) {
+    public List<StockHistoryDBEntity> getStockHistory(String stockCode) {
         StringBuilder sql = new StringBuilder();
         sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
         sql.append("from stock_history sh ");
@@ -67,7 +67,7 @@ public class StocksRepository {
         return jdbcTemplate.query(sql.toString(), new Object[] { stockCode }, new StockHistoryMapper());
     }
 
-    public List<StockHistory> getStockHistory(String stockCode, Date initialDate, Date finalDate) {
+    public List<StockHistoryDBEntity> getStockHistory(String stockCode, Date initialDate, Date finalDate) {
         StringBuilder sql = new StringBuilder();
         sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
         sql.append("from stock_history sh ");
@@ -77,7 +77,7 @@ public class StocksRepository {
                 new StockHistoryMapper());
     }
 
-    public List<StockHistory> getStockHistory(long stockId, Date initialDate, Date finalDate) {
+    public List<StockHistoryDBEntity> getStockHistory(long stockId, Date initialDate, Date finalDate) {
         StringBuilder sql = new StringBuilder();
         sql.append("select sh.stock_history_id, sh.stock_id, sh.date, sh.high, sh.low, sh.close, sh.open, sh.volume ");
         sql.append("from stock_history sh ");
@@ -87,7 +87,7 @@ public class StocksRepository {
                 new StockHistoryMapper());
     }
 
-    public boolean existsHistoryAtDate(long stockId, Date date) {   
+    public boolean existsHistoryAtDate(long stockId, Date date) {
         StringBuilder sql = new StringBuilder();
         sql.append("select count(*) ");
         sql.append("from stock_history sh ");

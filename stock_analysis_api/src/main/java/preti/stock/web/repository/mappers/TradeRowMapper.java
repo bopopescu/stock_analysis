@@ -5,14 +5,14 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.TradeDBEntity;
 
-public class TradeRowMapper implements RowMapper<Trade> {
+public class TradeRowMapper implements RowMapper<TradeDBEntity> {
 
     @Override
-    public Trade mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public TradeDBEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-        Trade trade = new Trade();
+        TradeDBEntity trade = new TradeDBEntity();
         trade.setId(rs.getLong("trade_id"));
         trade.setStockId(rs.getLong("stock_id"));
         trade.setBuyDate(rs.getDate("buy_date"));

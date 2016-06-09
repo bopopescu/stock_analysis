@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.joda.time.DateTime;
@@ -20,157 +21,161 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.OrderDBEntity;
+import preti.stock.db.model.OrderExecutionData;
+import preti.stock.db.model.TradeDBEntity;
 
 public class Run {
 
-	public static void main2(String[] args) throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper jsonMapper = new ObjectMapper();
-		Account account = jsonMapper.readValue(new File("/tmp/input.json"), Account.class);
-		System.out.println(jsonMapper.writeValueAsString(account));
+    public static void main2(String[] args) throws JsonParseException, JsonMappingException, IOException {
+        ObjectMapper jsonMapper = new ObjectMapper();
+        Account account = jsonMapper.readValue(new File("/tmp/input.json"), Account.class);
+        System.out.println(jsonMapper.writeValueAsString(account));
 
-		RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
 
-		Map<String, String> parameters = new HashMap<>();
+        Map<String, String> parameters = new HashMap<>();
 
-		parameters.put("date", "2014-03-12");
-		account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
-				Account.class, parameters);
+        parameters.put("date", "2014-03-12");
+        account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
+                Account.class, parameters);
 
-		parameters.put("date", "2014-03-13");
-		account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
-				Account.class, parameters);
+        parameters.put("date", "2014-03-13");
+        account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
+                Account.class, parameters);
 
-		parameters.put("date", "2014-03-14");
-		account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
-				Account.class, parameters);
+        parameters.put("date", "2014-03-14");
+        account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
+                Account.class, parameters);
 
-		System.out.println(account);
+        System.out.println(account);
 
-	}
+    }
 
-	public static void main3(String[] args)
-			throws JsonParseException, JsonMappingException, IOException, ParseException {
-		ObjectMapper jsonMapper = new ObjectMapper();
-		RestTemplate restTemplate = new RestTemplate();
+    public static void main3(String[] args)
+            throws JsonParseException, JsonMappingException, IOException, ParseException {
+        ObjectMapper jsonMapper = new ObjectMapper();
+        RestTemplate restTemplate = new RestTemplate();
 
-		DonchianModel[] model = jsonMapper.readValue(new File("/tmp/model_janeiro.json"), DonchianModel[].class);
+        DonchianModel[] model = jsonMapper.readValue(new File("/tmp/model_janeiro.json"), DonchianModel[].class);
 
-		String[] stockCodesToAnalyze = { "BBDC4", "BDLL4", "BGIP4", "BOBR4", "BRAP4", "BRIV4", "CMIG4", "CRIV4",
-				"CTNM4", "ELPL4", "ESTR4", "FJTA4", "GETI4", "GGBR4", "GOAU4", "GOLL4", "GUAR4", "INEP4", "ITSA4",
-				"LAME4", "LIXC4", "MGEL4", "MTSA4", "MWET4", "PCAR4", "PETR4", "POMO4", "RAPT4", "RCSL4", "SAPR4",
-				"SHUL4", "SLED4", "TEKA4", "TOYB4", "TRPL4" };
+        String[] stockCodesToAnalyze = { "BBDC4", "BDLL4", "BGIP4", "BOBR4", "BRAP4", "BRIV4", "CMIG4", "CRIV4",
+                "CTNM4", "ELPL4", "ESTR4", "FJTA4", "GETI4", "GGBR4", "GOAU4", "GOLL4", "GUAR4", "INEP4", "ITSA4",
+                "LAME4", "LIXC4", "MGEL4", "MTSA4", "MWET4", "PCAR4", "PETR4", "POMO4", "RAPT4", "RCSL4", "SAPR4",
+                "SHUL4", "SLED4", "TEKA4", "TOYB4", "TRPL4" };
 
-		Account account = new Account();
-		account.setBalance(10000);
-		account.setInitialPosition(10000);
-		account.setModel(Arrays.asList(model));
-		account.setStockCodesToAnalyze(Arrays.asList(stockCodesToAnalyze));
-		account.setWallet(new ArrayList<>());
+        Account account = new Account();
+        account.setBalance(10000);
+        account.setInitialPosition(10000);
+        account.setModel(Arrays.asList(model));
+        account.setStockCodesToAnalyze(Arrays.asList(stockCodesToAnalyze));
+        account.setWallet(new ArrayList<>());
 
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date initialDate = dateFormat.parse("2014-02-01");
-		Date finalDate = dateFormat.parse("2014-10-01");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date initialDate = dateFormat.parse("2014-02-01");
+        Date finalDate = dateFormat.parse("2014-10-01");
 
-		Date secondModelDate = dateFormat.parse("2014-06-01");
-		boolean secondModelRead = false;
-		Date thirdModelDate = dateFormat.parse("2014-10-01");
-		boolean thirdModelRead = false;
+        Date secondModelDate = dateFormat.parse("2014-06-01");
+        boolean secondModelRead = false;
+        Date thirdModelDate = dateFormat.parse("2014-10-01");
+        boolean thirdModelRead = false;
 
-		Map<String, String> parameters = new HashMap<>();
-		DateTime currentDate = new DateTime(initialDate.getTime());
-		while (currentDate.isBefore(finalDate.getTime())) {
-			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
-			if (currentDate.isEqual(secondModelDate.getTime()) && !secondModelRead) {
-				System.out.println("Reading model /tmp/model_maio.json");
-				DonchianModel[] newModel = jsonMapper.readValue(new File("/tmp/model_maio.json"),
-						DonchianModel[].class);
-				DonchianModel[] oldModel = account.getModel().toArray(new DonchianModel[] {});
-				account.setModel(Arrays.asList(mergeModels(newModel, oldModel)));
-				secondModelRead = true;
-			}
+        Map<String, String> parameters = new HashMap<>();
+        DateTime currentDate = new DateTime(initialDate.getTime());
+        while (currentDate.isBefore(finalDate.getTime())) {
+            System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
+            if (currentDate.isEqual(secondModelDate.getTime()) && !secondModelRead) {
+                System.out.println("Reading model /tmp/model_maio.json");
+                DonchianModel[] newModel = jsonMapper.readValue(new File("/tmp/model_maio.json"),
+                        DonchianModel[].class);
+                DonchianModel[] oldModel = account.getModel().toArray(new DonchianModel[] {});
+                account.setModel(Arrays.asList(mergeModels(newModel, oldModel)));
+                secondModelRead = true;
+            }
 
-			if (currentDate.isEqual(thirdModelDate.getTime()) && !thirdModelRead) {
-				System.out.println("Reading model /tmp/model_setembro.json");
-				DonchianModel[] newModel = jsonMapper.readValue(new File("/tmp/model_setembro.json"),
-						DonchianModel[].class);
-				DonchianModel[] oldModel = account.getModel().toArray(new DonchianModel[] {});
-				account.setModel(Arrays.asList(mergeModels(newModel, oldModel)));
-				thirdModelRead = true;
-			}
+            if (currentDate.isEqual(thirdModelDate.getTime()) && !thirdModelRead) {
+                System.out.println("Reading model /tmp/model_setembro.json");
+                DonchianModel[] newModel = jsonMapper.readValue(new File("/tmp/model_setembro.json"),
+                        DonchianModel[].class);
+                DonchianModel[] oldModel = account.getModel().toArray(new DonchianModel[] {});
+                account.setModel(Arrays.asList(mergeModels(newModel, oldModel)));
+                thirdModelRead = true;
+            }
 
-			parameters.put("date", dateFormat.format(currentDate.toDate()));
-			account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
-					Account.class, parameters);
+            parameters.put("date", dateFormat.format(currentDate.toDate()));
+            account = restTemplate.postForObject("http://localhost:8080/recomendations/generate?date={date}", account,
+                    Account.class, parameters);
 
-			currentDate = currentDate.plusDays(1);
-		}
+            currentDate = currentDate.plusDays(1);
+        }
 
-		System.out.println("Final Balance: " + account.getBalance());
-		parameters.put("date", "2015-01-01");
-		account = restTemplate.postForObject("http://localhost:8080/account/closeAllOpenTrades?date={date}", account,
-				Account.class, parameters);
-		System.out.println(jsonMapper.writeValueAsString(account));
-		System.out.println("Final Balance: " + account.getBalance());
-	}
+        System.out.println("Final Balance: " + account.getBalance());
+        parameters.put("date", "2015-01-01");
+        account = restTemplate.postForObject("http://localhost:8080/account/closeAllOpenTrades?date={date}", account,
+                Account.class, parameters);
+        System.out.println(jsonMapper.writeValueAsString(account));
+        System.out.println("Final Balance: " + account.getBalance());
+    }
 
-	public static void main(String[] args) throws ParseException {
-		RestTemplate restTemplate = new RestTemplate();
+    public static void main(String[] args) throws ParseException {
+        RestTemplate restTemplate = new RestTemplate();
 
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date initialDate = dateFormat.parse("2014-02-01");
-		Date finalDate = dateFormat.parse("2014-10-01");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date initialDate = dateFormat.parse("2014-02-01");
+        Date finalDate = dateFormat.parse("2014-10-01");
 
-		Map<String, Object> parameters = new HashMap<>();
-		DateTime currentDate = new DateTime(initialDate.getTime());
-		while (currentDate.isBefore(finalDate.getTime())) {
-			System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
+        Map<String, Object> parameters = new HashMap<>();
+        DateTime currentDate = new DateTime(initialDate.getTime());
+        while (currentDate.isBefore(finalDate.getTime())) {
+            System.out.println("Analysing " + dateFormat.format(currentDate.toDate()));
 
-			parameters.put("date", dateFormat.format(currentDate.toDate()));
-			parameters.put("accountId", 1);
-			Order[] orders = restTemplate.getForObject("http://localhost:8080/recomendation/generate?accountId={accountId}&date={date}",
-			        Order[].class, parameters);
-			System.out.println(orders.length + " recomendations generated");
-			
-			orders = restTemplate.postForObject("http://localhost:8080/order/create", orders, Order[].class);
-			System.out.println(orders.length + " orders created");
-			
-			parameters.put("accountId", 1l);
-			parameters.put("execDate", dateFormat.format(currentDate.toDate()));
-			for(Order o : orders){
-			    o.setExecutionDate(currentDate.toDate());
-			    o.setExecutionValue(o.getValue());
-			}
-			Trade[] trades = restTemplate.postForObject("http://localhost:8080/order/execute?executionDate={execDate}&accountId={accountId}", orders, Trade[].class, parameters);
+            parameters.put("date", dateFormat.format(currentDate.toDate()));
+            parameters.put("accountId", 1);
+            OrderDBEntity[] orders = restTemplate.getForObject(
+                    "http://localhost:8080/recomendation/generate?accountId={accountId}&date={date}",
+                    OrderDBEntity[].class, parameters);
+            System.out.println(orders.length + " recomendations generated");
+
+            orders = restTemplate.postForObject("http://localhost:8080/order/create", orders, OrderDBEntity[].class);
+            System.out.println(orders.length + " orders created");
+
+            parameters.put("accountId", 1l);
+            parameters.put("execDate", dateFormat.format(currentDate.toDate()));
+            List<OrderExecutionData> ordersData = new ArrayList<>();
+            for (OrderDBEntity o : orders) {
+                ordersData.add(new OrderExecutionData(o.getOrderId(), currentDate.toDate(), o.getValue()));
+            }
+            TradeDBEntity[] trades = restTemplate.postForObject(
+                    "http://localhost:8080/order/execute?accountId={accountId}",
+                    ordersData.toArray(new OrderExecutionData[] {}), TradeDBEntity[].class, parameters);
             System.out.println(trades.length + " trades executed");
 
-			currentDate = currentDate.plusDays(1);
-		}
+            currentDate = currentDate.plusDays(1);
+        }
 
-		// FALTA CHAMAR CLOSE ALL OPEN TRADES;
-	}
+        // FALTA CHAMAR CLOSE ALL OPEN TRADES;
+    }
 
-	private static DonchianModel[] mergeModels(DonchianModel[] newModel, DonchianModel[] oldModel) {
-		Map<Long, DonchianModel> mapModels = new HashMap<>();
-		for (DonchianModel m : newModel) {
-			mapModels.put(m.getStockId(), m);
-		}
+    private static DonchianModel[] mergeModels(DonchianModel[] newModel, DonchianModel[] oldModel) {
+        Map<Long, DonchianModel> mapModels = new HashMap<>();
+        for (DonchianModel m : newModel) {
+            mapModels.put(m.getStockId(), m);
+        }
 
-		for (DonchianModel m : oldModel) {
-			if (!mapModels.containsKey(m.getStockId())) {
-				mapModels.put(m.getStockId(),
-						new DonchianModel(0l, m.getStockId(), 0, m.getExitDonchianSize(), m.getRiskRate()));
-			}
-		}
+        for (DonchianModel m : oldModel) {
+            if (!mapModels.containsKey(m.getStockId())) {
+                mapModels.put(m.getStockId(),
+                        new DonchianModel(0l, m.getStockId(), 0, m.getExitDonchianSize(), m.getRiskRate()));
+            }
+        }
 
-		DonchianModel[] mergedModels = new DonchianModel[mapModels.size()];
-		int i = 0;
-		for (DonchianModel m : mapModels.values()) {
-			mergedModels[i] = m;
-			i++;
-		}
-		return mergedModels;
-	}
+        DonchianModel[] mergedModels = new DonchianModel[mapModels.size()];
+        int i = 0;
+        for (DonchianModel m : mapModels.values()) {
+            mergedModels[i] = m;
+            i++;
+        }
+        return mergedModels;
+    }
 
 }

@@ -1,19 +1,19 @@
-package preti.stock.coremodel;
+package preti.stock.db.model;
 
-public enum OrderType {
+public enum OrderDBEntityType {
     BUY("B"), SELL("S");
 
     public String type;
 
-    private OrderType(String s) {
+    private OrderDBEntityType(String s) {
         this.type = s;
     }
     
-    public static OrderType getFromValue(String value){
+    public static OrderDBEntityType getFromValue(String value){
         if(BUY.type.equals(value))
             return BUY;
         else if(SELL.type.equals(value))
-            return OrderType.SELL;
+            return OrderDBEntityType.SELL;
         
         throw new IllegalArgumentException("Invalid order type: " + value);
     }

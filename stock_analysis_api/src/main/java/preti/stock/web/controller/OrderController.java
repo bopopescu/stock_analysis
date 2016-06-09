@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.OrderExecutionData;
-import preti.stock.coremodel.Trade;
+import preti.stock.db.model.OrderDBEntity;
+import preti.stock.db.model.OrderExecutionData;
+import preti.stock.db.model.TradeDBEntity;
 import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.service.OrderService;
 import preti.stock.web.service.TradeService;
@@ -30,12 +30,12 @@ public class OrderController {
     private TradeService tradeService;
 
     @RequestMapping(path = "/order/create", headers = "Accept=application/json")
-    public List<Order> createOrders(@RequestBody List<Order> orders) {
+    public List<OrderDBEntity> createOrders(@RequestBody List<OrderDBEntity> orders) {
         return orderService.createOrders(orders);
     }
 
     @RequestMapping(path = "/order/execute", headers = "Accept=application/json")
-    public List<Trade> executeOrders(@RequestBody List<OrderExecutionData> ordersExecData,
+    public List<TradeDBEntity> executeOrders(@RequestBody List<OrderExecutionData> ordersExecData,
             @RequestParam(name = "accountId", required = true) long accountId)
             throws ParseException, ApiValidationException {
         logger.info(String.format("Executing orders for accountId=%s", accountId));
@@ -43,7 +43,7 @@ public class OrderController {
     }
 
     @RequestMapping(path = "/order/getOpen", headers = "Accept=application/json", method = RequestMethod.GET)
-    public List<Order> getAllOpenOrders(@RequestParam(name = "accountId", required = true) long accountId) {
+    public List<OrderDBEntity> getAllOpenOrders(@RequestParam(name = "accountId", required = true) long accountId) {
         return orderService.getAllOpenOrders(accountId);
     }
 

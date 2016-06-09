@@ -2,16 +2,19 @@ package preti.stock.system;
 
 import java.util.Date;
 
-public interface TradingStrategy {
+public interface TradingStrategy<S, T> {
+    long getId();
 
-	long getModelId();
+    Stock<S> getStock();
 
-	boolean enterPosition(Date d);
+    boolean hasReachedMaxGain(Trade<T> trade, Date date);
 
-	boolean exitPosition(Date d);
+    boolean hasReachedStopLoss(Trade<T> trade, Date date);
 
-	double calculatePositionSize(Date d, double currentTotalBalance);
+    boolean shouldBuyStock(Date date);
 
-	double calculateStopLossPoint(Date d);
-
+    double calculatePositionSize(Date date, double accountInitialBalance, double accountCurrentBalance,
+            double openPositionsValue);
+    
+    double calculateStopLossPoint(Date d);
 }

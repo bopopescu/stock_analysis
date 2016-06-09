@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
+import preti.stock.db.model.StockDBEntity;
+import preti.stock.db.model.StockHistoryDBEntity;
 import preti.stock.web.service.StocksService;
 
 @RestController
@@ -27,12 +27,11 @@ public class StocksController {
     // curl -H "Content-Type: application/json" -d '["PETR4", "CMIG4"]'
     // localhost:8080/loadStocks
     @RequestMapping(path = "/stock", headers = "Accept=application/json")
-    public List<Stock> loadStocks(@RequestBody List<String> stockCodes,
+    public List<StockDBEntity> loadStocks(@RequestBody List<String> stockCodes,
             @RequestParam(name = "begin", required = true) String initialDate,
             @RequestParam(name = "end", required = true) String finalDate) throws IOException, ParseException {
 
-        return stocksService.loadStocks(stockCodes, ControllerTools.parseDate(initialDate),
-                ControllerTools.parseDate(finalDate));
+        return stocksService.loadStocks(stockCodes);
     }
 
     @RequestMapping(path = "/stock/loadData", headers = "Accept=application/json")
@@ -41,12 +40,12 @@ public class StocksController {
     }
 
     @RequestMapping(path = "/stock", headers = "Accept=application/json", method = RequestMethod.GET)
-    public Stock getStock(@RequestParam(name = "stockId", required = true) long stockId) {
+    public StockDBEntity getStock(@RequestParam(name = "stockId", required = true) long stockId) {
         return stocksService.getStock(stockId);
     }
 
     @RequestMapping(path = "/stock/history", headers = "Accept=application/json", method = RequestMethod.GET)
-    public List<StockHistory> getStockHistory(@RequestParam(name = "stockId", required = true) long stockId,
+    public List<StockHistoryDBEntity> getStockHistory(@RequestParam(name = "stockId", required = true) long stockId,
             @RequestParam(name = "begin", required = true) String initialDate,
             @RequestParam(name = "end", required = true) String finalDate) throws IOException, ParseException {
         return stocksService.getStockHistory(stockId, ControllerTools.parseDate(initialDate),

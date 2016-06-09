@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import com.mysql.jdbc.Statement;
 
-import preti.stock.coremodel.Order;
+import preti.stock.db.model.OrderDBEntity;
 import preti.stock.web.repository.mappers.OrderMapper;
 
 @Repository
@@ -30,7 +30,7 @@ public class OrderRepository {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public Order getOrder(long orderId) {
+    public OrderDBEntity getOrder(long orderId) {
         StringBuilder sql = new StringBuilder();
         sql.append(ORDER_SELECT);
         sql.append("where ");
@@ -39,7 +39,7 @@ public class OrderRepository {
         return jdbcTemplate.queryForObject(sql.toString(), new Object[] { orderId }, new OrderMapper());
     }
 
-    public long createOrder(Order order) {
+    public long createOrder(OrderDBEntity order) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(new PreparedStatementCreator() {
@@ -64,7 +64,7 @@ public class OrderRepository {
         return keyHolder.getKey().longValue();
     }
 
-    public List<Order> getAllOpenOrders(long accountId) {
+    public List<OrderDBEntity> getAllOpenOrders(long accountId) {
         StringBuilder sql = new StringBuilder();
         sql.append(ORDER_SELECT);
         sql.append(" inner join model m on m.model_id=o.model_id ");

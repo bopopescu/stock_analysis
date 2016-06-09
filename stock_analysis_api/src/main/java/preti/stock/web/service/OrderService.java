@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import preti.stock.coremodel.Order;
+import preti.stock.db.model.OrderDBEntity;
 import preti.stock.web.repository.OrderRepository;
 
 @Service
@@ -19,21 +19,21 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public List<Order> createOrders(List<Order> orders) {
-        List<Order> createdOrders = new ArrayList<>();
-        for (Order o : orders) {
+    public List<OrderDBEntity> createOrders(List<OrderDBEntity> orders) {
+        List<OrderDBEntity> createdOrders = new ArrayList<>();
+        for (OrderDBEntity o : orders) {
             createdOrders.add(createOrder(o));
         }
 
         return createdOrders;
     }
 
-    public Order createOrder(Order order) {
+    public OrderDBEntity createOrder(OrderDBEntity order) {
         long key = orderRepository.createOrder(order);
         return orderRepository.getOrder(key);
     }
 
-    public List<Order> getAllOpenOrders(long accountId) {
+    public List<OrderDBEntity> getAllOpenOrders(long accountId) {
         return orderRepository.getAllOpenOrders(accountId);
     }
 }

@@ -1,5 +1,6 @@
 package preti.stock.web.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,84 +15,93 @@ import org.springframework.stereotype.Service;
 
 import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.Trade;
-import preti.stock.system.TradeSystem;
-import preti.stock.system.TradingStrategy;
-import preti.stock.system.TradingStrategyImpl;
+import preti.stock.db.model.OrderDBEntity;
+import preti.stock.db.model.StockDBEntity;
+import preti.stock.db.model.TradeDBEntity;
+import preti.stock.system.Recomendation;
+import preti.stock.system.dbimpl.DonchianStrategyDBImpl;
+import preti.stock.system.dbimpl.StockDBImpl;
+import preti.stock.system.dbimpl.TradeDBImpl;
+import preti.stock.system.dbimpl.TradingSystemDBImpl;
 import preti.stock.web.repository.DonchianModelRepository;
 import preti.stock.web.repository.TradeRepository;
 
 @Service
 public class RecomendationsService {
-	private Logger logger = LoggerFactory.getLogger(RecomendationsService.class);
+    private Logger logger = LoggerFactory.getLogger(RecomendationsService.class);
 
-	@Autowired
-	private AccountService accountService;
-	@Autowired
-	private DonchianModelRepository modelRepository;
-	@Autowired
-	private TradeRepository tradeRepository;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private DonchianModelRepository modelRepository;
+    @Autowired
+    private TradeRepository tradeRepository;
 
-	@Autowired
-	private StocksService stocksService;
+    @Autowired
+    private StocksService stocksService;
 
-	public List<Order> generateRecomendations(long accountId, Date recomendationDate) {
-		Account account = accountService.loadCompleteAccount(accountId, recomendationDate);
+    public List<OrderDBEntity> generateRecomendations(long accountId, Date recomendationDate) {
+        Account account = accountService.loadCompleteAccount(accountId, recomendationDate);
 
-		Date beginDate = identifyBeginDate(accountId, recomendationDate);
-		logger.debug("Begin date is " + beginDate + " end date is " + recomendationDate);
+        Date beginDate = identifyBeginDate(accountId, recomendationDate);
+        logger.debug("Begin date is " + beginDate + " end date is " + recomendationDate);
 
-		Map<Long, Stock> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate, recomendationDate);
+        Map<Long, StockDBImpl> stocksMap = loadStocksMap(account.getStockCodesToAnalyze(), beginDate,
+                recomendationDate);
+        List<TradeDBImpl> trades = generateTrades(account, stocksMap);
 
-		// Nao estou carregando os Stocks associados aos trades quando carrego
-		// os trades do BD, entao eu preciso preencher manualmente.
-		populateTradesWithStocks(account, stocksMap);
+        Map<String, DonchianStrategyDBImpl> tradingStrategies = createTradingStrategies(account,
+                stocksMap);
 
-		Map<Long, TradingStrategy> tradingStrategies = createTradingStrategies(account, stocksMap);
+        TradingSystemDBImpl system = new TradingSystemDBImpl(trades, stocksMap.values(), tradingStrategies,
+                account.getInitialPosition(), account.getBalance());
+        
+        List<Recomendation<OrderDBEntity>> recomendations = system.analyze(recomendationDate);
+        List<OrderDBEntity> ordersResult = new ArrayList<>();
+        recomendations.forEach( rec -> ordersResult.add(rec.getTarget()));
+        
+        return ordersResult;
 
-		TradeSystem system = new TradeSystem(account.getWallet(), stocksMap.values(), tradingStrategies,
-				account.getBalance(), accountId);
+    }
 
-		return system.analyzeStocks(recomendationDate);
+    private Date identifyBeginDate(long accountId, Date recomendationDate) {
+        int maxDonchianChannelSize = modelRepository.getMaxDonchianChannelSize();
 
-	}
+        Date oldestOpenTradeBuyDate = tradeRepository.getOldestOpenTradeBuyDateForAccount(accountId);
+        long diffBetweenDates = oldestOpenTradeBuyDate != null
+                ? recomendationDate.getTime() - oldestOpenTradeBuyDate.getTime() : 0;
+        int diffInDays = (int) TimeUnit.DAYS.convert(diffBetweenDates, TimeUnit.MILLISECONDS);
 
-	private Date identifyBeginDate(long accountId, Date recomendationDate) {
-		int maxDonchianChannelSize = modelRepository.getMaxDonchianChannelSize();
+        return new DateTime(recomendationDate).minusDays(Math.max(diffInDays, maxDonchianChannelSize)).toDate();
+    }
 
-		Date oldestOpenTradeBuyDate = tradeRepository.getOldestOpenTradeBuyDateForAccount(accountId);
-		long diffBetweenDates = oldestOpenTradeBuyDate != null
-				? recomendationDate.getTime() - oldestOpenTradeBuyDate.getTime() : 0;
-		int diffInDays = (int) TimeUnit.DAYS.convert(diffBetweenDates, TimeUnit.MILLISECONDS);
+    private List<TradeDBImpl> generateTrades(Account account, Map<Long, StockDBImpl> stocksMap) {
+        List<TradeDBImpl> trades = new ArrayList<>();
+        for (TradeDBEntity t : account.getWallet()) {
+            trades.add(new TradeDBImpl(t, stocksMap.get(t.getStockId())));
+        }
+        return trades;
+    }
 
-		return new DateTime(recomendationDate).minusDays(Math.max(diffInDays, maxDonchianChannelSize)).toDate();
-	}
+    private Map<String, DonchianStrategyDBImpl> createTradingStrategies(Account account,
+            Map<Long, StockDBImpl> stocksMap) {
+        Map<String, DonchianStrategyDBImpl> tradingStrategies = new HashMap<>();
+        for (DonchianModel parameter : account.getModel()) {
+            StockDBImpl st = stocksMap.get(parameter.getStockId());
+            tradingStrategies.put(st.getCode(), new DonchianStrategyDBImpl(st, parameter.getId(),
+                    parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
+        }
+        return tradingStrategies;
+    }
 
-	private void populateTradesWithStocks(Account account, Map<Long, Stock> stocksMap) {
-		for (Trade t : account.getWallet()) {
-			t.applyStock(stocksMap.get(t.getStockId()));
-		}
-	}
-
-	private Map<Long, TradingStrategy> createTradingStrategies(Account account, Map<Long, Stock> stocksMap) {
-		Map<Long, TradingStrategy> tradingStrategies = new HashMap<>();
-		for (DonchianModel parameter : account.getModel()) {
-			tradingStrategies.put(parameter.getStockId(),
-					new TradingStrategyImpl(stocksMap.get(parameter.getStockId()), parameter.getId(),
-							parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(),
-							parameter.getRiskRate()));
-		}
-		return tradingStrategies;
-	}
-
-	private Map<Long, Stock> loadStocksMap(List<String> stockCodes, Date beginDate, Date endDate) {
-		List<Stock> stocks = stocksService.loadStocks(stockCodes, beginDate, endDate);
-		Map<Long, Stock> stocksMap = new HashMap<>();
-		for (Stock st : stocks) {
-			stocksMap.put(st.getId(), st);
-		}
-		return stocksMap;
-	}
+    private Map<Long, StockDBImpl> loadStocksMap(List<String> stockCodes, Date beginDate, Date endDate) {
+        List<StockDBEntity> dbStockEntities = stocksService.loadStocks(stockCodes);
+        Map<Long, StockDBImpl> stocksMap = new HashMap<>();
+        for (StockDBEntity st : dbStockEntities) {
+            StockDBImpl stImpl = new StockDBImpl(st);
+            stImpl.setHistory(stocksService.getStockHistory(st.getId(), beginDate, endDate));
+            stocksMap.put(st.getId(), stImpl);
+        }
+        return stocksMap;
+    }
 }
