@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import preti.stock.analysismodel.donchian.Account;
+import preti.stock.db.model.AccountDBEntity;
 import preti.stock.db.model.OrderDBEntity;
 import preti.stock.db.model.OrderExecutionData;
 import preti.stock.db.model.TradeDBEntity;
@@ -55,7 +55,7 @@ public class TradeService {
             trades.add(t);
         }
 
-        Account account = accountRepository.getAccount(accountId);
+        AccountDBEntity account = accountRepository.getAccount(accountId);
 //        if (account.getBalance() + balanceChange < 0) {
 //            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
 //        }
@@ -71,7 +71,7 @@ public class TradeService {
             throw new IllegalArgumentException(String.format("Can't execute buy order: order %s is of type %s",
                     order.getOrderId(), order.getType()));
 
-        TradeDBEntity t = new TradeDBEntity(order.getStockId(), order.getSize(), order.getStopPos(), order.getOrderId(), 
+        TradeDBEntity t = new TradeDBEntity(order.getStockId(), order.getSize(), order.getStopPos(), order.getOrderId(),
                 executionDate, null, executionValue);
         validateNewTrade(accountId, t);
         long tradeId = tradeRepository.createTrade(t);
@@ -79,8 +79,8 @@ public class TradeService {
         return tradeRepository.getTrade(tradeId);
     }
 
-    public TradeDBEntity executeSellOrder(long accountId, OrderDBEntity order, Date executionDate, double executionValue)
-            throws ApiValidationException {
+    public TradeDBEntity executeSellOrder(long accountId, OrderDBEntity order, Date executionDate,
+            double executionValue) throws ApiValidationException {
         if (!order.isSellOrder())
             throw new IllegalArgumentException(String.format("Can't execute sell order: order %s is of type %s",
                     order.getOrderId(), order.getType()));

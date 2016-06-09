@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import preti.stock.analysismodel.donchian.Account;
 import preti.stock.analysismodel.donchian.DonchianModel;
 import preti.stock.db.model.OrderDBEntity;
 import preti.stock.db.model.StockDBEntity;
 import preti.stock.db.model.TradeDBEntity;
+import preti.stock.db.model.wrapper.AccountWrapper;
 import preti.stock.system.Recomendation;
 import preti.stock.system.dbimpl.DonchianStrategyDBImpl;
 import preti.stock.system.dbimpl.StockDBImpl;
@@ -41,7 +41,7 @@ public class RecomendationsService {
     private StocksService stocksService;
 
     public List<OrderDBEntity> generateRecomendations(long accountId, Date recomendationDate) {
-        Account account = accountService.loadCompleteAccount(accountId, recomendationDate);
+        AccountWrapper account = accountService.loadCompleteAccount(accountId, recomendationDate);
 
         Date beginDate = identifyBeginDate(accountId, recomendationDate);
         logger.debug("Begin date is " + beginDate + " end date is " + recomendationDate);
@@ -50,16 +50,15 @@ public class RecomendationsService {
                 recomendationDate);
         List<TradeDBImpl> trades = generateTrades(account, stocksMap);
 
-        Map<String, DonchianStrategyDBImpl> tradingStrategies = createTradingStrategies(account,
-                stocksMap);
+        Map<String, DonchianStrategyDBImpl> tradingStrategies = createTradingStrategies(account, stocksMap);
 
         TradingSystemDBImpl system = new TradingSystemDBImpl(trades, stocksMap.values(), tradingStrategies,
-                account.getInitialPosition(), account.getBalance());
-        
+                account.getTarget().getInitialPosition(), account.getTarget().getBalance());
+
         List<Recomendation<OrderDBEntity>> recomendations = system.analyze(recomendationDate);
         List<OrderDBEntity> ordersResult = new ArrayList<>();
-        recomendations.forEach( rec -> ordersResult.add(rec.getTarget()));
-        
+        recomendations.forEach(rec -> ordersResult.add(rec.getTarget()));
+
         return ordersResult;
 
     }
@@ -75,7 +74,7 @@ public class RecomendationsService {
         return new DateTime(recomendationDate).minusDays(Math.max(diffInDays, maxDonchianChannelSize)).toDate();
     }
 
-    private List<TradeDBImpl> generateTrades(Account account, Map<Long, StockDBImpl> stocksMap) {
+    private List<TradeDBImpl> generateTrades(AccountWrapper account, Map<Long, StockDBImpl> stocksMap) {
         List<TradeDBImpl> trades = new ArrayList<>();
         for (TradeDBEntity t : account.getWallet()) {
             trades.add(new TradeDBImpl(t, stocksMap.get(t.getStockId())));
@@ -83,7 +82,7 @@ public class RecomendationsService {
         return trades;
     }
 
-    private Map<String, DonchianStrategyDBImpl> createTradingStrategies(Account account,
+    private Map<String, DonchianStrategyDBImpl> createTradingStrategies(AccountWrapper account,
             Map<Long, StockDBImpl> stocksMap) {
         Map<String, DonchianStrategyDBImpl> tradingStrategies = new HashMap<>();
         for (DonchianModel parameter : account.getModel()) {

@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import preti.stock.analysismodel.donchian.Account;
+import preti.stock.db.model.AccountDBEntity;
 import preti.stock.web.repository.mappers.AccountMapper;
 
 @Repository
@@ -20,7 +20,7 @@ public class AccountRepository {
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
 
-	public Account getAccount(long accountId) {
+    public AccountDBEntity getAccount(long accountId) {
 		return jdbcTemplate.queryForObject(
 				"select account_id, balance, initial_position from account where account_id=?",
 				new Object[] { accountId }, new AccountMapper());

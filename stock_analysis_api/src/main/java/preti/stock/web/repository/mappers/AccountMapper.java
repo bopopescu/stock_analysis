@@ -5,17 +5,17 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import preti.stock.analysismodel.donchian.Account;
+import preti.stock.db.model.AccountDBEntity;
 
-public class AccountMapper implements RowMapper<Account> {
+public class AccountMapper implements RowMapper<AccountDBEntity> {
 
-	@Override
-	public Account mapRow(ResultSet rs, int rowNum) throws SQLException {
-		Account account = new Account();
-		account.setId(rs.getLong("account_id"));
-		account.setBalance(rs.getDouble("balance"));
-		account.setInitialPosition(rs.getDouble("initial_position"));
-		return account;
-	}
+    @Override
+    public AccountDBEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        AccountDBEntity account = new AccountDBEntity();
+        account.setId(rs.getLong("account_id"));
+        account.setBalance(rs.getDouble("balance"));
+        account.setInitialPosition(rs.getDouble("initial_position"));
+        return account;
+    }
 
 }

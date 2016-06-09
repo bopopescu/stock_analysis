@@ -6,7 +6,7 @@ import java.util.Date;
 @SuppressWarnings("serial")
 public class OrderDBEntity implements Serializable {
     private long orderId;
-    private OrderDBEntityType type;
+    private OperationType type;
     private long stockId;
     private long modelId;
     private double size;
@@ -18,12 +18,12 @@ public class OrderDBEntity implements Serializable {
 
     }
     
-    public OrderDBEntity(OrderDBEntityType type, long stockId, long modelId, double size, Date creationDate, double value,
+    public OrderDBEntity(OperationType type, long stockId, long modelId, double size, Date creationDate, double value,
             double stopPos) {
         this(0, type, stockId, modelId, size, creationDate, value, stopPos);
     }
 
-    public OrderDBEntity(long orderId, OrderDBEntityType type, long stockId, long modelId, double size, Date creationDate, double value,
+    public OrderDBEntity(long orderId, OperationType type, long stockId, long modelId, double size, Date creationDate, double value,
             double stopPos) {
         super();
         this.orderId = orderId;
@@ -44,11 +44,11 @@ public class OrderDBEntity implements Serializable {
         this.orderId = orderId;
     }
 
-    public OrderDBEntityType getType() {
+    public OperationType getType() {
         return type;
     }
 
-    public void setType(OrderDBEntityType type) {
+    public void setType(OperationType type) {
         this.type = type;
     }
 
@@ -101,11 +101,11 @@ public class OrderDBEntity implements Serializable {
     }
     
     public boolean isBuyOrder() {
-        return OrderDBEntityType.BUY.equals(type);
+        return OperationType.BUY.equals(type);
     }
     
     public boolean isSellOrder() {
-        return OrderDBEntityType.SELL.equals(type);
+        return OperationType.SELL.equals(type);
     }
 
 }
