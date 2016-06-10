@@ -73,26 +73,29 @@ create table op_order (
 	stop_pos decimal(10, 2) not null,
 	primary key (order_id)
 ) ENGINE=InnoDB;
-alter table op_order add constraint fk_order_account foreign key (account_id) references account (account_id);
 alter table op_order add constraint fk_order_stock foreign key (stock_id) references stock (stock_id);
-alter table op_order add constraint fk_order_model foreign key (account_id, model_id) references model (account_id, model_id);
+alter table op_order add constraint fk_order_model foreign key (model_id) references model (model_id);
 
-create table trade (
-	trade_id BIGINT NOT NULL AUTO_INCREMENT,
-	stock_id INT NOT NULL,
-	buy_order_id BIGINT NOT NULL,
-	buy_date DATE NOT NULL,
-	sell_order_id BIGINT,
-	sell_date DATE,
-	buy_value decimal(10,2) not null,
-	sell_value decimal(10,2),
-	size decimal(10,2) not null,
-	stop_pos decimal(10,2) not null,
-	primary key (trade_id),
-	unique key (buy_order_id),
-	unique key (sell_order_id)
+create table wallet (
+  wallet_id BIGINT NOT NULL AUTO_INCREMENT,
+  stock_id INT NOT NULL,
+  account_id BIGINT NOT NULL,
+  size decimal(15,2) not null,
+  dat_creation DATETIME NOT NULL,
+  dat_update DATETIME NOT NULL,
+  primary key (wallet_id),
+  unique key (account_id, stock_id)
 ) ENGINE=InnoDB;
-alter table trade add constraint fk_trade_stock foreign key (stock_id) references stock (stock_id);
-alter table trade add constraint fk_trade_buy_order_id foreign key (buy_order_id) references op_order (order_id);
-alter table trade add constraint fk_trade_sell_order_id foreign key (sell_order_id) references op_order (order_id);
-alter table trade add index (buy_date);
+alter table wallet add constraint fk_wallet_stock foreign key (stock_id) references stock (stock_id);
+alter table wallet add constraint fk_wallet_account foreign key (account_id) references account (account_id);
+
+create table operation (
+	operation_id BIGINT NOT NULL AUTO_INCREMENT,
+	order_id BIGINT NOT NULL,
+	dat_creation DATETIME NOT NULL,
+	size decimal(15,2) not null,
+	value decimal(15,2) not null,
+	stop_loss decimal(10,2) not null,
+	primary key (operation_id)
+) ENGINE=InnoDB;
+alter table operation add constraint fk_operation_order_id foreign key (order_id) references op_order (order_id);

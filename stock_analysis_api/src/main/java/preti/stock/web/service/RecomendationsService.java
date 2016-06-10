@@ -14,17 +14,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.db.model.OperationDBEntity;
 import preti.stock.db.model.OrderDBEntity;
 import preti.stock.db.model.StockDBEntity;
-import preti.stock.db.model.TradeDBEntity;
 import preti.stock.db.model.wrapper.AccountWrapper;
+import preti.stock.db.model.wrapper.TradeWrapper;
 import preti.stock.system.Recomendation;
 import preti.stock.system.dbimpl.DonchianStrategyDBImpl;
 import preti.stock.system.dbimpl.StockDBImpl;
 import preti.stock.system.dbimpl.TradeDBImpl;
 import preti.stock.system.dbimpl.TradingSystemDBImpl;
 import preti.stock.web.repository.DonchianModelRepository;
-import preti.stock.web.repository.TradeRepository;
+import preti.stock.web.repository.OperationRepository;
 
 @Service
 public class RecomendationsService {
@@ -32,10 +33,12 @@ public class RecomendationsService {
 
     @Autowired
     private AccountService accountService;
+
     @Autowired
     private DonchianModelRepository modelRepository;
+
     @Autowired
-    private TradeRepository tradeRepository;
+    private OperationRepository operationRepository;
 
     @Autowired
     private StocksService stocksService;
@@ -66,7 +69,7 @@ public class RecomendationsService {
     private Date identifyBeginDate(long accountId, Date recomendationDate) {
         int maxDonchianChannelSize = modelRepository.getMaxDonchianChannelSize();
 
-        Date oldestOpenTradeBuyDate = tradeRepository.getOldestOpenTradeBuyDateForAccount(accountId);
+        Date oldestOpenTradeBuyDate = operationRepository.getOldestOpenOperationForAccount(accountId);
         long diffBetweenDates = oldestOpenTradeBuyDate != null
                 ? recomendationDate.getTime() - oldestOpenTradeBuyDate.getTime() : 0;
         int diffInDays = (int) TimeUnit.DAYS.convert(diffBetweenDates, TimeUnit.MILLISECONDS);
@@ -75,10 +78,16 @@ public class RecomendationsService {
     }
 
     private List<TradeDBImpl> generateTrades(AccountWrapper account, Map<Long, StockDBImpl> stocksMap) {
+        List<OperationDBEntity> openOperations = operationRepository.getOpenOperations(account.getTarget().getId());
+
         List<TradeDBImpl> trades = new ArrayList<>();
-        for (TradeDBEntity t : account.getWallet()) {
-            trades.add(new TradeDBImpl(t, stocksMap.get(t.getStockId())));
+        for (OperationDBEntity op : openOperations) {
+            TradeWrapper wrapper = new TradeWrapper(op, null);
+            long stockId = operationRepository.getStockIdForOperation(op.getOperationId());
+            TradeDBImpl t = new TradeDBImpl(wrapper, stocksMap.get(stockId));
+            trades.add(t);
         }
+
         return trades;
     }
 

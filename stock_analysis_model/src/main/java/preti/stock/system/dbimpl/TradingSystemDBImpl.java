@@ -13,14 +13,14 @@ import org.apache.commons.logging.LogFactory;
 
 import preti.stock.db.model.OrderDBEntity;
 import preti.stock.db.model.StockDBEntity;
-import preti.stock.db.model.TradeDBEntity;
+import preti.stock.db.model.wrapper.TradeWrapper;
 import preti.stock.system.Recomendation;
 import preti.stock.system.Stock;
 import preti.stock.system.Trade;
 import preti.stock.system.TradingStrategy;
 import preti.stock.system.TradingSystem;
 
-public class TradingSystemDBImpl extends TradingSystem<OrderDBEntity, StockDBEntity, TradeDBEntity> {
+public class TradingSystemDBImpl extends TradingSystem<OrderDBEntity, StockDBEntity, TradeWrapper> {
     private static final Log log = LogFactory.getLog(TradingSystemDBImpl.class);
 
     private double accountInitialPosition, accountBalance;
@@ -59,24 +59,24 @@ public class TradingSystemDBImpl extends TradingSystem<OrderDBEntity, StockDBEnt
     }
 
     @Override
-    protected TradingStrategy<StockDBEntity, TradeDBEntity> getStrategyForStock(Stock<StockDBEntity> stock) {
+    protected TradingStrategy<StockDBEntity, TradeWrapper> getStrategyForStock(Stock<StockDBEntity> stock) {
         return tradingStrategies.get(stock.getCode());
     }
 
     @Override
-    protected Trade<TradeDBEntity> getOpenTradeForStock(Stock<StockDBEntity> stock) {
+    protected Trade<TradeWrapper> getOpenTradeForStock(Stock<StockDBEntity> stock) {
         return openTrades.get(stock.getCode());
     }
 
     @Override
-    protected Recomendation<OrderDBEntity> createSellRecomendation(Trade<TradeDBEntity> trade, Date date) {
+    protected Recomendation<OrderDBEntity> createSellRecomendation(Trade<TradeWrapper> trade, Date date) {
         StockDBImpl stock = (StockDBImpl) trade.getStock();
         log.info(String.format("Creating sell recomendation for stock %s at date %s", stock.getCode(), date));
 
         if (!trade.isOpen())
             throw new IllegalArgumentException(String.format("No open trade to close for stock %s.", stock.getCode()));
 
-        TradingStrategy<StockDBEntity, TradeDBEntity> strategy = this.tradingStrategies.get(stock.getCode());
+        TradingStrategy<StockDBEntity, TradeWrapper> strategy = this.tradingStrategies.get(stock.getCode());
         return RecomendationDBImpl.createSellRecomendation(stock, strategy.getId(), trade.getSize(), date,
                 stock.getCloseValueAtDate(date));
 
@@ -87,7 +87,7 @@ public class TradingSystemDBImpl extends TradingSystem<OrderDBEntity, StockDBEnt
         log.info(String.format("Creating buy recomendation for stock %s at date %s", stock.getCode(), date));
 
         double stockValue = stock.getCloseValueAtDate(date);
-        TradingStrategy<StockDBEntity, TradeDBEntity> strategy = getStrategyForStock(stock);
+        TradingStrategy<StockDBEntity, TradeWrapper> strategy = getStrategyForStock(stock);
         double stopLoss = strategy.calculateStopLossPoint(date);
 
         return RecomendationDBImpl.createBuyRecomendation(stock, strategy.getId(), size, date, stockValue, stopLoss);

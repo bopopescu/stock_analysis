@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import preti.stock.db.model.TradeDBEntity;
+import preti.stock.db.model.OperationDBEntity;
 import preti.stock.web.service.TradeService;
 
 @RestController
@@ -21,10 +21,10 @@ public class TradeController {
     private TradeService tradeService;
 
     @RequestMapping(path = "/trade/open", method = RequestMethod.GET)
-    public List<TradeDBEntity> getOpenTrades(@RequestParam(name = "accountId", required = true) long accountId,
+    public List<OperationDBEntity> getOpenTrades(@RequestParam(name = "accountId", required = true) long accountId,
             @RequestParam(name = "stockId", required = true) long stockId) {
         logger.debug(String.format("Finding open trades for account %s and stock %s", accountId, stockId));
-        List<TradeDBEntity> trades = tradeService.getOpenTrades(accountId, stockId);
+        List<OperationDBEntity> trades = tradeService.getOpenTrades(accountId, stockId);
         logger.info(
                 String.format("Found %s open trades for account %s and stock %s", trades.size(), accountId, stockId));
         return trades;

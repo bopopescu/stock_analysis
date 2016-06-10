@@ -6,14 +6,14 @@ import java.util.List;
 
 import preti.stock.analysismodel.donchian.DonchianModel;
 import preti.stock.db.model.AccountDBEntity;
-import preti.stock.db.model.TradeDBEntity;
+import preti.stock.db.model.WalletDBEntity;
 
 @SuppressWarnings("serial")
 public class AccountWrapper implements Serializable {
 
     private AccountDBEntity target;
     private List<DonchianModel> model;
-    private Collection<TradeDBEntity> wallet;
+    private Collection<WalletDBEntity> wallet;
     private List<String> stockCodesToAnalyze;
 
     public AccountDBEntity getTarget() {
@@ -32,11 +32,11 @@ public class AccountWrapper implements Serializable {
         this.model = model;
     }
 
-    public Collection<TradeDBEntity> getWallet() {
+    public Collection<WalletDBEntity> getWallet() {
         return wallet;
     }
 
-    public void setWallet(Collection<TradeDBEntity> wallet) {
+    public void setWallet(Collection<WalletDBEntity> wallet) {
         this.wallet = wallet;
     }
 

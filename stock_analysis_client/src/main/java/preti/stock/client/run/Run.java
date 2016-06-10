@@ -13,9 +13,9 @@ import org.joda.time.DateTime;
 import org.springframework.web.client.RestTemplate;
 
 import preti.stock.analysismodel.donchian.DonchianModel;
+import preti.stock.db.model.OperationDBEntity;
 import preti.stock.db.model.OrderDBEntity;
 import preti.stock.db.model.OrderExecutionData;
-import preti.stock.db.model.TradeDBEntity;
 
 public class Run {
 
@@ -47,9 +47,9 @@ public class Run {
             for (OrderDBEntity o : orders) {
                 ordersData.add(new OrderExecutionData(o.getOrderId(), currentDate.toDate(), o.getValue()));
             }
-            TradeDBEntity[] trades = restTemplate.postForObject(
+            OperationDBEntity[] trades = restTemplate.postForObject(
                     "http://localhost:8080/order/execute?accountId={accountId}",
-                    ordersData.toArray(new OrderExecutionData[] {}), TradeDBEntity[].class, parameters);
+                    ordersData.toArray(new OrderExecutionData[] {}), OperationDBEntity[].class, parameters);
             System.out.println(trades.length + " trades executed");
 
             currentDate = currentDate.plusDays(1);

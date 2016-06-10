@@ -1,4 +1,5 @@
-delete from trade;
+delete from operation;
+delete from wallet;
 delete from op_order;
 delete from donchian_model_entry;
 delete from model;

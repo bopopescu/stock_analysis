@@ -15,11 +15,11 @@ import eu.verdelhan.ta4j.indicators.simple.MaxPriceIndicator;
 import eu.verdelhan.ta4j.indicators.simple.MinPriceIndicator;
 import preti.stock.db.model.StockDBEntity;
 import preti.stock.db.model.StockHistoryDBEntity;
-import preti.stock.db.model.TradeDBEntity;
+import preti.stock.db.model.wrapper.TradeWrapper;
 import preti.stock.system.Trade;
 import preti.stock.system.TradingStrategy;
 
-public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, TradeDBEntity> {
+public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, TradeWrapper> {
     private static final Log log = LogFactory.getLog(DonchianStrategyDBImpl.class);
 
     private long id;
@@ -74,7 +74,7 @@ public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, Tr
     }
 
     @Override
-    public boolean hasReachedMaxGain(Trade<TradeDBEntity> trade, Date date) {
+    public boolean hasReachedMaxGain(Trade<TradeWrapper> trade, Date date) {
         int dataSize = stock.getHistorySizeBeforeDate(date);
         if (dataSize <= exitDonchianSize)
             return false;
@@ -83,7 +83,7 @@ public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, Tr
     }
 
     @Override
-    public boolean hasReachedStopLoss(Trade<TradeDBEntity> trade, Date date) {
+    public boolean hasReachedStopLoss(Trade<TradeWrapper> trade, Date date) {
         if (!trade.isOpen())
             throw new IllegalArgumentException("Trade is not opened.");
 

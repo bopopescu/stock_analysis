@@ -1,5 +1,6 @@
 package preti.stock.system;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,13 +72,18 @@ public abstract class TradingSystem<R, S, T> {
                     recomendations.add(rec);
                     decrementAvailableMoney(rec.getSize()*rec.getValue());
                 } else {
-                    log.warn(String.format("Not enough balance to enter position for stock %s at date %d",
+                    log.warn(String.format("Not enough balance to enter position for stock %s at date %s",
                             stock.getCode(), recomendationDate));
                 }
             }
         }
 
         return recomendations;
+    }
+    
+    public static void main(String[] args){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        System.out.println(format.format(new Date()));
     }
 
 }
