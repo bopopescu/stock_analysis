@@ -1,6 +1,7 @@
 package preti.stock.fe.location.recomendations;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class RecomendationsService {
             Stock stock = stockFacade.getStock(o.getStockId());
             StockHistory[] history = stockFacade.getStockHistory(o.getStockId(), initialHistoryDate,
                     recomendationsDate);
-            // stock.setHistory(Arrays.asList(history));
+            stock.setHistory(Arrays.asList(history));
             switch (o.getType()) {
             case BUY:
                 orders.add(
