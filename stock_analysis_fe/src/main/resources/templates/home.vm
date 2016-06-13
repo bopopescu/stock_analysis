@@ -102,25 +102,19 @@
                                         <tr>
                                             <th>Código</th>
                                             <th>Nome</th>
-                                            <th>Data compra</th>
-                                            <th>Valor compra</th>
                                             <th>Quantidade</th>
-                                            <th>Valor total compra</th>
-                                            <th>Valor atual</th>
+                                            <th>Valor unitário atual</th>
                                             <th>Valor total atual</th>
                                         </tr>
                                     </thead>
                                     <tbody id="var_wallet">
-                                    	#foreach ($trade in $homeVO.trades)
+                                    	#foreach ($w in $homeVO.wallet)
                                     		<tr class="odd gradeX">
-                                    			<td>$trade.stockCode</td>
-                                    			<td>$trade.stockName</td>
-                                    			<td class="right">$dateTool.format($trade.buyDate)</td>
-                                    			<td class="right">$trade.buyValue</td>
-                                    			<td class="right">$trade.size</td>
-                                    			<td class="right">$trade.totalBuyValue</td>
-                                    			<td class="right">$trade.sellValue</td>
-                                    			<td class="right">$trade.totalSellValue</td>
+                                    			<td>$w.stockCode</td>
+                                    			<td>$w.stockName</td>
+                                    			<td class="right">$w.size</td>
+                                    			<td class="right">$w.formattedUnitValue</td>
+                                    			<td class="right">$w.formattedTotalValue</td>
                                     		</tr>	
                                     	#end
                                     </tbody>

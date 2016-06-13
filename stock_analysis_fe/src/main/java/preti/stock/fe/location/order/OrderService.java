@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.OrderExecutionData;
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.Trade;
+import preti.stock.client.OrderExecutionData;
+import preti.stock.client.RemoteApiException;
+import preti.stock.client.model.Operation;
+import preti.stock.client.model.Order;
+import preti.stock.client.model.Stock;
 import preti.stock.fe.facade.OrderFacade;
-import preti.stock.fe.facade.RemoteApiException;
 import preti.stock.fe.facade.StockFacade;
 import preti.stock.fe.location.OrderVO;
 
@@ -36,18 +36,18 @@ public class OrderService {
         List<OrderVO> ordersVO = new ArrayList<>();
         for (Order o : orders) {
             Stock stock = stockFacade.getStock(o.getStockId());
-            ordersVO.add(new OrderVO(o.getOrderId(), o.getType(), o.getStockId(), stock.getCode(),
-                    stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(), o.getStopPos()));
+            ordersVO.add(new OrderVO(o.getOrderId(), o.getType(), o.getStockId(), stock.getCode(), stock.getName(),
+                    o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(), o.getStopPos()));
         }
 
         return ordersVO;
     }
 
-    public List<Trade> executeOrders(List<OrderVO> ordersVO, long accountId) throws RemoteApiException {
+    public List<Operation> executeOrders(List<OrderVO> ordersVO, long accountId) throws RemoteApiException {
         logger.info(String.format("Execution %s orders for account %s", ordersVO.size(), accountId));
-        
+
         List<OrderExecutionData> ordersExecData = new ArrayList<>();
-        for(OrderVO o : ordersVO) {
+        for (OrderVO o : ordersVO) {
             ordersExecData.add(new OrderExecutionData(o.getOrderId(), o.getDate(), o.getValue()));
         }
         return orderFacade.executeOrders(ordersExecData, accountId);

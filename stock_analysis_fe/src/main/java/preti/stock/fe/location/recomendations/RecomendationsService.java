@@ -1,7 +1,6 @@
 package preti.stock.fe.location.recomendations;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -11,14 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import preti.stock.coremodel.Order;
-import preti.stock.coremodel.OrderType;
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
-import preti.stock.coremodel.Trade;
+import preti.stock.client.RemoteApiException;
+import preti.stock.client.model.Operation;
+import preti.stock.client.model.OperationType;
+import preti.stock.client.model.Order;
+import preti.stock.client.model.Stock;
+import preti.stock.client.model.StockHistory;
 import preti.stock.fe.facade.OrderFacade;
 import preti.stock.fe.facade.RecomendationFacade;
-import preti.stock.fe.facade.RemoteApiException;
 import preti.stock.fe.facade.StockFacade;
 import preti.stock.fe.facade.TradeFacade;
 import preti.stock.fe.location.OrderVO;
@@ -52,19 +51,19 @@ public class RecomendationsService {
             Stock stock = stockFacade.getStock(o.getStockId());
             StockHistory[] history = stockFacade.getStockHistory(o.getStockId(), initialHistoryDate,
                     recomendationsDate);
-            stock.setHistory(Arrays.asList(history));
+            // stock.setHistory(Arrays.asList(history));
             switch (o.getType()) {
             case BUY:
-                orders.add(new OrderVO(o.getOrderId(), OrderType.BUY, o.getStockId(), stock.getCode(),
-                        stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(),
-                        o.getStopPos()));
+                orders.add(
+                        new OrderVO(o.getOrderId(), OperationType.BUY, o.getStockId(), stock.getCode(), stock.getName(),
+                                o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(), o.getStopPos()));
                 break;
             case SELL:
-                List<Trade> openTrades = tradeFacade.getOpenTrades(accountId, o.getStockId());
-                Trade lastOpenTrade = openTrades.get(0);
-                orders.add(new OrderVO(o.getOrderId(), OrderType.SELL, o.getStockId(),
-                        stock.getCode(), stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(),
-                        o.getValue(), lastOpenTrade.getBuyValue(), lastOpenTrade.getBuyDate()));
+                List<Operation> openTrades = tradeFacade.getOpenTrades(accountId, o.getStockId());
+                Operation lastOpenTrade = openTrades.get(0);
+                orders.add(new OrderVO(o.getOrderId(), OperationType.SELL, o.getStockId(), stock.getCode(),
+                        stock.getName(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(),
+                        lastOpenTrade.getValue(), lastOpenTrade.getCreationDate()));
                 break;
             }
         }
@@ -78,12 +77,12 @@ public class RecomendationsService {
         for (OrderVO oVo : ordersVO) {
             switch (oVo.getType()) {
             case SELL:
-                orders.add(Order.createSellOrder(oVo.getOrderId(), oVo.getStockId(),
-                        oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue()));
+                orders.add(new Order(OperationType.SELL, oVo.getStockId(), oVo.getModelId(), oVo.getSize(),
+                        oVo.getDate(), oVo.getValue()));
                 break;
             case BUY:
-                orders.add(Order.createBuyOrder(oVo.getOrderId(), oVo.getStockId(),
-                        oVo.getModelId(), oVo.getSize(), oVo.getDate(), oVo.getValue(), oVo.getStopPos()));
+                orders.add(new Order(oVo.getOrderId(), OperationType.BUY, oVo.getStockId(), oVo.getModelId(),
+                        oVo.getSize(), oVo.getDate(), oVo.getValue(), oVo.getStopPos()));
                 break;
             }
         }

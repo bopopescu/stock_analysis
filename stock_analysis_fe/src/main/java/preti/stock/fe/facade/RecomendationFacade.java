@@ -12,7 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import preti.stock.coremodel.Order;
+import preti.stock.client.RemoteApiException;
+import preti.stock.client.model.Order;
 
 @Service
 public class RecomendationFacade extends AbstractApiFacade {

@@ -2,7 +2,6 @@ ext.deps = [
     jacksonVersion:'2.4.4'
 ]
 dependencies {
-	compile project(':stock_analysis_api_client')
 	compile "commons-logging:commons-logging:1.1.1"
 	compile "com.fasterxml.jackson.core:jackson-core:" + deps.jacksonVersion
 	compile "com.fasterxml.jackson.core:jackson-annotations:" + deps.jacksonVersion

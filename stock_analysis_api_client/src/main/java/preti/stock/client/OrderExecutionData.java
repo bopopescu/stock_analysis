@@ -1,4 +1,4 @@
-package preti.stock.db.model;
+package preti.stock.client;
 
 import java.io.Serializable;
 import java.util.Date;

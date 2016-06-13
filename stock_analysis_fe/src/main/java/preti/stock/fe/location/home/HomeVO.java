@@ -3,49 +3,47 @@ package preti.stock.fe.location.home;
 import java.io.Serializable;
 import java.util.List;
 
-import preti.stock.fe.location.TradeVO;
-
 @SuppressWarnings("serial")
 public class HomeVO implements Serializable {
 
-	private long accountId;
-	private double accountInitialPosition;
-	private double accountBalance;
-	private List<TradeVO> trades;
+    private long accountId;
+    private double accountInitialPosition;
+    private double accountBalance;
+    private List<WalletVO> wallet;
 
-	public HomeVO(long accountId, double accountInitialPosition, double accountBalance, List<TradeVO> trades) {
-		super();
-		this.accountId = accountId;
-		this.accountInitialPosition = accountInitialPosition;
-		this.accountBalance = accountBalance;
-		this.trades = trades;
-	}
+    public HomeVO(long accountId, double accountInitialPosition, double accountBalance, List<WalletVO> wallet) {
+        super();
+        this.accountId = accountId;
+        this.accountInitialPosition = accountInitialPosition;
+        this.accountBalance = accountBalance;
+        this.wallet = wallet;
+    }
 
-	public long getAccountId() {
-		return accountId;
-	}
+    public long getAccountId() {
+        return accountId;
+    }
 
-	public double getAccountInitialPosition() {
-		return accountInitialPosition;
-	}
+    public double getAccountInitialPosition() {
+        return accountInitialPosition;
+    }
 
-	public double getAccountBalance() {
-		return accountBalance;
-	}
+    public double getAccountBalance() {
+        return accountBalance;
+    }
 
-	public List<TradeVO> getTrades() {
-		return trades;
-	}
-	
-	public double getWalletTotalValue() {
-		if(trades==null || trades.isEmpty())
-			return 0;
-		
-		double totalValue = 0;
-		for(TradeVO t : trades)
-			totalValue += t.getTotalSellValue();
-		
-		return totalValue;
-	}
+    public List<WalletVO> getWallet() {
+        return wallet;
+    }
+
+    public double getWalletTotalValue() {
+        if (wallet == null || wallet.isEmpty())
+            return 0;
+
+        double totalValue = 0;
+        for (WalletVO w : wallet)
+            totalValue += w.getTotalValue();
+
+        return totalValue;
+    }
 
 }

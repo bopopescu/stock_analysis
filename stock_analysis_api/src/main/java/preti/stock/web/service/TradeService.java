@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import preti.stock.client.OrderExecutionData;
 import preti.stock.db.model.AccountDBEntity;
 import preti.stock.db.model.OperationDBEntity;
 import preti.stock.db.model.OrderDBEntity;
-import preti.stock.db.model.OrderExecutionData;
 import preti.stock.db.model.WalletDBEntity;
 import preti.stock.web.ApiError;
 import preti.stock.web.exception.ApiValidationException;

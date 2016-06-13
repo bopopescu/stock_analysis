@@ -3,13 +3,13 @@ package preti.stock.fe.location;
 import java.io.Serializable;
 import java.util.Date;
 
-import preti.stock.coremodel.OrderType;
+import preti.stock.client.model.OperationType;
 
 @SuppressWarnings("serial")
 public class OrderVO implements Serializable {
 
     private long orderId;
-    private OrderType type;
+    private OperationType type;
     private long stockId;
     private String stockCode;
     private String stockName;
@@ -27,8 +27,8 @@ public class OrderVO implements Serializable {
 
     }
 
-    public OrderVO(long orderId, OrderType type, long stockId, String stockCode, String stockName,
-            long modelId, double size, Date date, double value, double stopPos) {
+    public OrderVO(long orderId, OperationType type, long stockId, String stockCode, String stockName, long modelId,
+            double size, Date date, double value, double stopPos) {
         super();
         this.orderId = orderId;
         this.type = type;
@@ -42,8 +42,8 @@ public class OrderVO implements Serializable {
         this.stopPos = stopPos;
     }
 
-    public OrderVO(long orderId, OrderType type, long stockId, String stockCode, String stockName,
-            long modelId, double size, Date creationDate, double value, double previousBuyValue, Date previousBuyDate) {
+    public OrderVO(long orderId, OperationType type, long stockId, String stockCode, String stockName, long modelId,
+            double size, Date creationDate, double value, double previousBuyValue, Date previousBuyDate) {
         this(orderId, type, stockId, stockCode, stockName, modelId, size, creationDate, value, 0);
         this.previousBuyValue = previousBuyValue;
         this.previousBuyDate = previousBuyDate;
@@ -57,16 +57,16 @@ public class OrderVO implements Serializable {
         this.orderId = orderId;
     }
 
-    public OrderType getType() {
+    public OperationType getType() {
         return type;
     }
 
-    public void setType(OrderType type) {
+    public void setType(OperationType type) {
         this.type = type;
     }
 
     public void setTypeStr(String type) {
-        setType(OrderType.valueOf(type));
+        setType(OperationType.getFromValue(type));
     }
 
     public long getStockId() {
@@ -146,11 +146,11 @@ public class OrderVO implements Serializable {
     }
 
     public boolean isBuyOrder() {
-        return OrderType.BUY.equals(type);
+        return OperationType.BUY.equals(type);
     }
 
     public boolean isSellOrder() {
-        return OrderType.SELL.equals(type);
+        return OperationType.SELL.equals(type);
     }
 
     public String getFormattedPreviousBuyValue() {

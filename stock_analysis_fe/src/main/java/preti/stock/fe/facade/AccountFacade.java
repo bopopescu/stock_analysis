@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import preti.stock.analysismodel.donchian.Account;
+import preti.stock.client.RemoteApiException;
+import preti.stock.client.model.Account;
 
 @Service
 public class AccountFacade extends AbstractApiFacade {

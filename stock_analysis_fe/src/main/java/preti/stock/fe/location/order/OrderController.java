@@ -7,12 +7,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import preti.stock.fe.facade.RemoteApiException;
+import preti.stock.client.RemoteApiException;
 import preti.stock.fe.location.AbstractController;
 
 @Controller
 public class OrderController extends AbstractController {
-    
+
     @Autowired
     private OrderService orderService;
 
@@ -21,7 +21,7 @@ public class OrderController extends AbstractController {
             @RequestParam(name = "accountId", required = true) long accountId) throws RemoteApiException {
         model.put("accountId", accountId);
         model.put("orders", orderService.getAllOpenOrders(accountId));
-        
+
         return "orders";
     }
 

@@ -1,4 +1,4 @@
-package preti.stock.fe.facade;
+package preti.stock.client;
 
 import org.springframework.http.HttpStatus;
 

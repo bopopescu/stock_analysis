@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import preti.stock.api.ApiHeader;
+import preti.stock.client.ApiHeader;
 import preti.stock.web.exception.ApiValidationException;
 
 @ControllerAdvice

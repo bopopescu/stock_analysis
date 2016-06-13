@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import preti.stock.api.ApiHeader;
+import preti.stock.client.ApiHeader;
 import preti.stock.fe.facade.FacadeValidationException;
 
 @ControllerAdvice

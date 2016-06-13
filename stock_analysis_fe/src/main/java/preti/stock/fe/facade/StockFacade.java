@@ -10,8 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import preti.stock.coremodel.Stock;
-import preti.stock.coremodel.StockHistory;
+import preti.stock.client.RemoteApiException;
+import preti.stock.client.model.Stock;
+import preti.stock.client.model.StockHistory;
 
 @Service
 public class StockFacade extends AbstractApiFacade {

@@ -1,4 +1,4 @@
-package preti.stock.api;
+package preti.stock.client;
 
 public enum ApiHeader {
     ERROR_VALIDATION_CODE("Error-Validation-Code");

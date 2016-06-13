@@ -93,7 +93,7 @@
 					
 					var element = $(this).attr('value')
 					var orderVO = {
-						"typeStr": 'BUY',
+						"typeStr": 'B',
 						"stockId": $("#buy_stockId_"+element).attr('value'),
 						"modelId": $("#buy_modelId_"+element).attr('value'),
 						"size": converteNumero( $("input[name='buySize_"+element+"'").attr('value') ),
@@ -139,7 +139,7 @@
 					
 					var element = $(this).attr('value')
 					var orderVO = {
-						"typeStr": 'SELL',
+						"typeStr": 'S',
 						"stockId": $("#sell_stockId_"+element).attr('value'),
 						"modelId": $("#sell_modelId_"+element).attr('value'),
 						"size": converteNumero( $("input[name='sellSize_"+element+"'").attr('value') ),

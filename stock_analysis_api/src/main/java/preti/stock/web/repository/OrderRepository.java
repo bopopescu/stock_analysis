@@ -70,8 +70,7 @@ public class OrderRepository {
         sql.append(" inner join model m on m.model_id=o.model_id ");
         sql.append(" where ");
         sql.append("    m.account_id=? ");
-        sql.append("    and not exists (select 1 from trade t where t.sell_order_id=o.order_id) ");
-        sql.append("    and not exists (select 1 from trade t where t.buy_order_id=o.order_id) ");
+        sql.append("    and not exists (select 1 from operation op where op.order_id=o.order_id) ");
 
         return jdbcTemplate.query(sql.toString(), new Object[] { accountId }, new OrderMapper());
     }

@@ -12,10 +12,9 @@ import java.util.Map;
 import org.joda.time.DateTime;
 import org.springframework.web.client.RestTemplate;
 
-import preti.stock.analysismodel.donchian.DonchianModel;
-import preti.stock.db.model.OperationDBEntity;
-import preti.stock.db.model.OrderDBEntity;
-import preti.stock.db.model.OrderExecutionData;
+import preti.stock.client.OrderExecutionData;
+import preti.stock.client.model.Operation;
+import preti.stock.client.model.Order;
 
 public class Run {
 
@@ -33,51 +32,28 @@ public class Run {
 
             parameters.put("date", dateFormat.format(currentDate.toDate()));
             parameters.put("accountId", 1);
-            OrderDBEntity[] orders = restTemplate.getForObject(
-                    "http://localhost:8080/recomendation/generate?accountId={accountId}&date={date}",
-                    OrderDBEntity[].class, parameters);
+            Order[] orders = restTemplate.getForObject(
+                    "http://localhost:8080/recomendation/generate?accountId={accountId}&date={date}", Order[].class,
+                    parameters);
             System.out.println(orders.length + " recomendations generated");
 
-            orders = restTemplate.postForObject("http://localhost:8080/order/create", orders, OrderDBEntity[].class);
+            orders = restTemplate.postForObject("http://localhost:8080/order/create", orders, Order[].class);
             System.out.println(orders.length + " orders created");
 
             parameters.put("accountId", 1l);
             parameters.put("execDate", dateFormat.format(currentDate.toDate()));
             List<OrderExecutionData> ordersData = new ArrayList<>();
-            for (OrderDBEntity o : orders) {
+            for (Order o : orders) {
                 ordersData.add(new OrderExecutionData(o.getOrderId(), currentDate.toDate(), o.getValue()));
             }
-            OperationDBEntity[] trades = restTemplate.postForObject(
-                    "http://localhost:8080/order/execute?accountId={accountId}",
-                    ordersData.toArray(new OrderExecutionData[] {}), OperationDBEntity[].class, parameters);
+            Operation[] trades = restTemplate.postForObject("http://localhost:8080/order/execute?accountId={accountId}",
+                    ordersData.toArray(new OrderExecutionData[] {}), Operation[].class, parameters);
             System.out.println(trades.length + " trades executed");
 
             currentDate = currentDate.plusDays(1);
         }
 
         // FALTA CHAMAR CLOSE ALL OPEN TRADES;
-    }
-
-    private static DonchianModel[] mergeModels(DonchianModel[] newModel, DonchianModel[] oldModel) {
-        Map<Long, DonchianModel> mapModels = new HashMap<>();
-        for (DonchianModel m : newModel) {
-            mapModels.put(m.getStockId(), m);
-        }
-
-        for (DonchianModel m : oldModel) {
-            if (!mapModels.containsKey(m.getStockId())) {
-                mapModels.put(m.getStockId(),
-                        new DonchianModel(0l, m.getStockId(), 0, m.getExitDonchianSize(), m.getRiskRate()));
-            }
-        }
-
-        DonchianModel[] mergedModels = new DonchianModel[mapModels.size()];
-        int i = 0;
-        for (DonchianModel m : mapModels.values()) {
-            mergedModels[i] = m;
-            i++;
-        }
-        return mergedModels;
     }
 
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import preti.stock.fe.facade.RemoteApiException;
+import preti.stock.client.RemoteApiException;
 import preti.stock.fe.location.AbstractController;
 import preti.stock.fe.location.OrderVO;
 

@@ -1,6 +1,7 @@
 package preti.stock.web.controller;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import preti.stock.client.OrderExecutionData;
+import preti.stock.client.model.Operation;
+import preti.stock.client.model.OperationType;
+import preti.stock.client.model.Order;
 import preti.stock.db.model.OperationDBEntity;
 import preti.stock.db.model.OrderDBEntity;
-import preti.stock.db.model.OrderExecutionData;
 import preti.stock.web.exception.ApiValidationException;
 import preti.stock.web.service.OrderService;
 import preti.stock.web.service.TradeService;
@@ -30,16 +34,27 @@ public class OrderController {
     private TradeService tradeService;
 
     @RequestMapping(path = "/order/create", headers = "Accept=application/json")
-    public List<OrderDBEntity> createOrders(@RequestBody List<OrderDBEntity> orders) {
-        return orderService.createOrders(orders);
+    public List<Order> createOrders(@RequestBody List<OrderDBEntity> orders) {
+
+        List<OrderDBEntity> dbOrders = orderService.createOrders(orders);
+        List<Order> result = new ArrayList<>();
+        dbOrders.forEach(o -> result.add(new Order(o.getOrderId(), OperationType.getFromValue(o.getType().type),
+                o.getStockId(), o.getModelId(), o.getSize(), o.getCreationDate(), o.getValue(), o.getStopPos())));
+        return result;
     }
 
     @RequestMapping(path = "/order/execute", headers = "Accept=application/json")
-    public List<OperationDBEntity> executeOrders(@RequestBody List<OrderExecutionData> ordersExecData,
+    public List<Operation> executeOrders(@RequestBody List<OrderExecutionData> ordersExecData,
             @RequestParam(name = "accountId", required = true) long accountId)
             throws ParseException, ApiValidationException {
         logger.info(String.format("Executing orders for accountId=%s", accountId));
-        return tradeService.executeOrders(accountId, ordersExecData);
+
+        List<OperationDBEntity> operations = tradeService.executeOrders(accountId, ordersExecData);
+        List<Operation> result = new ArrayList<>();
+        operations.forEach(op -> result.add(new Operation(op.getOperationId(), op.getOrderId(), op.getCreationDate(),
+                op.getSize(), op.getValue(), op.getStopLoss())));
+
+        return result;
     }
 
     @RequestMapping(path = "/order/getOpen", headers = "Accept=application/json", method = RequestMethod.GET)
