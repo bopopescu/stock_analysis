@@ -96,8 +96,7 @@ public class RecomendationsService {
         Map<String, DonchianStrategyDBImpl> tradingStrategies = new HashMap<>();
         for (DonchianModel parameter : account.getModel()) {
             StockDBImpl st = stocksMap.get(parameter.getStockId());
-            tradingStrategies.put(st.getCode(), new DonchianStrategyDBImpl(st, parameter.getId(),
-                    parameter.getEntryDonchianSize(), parameter.getExitDonchianSize(), parameter.getRiskRate()));
+            tradingStrategies.put(st.getCode(), new DonchianStrategyDBImpl(st, parameter.getId()));
         }
         return tradingStrategies;
     }

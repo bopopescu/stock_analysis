@@ -61,9 +61,9 @@ public class TradeService {
         }
 
         AccountDBEntity account = accountRepository.getAccount(accountId);
-        if (account.getBalance() + balanceChange < 0) {
-            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
-        }
+//        if (account.getBalance() + balanceChange < 0) {
+//            throw new ApiValidationException(ApiError.TRADE_INSUFICIENT_BALANCE);
+//        }
 
         accountRepository.updateBalance(accountId, balanceChange);
 

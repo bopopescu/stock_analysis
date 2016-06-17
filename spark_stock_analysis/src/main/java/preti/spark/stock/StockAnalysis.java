@@ -235,10 +235,10 @@ public class StockAnalysis {
         ConfigContext configContext = new ConfigContext();
         configContext.setStockHistoryFile("/tmp/cotacoes.txt");
         configContext.setStockCodesToAnalyze(Arrays.asList(stockCodesToAnalyze));
-        configContext.setMinDochianEntryValue(2);
+        configContext.setMinDochianEntryValue(20);
         configContext.setMaxDonchianEntryValue(50);
-        configContext.setMinDonchianExitValue(2);
-        configContext.setMaxDonchianExitValue(50);
+        configContext.setMinDonchianExitValue(10);
+        configContext.setMaxDonchianExitValue(30);
 
         Date parsedInitialDate = dateFormat.parse(initialDate);
         configContext.setInitialDate(

@@ -1,66 +1,37 @@
 package preti.stock.api.model.trading;
 
-import java.util.ArrayList;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
+import org.springframework.web.client.RestTemplate;
 
-import eu.verdelhan.ta4j.Tick;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.helpers.HighestValueIndicator;
-import eu.verdelhan.ta4j.indicators.helpers.LowestValueIndicator;
-import eu.verdelhan.ta4j.indicators.simple.MaxPriceIndicator;
-import eu.verdelhan.ta4j.indicators.simple.MinPriceIndicator;
 import preti.stock.api.model.db.StockDBEntity;
-import preti.stock.api.model.db.StockHistoryDBEntity;
 import preti.stock.api.model.db.wrapper.TradeWrapper;
 import preti.stock.system.Trade;
 import preti.stock.system.TradingStrategy;
 
 public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, TradeWrapper> {
+    @SuppressWarnings("unused")
     private static final Log log = LogFactory.getLog(DonchianStrategyDBImpl.class);
+    private final String analysisServiceLocation = "http://stock_analysis_service:8082";
 
     private long id;
     private StockDBImpl stock;
-    private final double riskRate;
-    private int entryDonchianSize, exitDonchianSize;
 
-    private LowestValueIndicator lowestValueIndicator;
-    private HighestValueIndicator highestValueIndicator;
+    private RestTemplate restTemplate;
+    DateFormat dateFormat;
 
-    public DonchianStrategyDBImpl(StockDBImpl stock, long id, int entryDonchianSize, int exitDonchianSize,
-            double riskRate) {
+    public DonchianStrategyDBImpl(StockDBImpl stock, long id) {
         this.stock = stock;
         this.id = id;
-        this.entryDonchianSize = entryDonchianSize;
-        this.exitDonchianSize = exitDonchianSize;
 
-        this.lowestValueIndicator = createLowestValueIndicator();
-        this.highestValueIndicator = createHighestValueIndicator();
-
-        this.riskRate = riskRate;
-    }
-
-    private TimeSeries createTimeSeries() {
-        TimeSeries stockHistory = new TimeSeries(stock.getCode(), new ArrayList<>());
-        for (Date d : stock.getAllHistoryDates()) {
-            StockHistoryDBEntity h = stock.getHistory(d);
-            stockHistory.addTick(
-                    new Tick(new DateTime(d.getTime()), 0, h.getHigh(), h.getLow(), h.getClose(), h.getVolume()));
-        }
-        return stockHistory;
-    }
-
-    private LowestValueIndicator createLowestValueIndicator() {
-        MinPriceIndicator minPrice = new MinPriceIndicator(createTimeSeries());
-        return new LowestValueIndicator(minPrice, exitDonchianSize);
-    }
-
-    private HighestValueIndicator createHighestValueIndicator() {
-        MaxPriceIndicator maxPrice = new MaxPriceIndicator(createTimeSeries());
-        return new HighestValueIndicator(maxPrice, entryDonchianSize);
+        restTemplate = new RestTemplate();
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     }
 
     @Override
@@ -75,11 +46,16 @@ public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, Tr
 
     @Override
     public boolean hasReachedMaxGain(Trade<TradeWrapper> trade, Date date) {
-        int dataSize = stock.getHistorySizeBeforeDate(date);
-        if (dataSize <= exitDonchianSize)
-            return false;
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("stock", stock.getCode());
+        parameters.put("account", 1);
+        parameters.put("date", dateFormat.format(date));
 
-        return stock.getCloseValueAtDate(date) <= lowestValueIndicator.getValue(dataSize - 1).toDouble();
+        StringBuilder url = new StringBuilder();
+        url.append(analysisServiceLocation);
+        url.append("/shouldSellStock");
+        url.append("?stock={stock}&date={date}&account={account}");
+        return restTemplate.getForObject(url.toString(), Boolean.class, parameters);
     }
 
     @Override
@@ -92,39 +68,46 @@ public class DonchianStrategyDBImpl implements TradingStrategy<StockDBEntity, Tr
 
     @Override
     public boolean shouldBuyStock(Date date) {
-        if (entryDonchianSize == 0) {
-            log.info("Skiping at date " + date);
-            return false;
-        }
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("stock", stock.getCode());
+        parameters.put("account", 1);
+        parameters.put("date", dateFormat.format(date));
 
-        int dataSize = stock.getHistorySizeBeforeDate(date);
-        if (dataSize <= entryDonchianSize) {
-            log.info("Skiping at date " + date);
-            return false;
-        }
-
-        return stock.getVolumeAtDate(date) >= Math.pow(10, 6)
-                && stock.getCloseValueAtDate(date) > highestValueIndicator.getValue(dataSize - 1).toDouble();
+        StringBuilder url = new StringBuilder();
+        url.append(analysisServiceLocation);
+        url.append("/shouldBuyStock");
+        url.append("?stock={stock}&date={date}&account={account}");
+        return restTemplate.getForObject(url.toString(), Boolean.class, parameters);
     }
 
     @Override
     public double calculatePositionSize(Date date, double accountInitialBalance, double accountCurrentBalance,
             double openPositionsValue) {
-        double stopLossPoint = calculateStopLossPoint(date);
-        double stockValue = stock.getCloseValueAtDate(date);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("stock", stock.getCode());
+        parameters.put("account", 1);
+        parameters.put("date", dateFormat.format(date));
+        parameters.put("balance", accountCurrentBalance);
+        parameters.put("openPosValue", openPositionsValue);
 
-        double size = Math
-                .floor(((accountCurrentBalance + openPositionsValue) * riskRate) / (stockValue - stopLossPoint));
-        while ((size * stockValue) > accountCurrentBalance && size > 1) {
-            size--;
-        }
-
-        return size;
+        StringBuilder url = new StringBuilder();
+        url.append(analysisServiceLocation);
+        url.append("/calculatePositionSize");
+        url.append("?stock={stock}&date={date}&account={account}&balance={balance}&openPosValue={openPosValue}");
+        return restTemplate.getForObject(url.toString(), Double.class, parameters);
     }
 
     public double calculateStopLossPoint(Date d) {
-        int dataSize = stock.getHistorySizeBeforeDate(d);
-        return lowestValueIndicator.getValue(dataSize - 1).toDouble();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("stock", stock.getCode());
+        parameters.put("account", 1);
+        parameters.put("date", dateFormat.format(d));
+
+        StringBuilder url = new StringBuilder();
+        url.append(analysisServiceLocation);
+        url.append("/calculateStopLossPoint");
+        url.append("?stock={stock}&date={date}&account={account}");
+        return restTemplate.getForObject(url.toString(), Double.class, parameters);
     }
 
 }

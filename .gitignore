@@ -19,3 +19,4 @@ gradlew.bat
 !gradle-wrapper.jar
 
 /localdata
+/analysis_result
