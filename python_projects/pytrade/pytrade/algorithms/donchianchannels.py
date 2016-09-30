@@ -1,11 +1,9 @@
-from pytrade_base import BaseTradingStrategy
-import datetime
 import math
 
-from pyalgotrade import technical
 from pyalgotrade import dataseries
+from pyalgotrade import technical
 
-
+from pytrade.base import TradingAlgorithm
 
 
 class MaxDonchianWindow(technical.EventWindow):
@@ -45,37 +43,38 @@ class DonchianChannel(dataseries.SequenceDataSeries):
     def isReady(self):
         return self.entryValue() is not None and self.exitValue() is not None
 
-class DonchianTradingStrategy(BaseTradingStrategy):
-    def __init__(self, instrument, feed, broker, donchianEntrySize, donchianExitSize):
-        super(DonchianTradingStrategy, self).__init__(instrument, feed, broker)
+class DonchianTradingAlgorithm(TradingAlgorithm):
+    def __init__(self, feed, broker, donchianEntrySize, donchianExitSize):
+        super(DonchianTradingAlgorithm, self).__init__(feed, broker)
 
-        self.__instrument = instrument
-        self.__donchian = DonchianChannel(feed[instrument].getHighDataSeries(), feed[instrument].getLowDataSeries(), donchianEntrySize, donchianExitSize, maxLen=60)
+        self.__donchians = {}
+        for instrument in feed.getRegisteredInstruments():
+            self.__donchians[instrument] = DonchianChannel(feed[instrument].getHighDataSeries(), feed[instrument].getLowDataSeries(), donchianEntrySize, donchianExitSize, maxLen=60)
 
-    def shouldAnalyze(self, bar):
-        return self.__donchian.isReady()
+    def shouldAnalyze(self, bar, instrument):
+        return self.__donchians[instrument].isReady()
 
-    def shouldBuyStock(self, bar):
-        return bar.getVolume()>10000000 and bar.getClose() > self.__donchian.entryValue()
+    def shouldBuyStock(self, bar, instrument):
+        return bar.getVolume()>10000000 and bar.getClose() > self.__donchians[instrument].entryValue()
 
-    def shouldSellStock(self, bar):
-        return bar.getClose() < self.__donchian.exitValue()
+    def shouldSellStock(self, bar, instrument):
+        return bar.getClose() < self.__donchians[instrument].exitValue()
 
 
-    def calculateEntrySize(self, bar):
+    def calculateEntrySize(self, bar, instrument):
         riskRate = 0.03
 
         totalCash = self.getBroker().getTotalCash(includeShares=True)
         closeValue = bar.getClose()
-        stopLossPoint = self.calculateStopLoss(bar)
+        stopLossPoint = self.calculateStopLoss(bar, instrument)
 
         return math.floor ( (totalCash * riskRate) / (closeValue - stopLossPoint) )
 
-    def calculateStopLoss(self, bar):
-        return self.__donchian.exitValue()
+    def calculateStopLoss(self, bar, instrument):
+        return self.__donchians[instrument].exitValue()
 
-    def getMinDonchian(self):
-        return self.__donchian.getMinDonchian()
+    def getMinDonchian(self, instrument):
+        return self.__donchians[instrument].getMinDonchian()
 
-    def getMaxDonchian(self):
-        return self.__donchian.getMaxDonchian()
+    def getMaxDonchian(self, instrument):
+        return self.__donchians[instrument].getMaxDonchian()

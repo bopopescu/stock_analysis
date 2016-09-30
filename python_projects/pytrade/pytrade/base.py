@@ -2,15 +2,27 @@
 from pyalgotrade import strategy
 from pyalgotrade.broker import Order
 import abc
+import logging
 
-class TradingSystem(strategy.BacktestingStrategy):
-    def __init__(self, feed, broker, tradingStrategies):
+class TradingSystem(strategy.BaseStrategy):
+    def __init__(self, feed, broker, debugMode=True, tradingAlgorithm=None):
         super(TradingSystem, self).__init__(feed, broker)
-        self.__tradingStrategies = tradingStrategies
+        self.setUseEventDateTimeInLogs(True)
+        self.__setDebugMode(debugMode)
+
+        self.__tradingAlgorithm = tradingAlgorithm
+
+    def setAlgorithm(self, tradingAlgorithm):
+        self.__tradingAlgorithm = tradingAlgorithm
+
+    def __setDebugMode(self, debugOn):
+        """Enable/disable debug level messages in the strategy and backtesting broker.
+        This is enabled by default."""
+        level = logging.DEBUG if debugOn else logging.INFO
+        self.getLogger().setLevel(level)
+        self.getBroker().getLogger().setLevel(level)
 
     def onOrderUpdated(self, order):
-        self.info(order)
-
         assert order.getType() == Order.Type.MARKET or order.getType() == Order.Type.STOP
 
         if order.getType() == Order.Type.STOP:
@@ -22,6 +34,12 @@ class TradingSystem(strategy.BacktestingStrategy):
         if order.getAction() == Order.Action.BUY and (order.getState() == Order.State.FILLED or order.getState() == Order.State.PARTIALLY_FILLED):
             shares = self.getBroker().getShares(instrument)
             self.stopOrder(instrument=instrument, stopPrice=order.stopLossValue, quantity=(-1*shares), goodTillCanceled=True)
+        elif order.getAction() == Order.Action.SELL and order.getState() == Order.State.ACCEPTED:
+            #verify if there was a colision between an sell order and a stop order;
+            activeOrders = self.getBroker().getActiveOrders(instrument=instrument)
+            if len(activeOrders) == 1 and activeOrders[0].getId() == order.getId():
+                self.warning("Collision between stop loss and sell condition submitted at %s" % (order.getSubmitDateTime()))
+                self.getBroker().cancelOrder(order)
         elif order.getAction() == Order.Action.SELL and order.getState() == Order.State.FILLED:
             stopOrder = self.getBroker().getActiveOrders(instrument=instrument)[0]
             assert stopOrder.getType() == Order.Type.STOP
@@ -36,41 +54,38 @@ class TradingSystem(strategy.BacktestingStrategy):
 
         order = self.marketOrder(instrument=instrument, quantity=quantity, goodTillCanceled=False, allOrNone=False)
         order.stopLossValue = stopLossValue #o ideal seria um ter um novo tipo de ordem pra preencher esse valor.
-        # self.stopOrder(instrument=instrument, stopPrice=stopLossValue, quantity=(-1*quantity), goodTillCanceled=True, allOrNone=True)
 
     def exitPosition(self, instrument):
         assert instrument in self.getBroker().getActiveInstruments()
         qty = self.getBroker().getShares(instrument)
         assert qty>0
 
-        #stopOrder = self.getBroker().getActiveOrders(instrument=instrument)[0]
-        #assert stopOrder.getType() == Order.Type.STOP
-        #self.getBroker().cancelOrder(stopOrder)
-
         self.marketOrder(instrument=instrument, quantity=(-1*qty))
 
+    def onBarsImpl(self, bars, instrument):
+        if (not self.__tradingAlgorithm.shouldAnalyze(bars, instrument)):
+            self.debug("Skipping stock %s at date %s" % (len(bars.getInstruments()), bars.getDateTime()))
+            return
+
+        bar = bars.getBar(instrument)
+        if self.isOpenPosition(instrument):  # open position
+            if self.__tradingAlgorithm.shouldSellStock(bar, instrument):
+                self.exitPosition(instrument)
+        elif self.__tradingAlgorithm.shouldBuyStock(bar, instrument):
+            size = self.__tradingAlgorithm.calculateEntrySize(bar, instrument)
+            stopLoss = self.__tradingAlgorithm.calculateStopLoss(bar, instrument)
+            self.enterPosition(instrument, size, stopLoss)
+
     def onBars(self, bars):
+        assert self.__tradingAlgorithm is not None, "Algorithm not attached."
         for instrument in bars.getInstruments():
-            strategy = self.__tradingStrategies[instrument]
-            if(not (strategy and strategy.shouldAnalyze(bars.getDateTime()) )):
-                self.info("Skipping stock %s at date %s" % (len(bars.getInstruments()), bars.getDateTime()))
-                continue
-
-            bar = bars.getBar(instrument)
-            if self.isOpenPosition(instrument): #open position
-                if strategy.shouldSellStock(bar):
-                    self.exitPosition(instrument)
-            elif strategy.shouldBuyStock(bar):
-                size = strategy.calculateEntrySize(bar)
-                stopLoss = strategy.calculateStopLoss(bar)
-                self.enterPosition(instrument, size, stopLoss)
+            self.onBarsImpl(bars, instrument)
 
 
-class BaseTradingStrategy(object):
+class TradingAlgorithm(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, instrument, feed, broker):
-        self.__instrument = instrument
+    def __init__(self, feed, broker):
         self.__feed = feed
         self.__broker = broker
 
@@ -78,7 +93,7 @@ class BaseTradingStrategy(object):
         return self.__broker
 
     @abc.abstractmethod
-    def shouldAnalyze(self, bar):
+    def shouldAnalyze(self, bar, instrument):
         """
         :param dateTime: datetime of the event.
         :type dateTime: dateTime.datetime.
@@ -86,17 +101,17 @@ class BaseTradingStrategy(object):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def shouldSellStock(self, bar):
+    def shouldSellStock(self, bar, instrument):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def shouldBuyStock(self, bar):
+    def shouldBuyStock(self, bar, instrument):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def calculateEntrySize(self, bar):
+    def calculateEntrySize(self, bar, instrument):
         raise  NotImplementedError()
 
     @abc.abstractmethod
-    def calculateStopLoss(self, bar):
+    def calculateStopLoss(self, bar, instrument):
         raise  NotImplementedError()
