@@ -11,9 +11,9 @@ codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5",
 feed = googlefeed.Feed()
 rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or row["Volume"] == "-"
 for code in codes:
-    datafile = './googlefinance/' + code + '-2014.csv'
+    datafile = './googlefinance/' + code + '-2015.csv'
     print "Downloading %s ..." % (datafile)
-    # googlefinance.download_daily_bars(code, 2014, datafile)
+    # googlefinance.download_daily_bars(code, 2015, datafile)
     feed.addBarsFromCSV(code, datafile, timezone=None, rowFilter=rowFilter)
 
 class DonchianStrategyOptimizer(TradingSystem):
@@ -21,12 +21,13 @@ class DonchianStrategyOptimizer(TradingSystem):
         broker = backtesting.Broker(10000, feed, backtesting.FixedPerTrade(10))
         super(DonchianStrategyOptimizer, self).__init__(feed=feed, broker=broker, tradingAlgorithm=DonchianTradingAlgorithm(feed, broker, entrySize, exitSize, riskFactor), debugMode=False)
 
-# entrySize = range(5, 90)
-# exitSize = range(2, 90)
-
-entrySize = range(15, 40)
-exitSize = range(8, 25)
+entrySize = range(10, 60)
+exitSize = range(5, 30)
 riskFactor = [float(x)/100 for x in range(1, 11)]
+
+# entrySize = range(15, 40)
+# exitSize = range(8, 25)
+# riskFactor = [float(x)/100 for x in range(1, 11)]
 
 result = local.run(DonchianStrategyOptimizer, feed, itertools.product(entrySize, exitSize, riskFactor), workerCount=6)
 print "Best result is R$%s with parameters %s" %(result.getResult(), result.getParameters())

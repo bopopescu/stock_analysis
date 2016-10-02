@@ -3,3 +3,4 @@ zipline
 googlefinance
 .idea
 .spyderproject
+*.pyc
