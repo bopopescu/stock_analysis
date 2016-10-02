@@ -13,7 +13,7 @@ class GoogleFinanceBacktest(object):
 
     LOGGER_NAME = "GoogleFinanceBacktest"
 
-    def __init__(self, instruments, initialCash, year, debugMode=True, csvDirs="./googlefinance", downloadFiles=True):
+    def __init__(self, instruments, initialCash, year, debugMode=True, csvStorage="./googlefinance", downloadFiles=True):
         self.__logger = logger.getLogger(GoogleFinanceBacktest.LOGGER_NAME)
         self.__finalPortfolioValue = 0
 
@@ -21,17 +21,8 @@ class GoogleFinanceBacktest(object):
         self.__feed = googlefeed.Feed()
         rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
                                 row["Volume"] == "-"
-        for code in instruments:
-            datafile = ('%s/%s-%s.csv') % (csvDirs, code, year)
-            if downloadFiles:
-                self.__logger.info("Downloading file %s" % (datafile))
-                if(os.path.exists(datafile)):
-                    self.__logger.debug("File %s already exists, not downloading it" % (datafile))
-                else:
-                    googlefinance.download_daily_bars(code, year, datafile)
 
-            self.__logger.info("Feeding file %s" % (datafile))
-            self.__feed.addBarsFromCSV(code, datafile, timezone=None, rowFilter=rowFilter)
+        self.__feed = googlefinance.build_feed(instruments, year, year, storage=csvStorage, skipErrors=True, rowFilter=rowFilter)
 
         # Create Broker
         comissionModel = backtesting.FixedPerTrade(10)
