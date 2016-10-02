@@ -13,7 +13,7 @@ class GoogleFinanceBacktest(object):
 
     LOGGER_NAME = "GoogleFinanceBacktest"
 
-    def __init__(self, instruments, initialCash, year, debugMode=True, csvStorage="./googlefinance", downloadFiles=True):
+    def __init__(self, instruments, initialCash, year, debugMode=True, csvStorage="./googlefinance"):
         self.__logger = logger.getLogger(GoogleFinanceBacktest.LOGGER_NAME)
         self.__finalPortfolioValue = 0
 
