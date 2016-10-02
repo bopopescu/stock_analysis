@@ -7,6 +7,7 @@ from pyalgotrade.stratanalyzer import returns
 from pytrade.backtesting.analyzer.dalytradingresults import DailyTradingResults
 from pyalgotrade import plotter
 from matplotlib.backends.backend_pdf import PdfPages
+import os.path
 
 class GoogleFinanceBacktest(object):
 
@@ -24,13 +25,17 @@ class GoogleFinanceBacktest(object):
             datafile = ('%s/%s-%s.csv') % (csvDirs, code, year)
             if downloadFiles:
                 self.__logger.info("Downloading file %s" % (datafile))
-                googlefinance.download_daily_bars(code, year, datafile)
+                if(os.path.exists(datafile)):
+                    self.__logger.debug("File %s already exists, not downloading it" % (datafile))
+                else:
+                    googlefinance.download_daily_bars(code, year, datafile)
 
             self.__logger.info("Feeding file %s" % (datafile))
             self.__feed.addBarsFromCSV(code, datafile, timezone=None, rowFilter=rowFilter)
 
         # Create Broker
-        self.__broker = backtesting.Broker(initialCash, self.__feed)
+        comissionModel = backtesting.FixedPerTrade(10)
+        self.__broker = backtesting.Broker(initialCash, self.__feed, commission=comissionModel)
         self.__strategy = TradingSystem(self.__feed, self.__broker, debugMode=debugMode)
 
         # Create Analyzers

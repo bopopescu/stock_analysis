@@ -44,8 +44,9 @@ class DonchianChannel(dataseries.SequenceDataSeries):
         return self.entryValue() is not None and self.exitValue() is not None
 
 class DonchianTradingAlgorithm(TradingAlgorithm):
-    def __init__(self, feed, broker, donchianEntrySize, donchianExitSize):
+    def __init__(self, feed, broker, donchianEntrySize, donchianExitSize, riskFactor):
         super(DonchianTradingAlgorithm, self).__init__(feed, broker)
+        self.__riskFactor = riskFactor
 
         self.__donchians = {}
         for instrument in feed.getRegisteredInstruments():
@@ -62,13 +63,12 @@ class DonchianTradingAlgorithm(TradingAlgorithm):
 
 
     def calculateEntrySize(self, bar, instrument):
-        riskRate = 0.03
 
         totalCash = self.getBroker().getTotalCash(includeShares=True)
         closeValue = bar.getClose()
         stopLossPoint = self.calculateStopLoss(bar, instrument)
 
-        return math.floor ( (totalCash * riskRate) / (closeValue - stopLossPoint) )
+        return math.floor ( (totalCash * self.__riskFactor) / (closeValue - stopLossPoint) )
 
     def calculateStopLoss(self, bar, instrument):
         return self.__donchians[instrument].exitValue()

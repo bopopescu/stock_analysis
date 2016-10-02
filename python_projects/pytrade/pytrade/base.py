@@ -38,7 +38,7 @@ class TradingSystem(strategy.BaseStrategy):
             #verify if there was a colision between an sell order and a stop order;
             activeOrders = self.getBroker().getActiveOrders(instrument=instrument)
             if len(activeOrders) == 1 and activeOrders[0].getId() == order.getId():
-                self.warning("Collision between stop loss and sell condition submitted at %s" % (order.getSubmitDateTime()))
+                self.warning("Collision between stop loss and sell condition submitted at %s" % (order.getSubmitDateTime())) #I could solve that if, before explicitly exiting a position, I verified that the trade was proffitable. That way, the only way to exit a proffitable trade would be via stop loss, so no collisions would happen.
                 self.getBroker().cancelOrder(order)
         elif order.getAction() == Order.Action.SELL and order.getState() == Order.State.FILLED:
             stopOrder = self.getBroker().getActiveOrders(instrument=instrument)[0]

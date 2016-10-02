@@ -17,11 +17,16 @@ for code in codes:
     feed.addBarsFromCSV(code, datafile, timezone=None, rowFilter=rowFilter)
 
 class DonchianStrategyOptimizer(TradingSystem):
-    def __init__(self, feed, entrySize, exitSize):
-        broker = backtesting.Broker(10000, feed)
-        super(DonchianStrategyOptimizer, self).__init__(feed, broker, DonchianTradingAlgorithm(feed, broker, entrySize, exitSize), debugMode=False)
+    def __init__(self, feed, entrySize, exitSize, riskFactor):
+        broker = backtesting.Broker(10000, feed, backtesting.FixedPerTrade(10))
+        super(DonchianStrategyOptimizer, self).__init__(feed=feed, broker=broker, tradingAlgorithm=DonchianTradingAlgorithm(feed, broker, entrySize, exitSize, riskFactor), debugMode=False)
 
-entrySize = range(10, 20)
-exitSize = range(2, 10)
+# entrySize = range(5, 90)
+# exitSize = range(2, 90)
 
-local.run(DonchianStrategyOptimizer, feed, itertools.product(entrySize, exitSize), workerCount=6)
+entrySize = range(15, 40)
+exitSize = range(8, 25)
+riskFactor = [float(x)/100 for x in range(1, 11)]
+
+result = local.run(DonchianStrategyOptimizer, feed, itertools.product(entrySize, exitSize, riskFactor), workerCount=6)
+print "Best result is R$%s with parameters %s" %(result.getResult(), result.getParameters())
