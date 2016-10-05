@@ -4,3 +4,4 @@ googlefinance
 .idea
 .spyderproject
 *.pyc
+sqlitedb
