@@ -7,7 +7,6 @@ from pyalgotrade.stratanalyzer import returns
 from pytrade.backtesting.analyzer.dalytradingresults import DailyTradingResults
 from pyalgotrade import plotter
 from matplotlib.backends.backend_pdf import PdfPages
-import os.path
 
 class GoogleFinanceBacktest(object):
 

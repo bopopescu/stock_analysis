@@ -1,20 +1,14 @@
 import matplotlib
-from matplotlib.backends.backend_pdf import PdfPages
-
-from pyalgotrade.barfeed import googlefeed
-from pyalgotrade.tools import googlefinance
-
 from pytrade.algorithms.donchianchannels import DonchianTradingAlgorithm
-from pytrade.base import TradingSystem
-
-from pyalgotrade.broker import backtesting
-
-from pyalgotrade.stratanalyzer import returns
-from pyalgotrade import plotter
-
-from pytrade.backtesting.analyzer.dalytradingresults import DailyTradingResults
-
 from pytrade.backtesting.backtest import GoogleFinanceBacktest
+from pytrade.feed import DynamicFeed
+import pytz, datetime
+from pyalgotrade.tools import googlefinance
+from pytrade.broker import PytradeBroker
+from pyalgotrade.broker import backtesting
+from pytrade.base import TradingSystem
+from pyalgotrade.observer import Event
+
 
 matplotlib.use('PDF')
 
@@ -27,7 +21,37 @@ backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.g
 backtest.run()
 backtest.generatePdfReport('/tmp/stock_analysis.pdf')
 
-47824
+############################################################################################################################
 
+# rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
+#                         row["Volume"] == "-"
+# instruments = ["PETR4", "PETR3"]
+# googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
+#                                       rowFilter=rowFilter)
+db = "./sqliteddb"
+# feed = DynamicFeed(db, codes, maxLen=10)
+# feed.getDatabase().addBarsFromFeed(googleFeed)
+################################################################################################
 
+feed = DynamicFeed(db, codes, maxLen=60)
 
+#$36922.16
+days =  feed.getAllDays()
+cash = 10000
+shares = {}
+activeOrders = {}
+nextOrderId = 1
+for day in days:
+    feed = DynamicFeed(db, codes, maxLen=60)
+    feed.positionFeed(day)
+
+    broker = PytradeBroker(cash, feed, backtesting.FixedPerTrade(10), shares, activeOrders, nextOrderId)
+    strategy = TradingSystem(feed, broker, debugMode=True)
+    strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05))
+
+    feed.dispatch()
+
+    cash = broker.getAvailableCash()
+    shares = broker.getAllShares()
+    activeOrders = broker.getAllActiveOrders()
+    nextOrderId = broker.getNextOrderIdWithoutIncrementing()

@@ -1,47 +1,33 @@
 import math
 
 from pyalgotrade import dataseries
-from pyalgotrade import technical
-
 from pytrade.base import TradingAlgorithm
 
 
-class MaxDonchianWindow(technical.EventWindow):
-    def getValue(self):
-        ret = None
-        if self.windowFull():
-            ret = self.getValues()[:-1].max()
-        return ret
-
-class MinDonchianWindow(technical.EventWindow):
-    def getValue(self):
-        ret = None
-        if self.windowFull():
-            ret = self.getValues()[:-1].min()
-        return ret
-
 class DonchianChannel(dataseries.SequenceDataSeries):
-    def __init__(self, entrySeries, exitSeries, entrySize, exitSize, maxLen=None):
+    def __init__(self, feed, instrument, entrySize, exitSize, maxLen=None):
 
         super(DonchianChannel, self).__init__(maxLen)
 
-        self.__entryWindow = technical.EventBasedFilter(entrySeries, MaxDonchianWindow(entrySize))
-        self.__exitWindow = technical.EventBasedFilter(exitSeries, MinDonchianWindow(exitSize))
+        self.__feed = feed
+        self.__instrument = instrument
+        self.__entrySize = entrySize
+        self.__exitSize = exitSize
 
     def getMinDonchian(self):
-        return self.__exitWindow
+        return self.__feed[self.__instrument].getLowDataSeries()[-(self.__exitSize+1):-1]
 
     def getMaxDonchian(self):
-        return self.__entryWindow
+        return self.__feed[self.__instrument].getHighDataSeries()[-(self.__entrySize+1):-1]
 
     def entryValue(self):
-        return self.__entryWindow[-1];
+        return max(self.getMaxDonchian())
 
     def exitValue(self):
-        return self.__exitWindow[-1];
+        return min(self.getMinDonchian())
 
     def isReady(self):
-        return self.entryValue() is not None and self.exitValue() is not None
+        return len(self.getMinDonchian())>=self.__exitSize and len(self.getMaxDonchian())>=self.__entrySize
 
 class DonchianTradingAlgorithm(TradingAlgorithm):
     def __init__(self, feed, broker, donchianEntrySize, donchianExitSize, riskFactor):
@@ -50,7 +36,7 @@ class DonchianTradingAlgorithm(TradingAlgorithm):
 
         self.__donchians = {}
         for instrument in feed.getRegisteredInstruments():
-            self.__donchians[instrument] = DonchianChannel(feed[instrument].getHighDataSeries(), feed[instrument].getLowDataSeries(), donchianEntrySize, donchianExitSize, maxLen=60)
+            self.__donchians[instrument] = DonchianChannel(feed, instrument, donchianEntrySize, donchianExitSize, maxLen=60)
 
     def shouldAnalyze(self, bar, instrument):
         return self.__donchians[instrument].isReady()

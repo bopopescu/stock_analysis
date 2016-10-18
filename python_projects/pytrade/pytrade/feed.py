@@ -23,7 +23,9 @@ class DynamicFeed(sqlitefeed.Feed):
         for instrument in instruments:
             self.loadBars(instrument, fromDateTime=fromDateTime, toDateTime=toDateTime)
 
-
+    def nextEvent(self):
+        dateTime, values = self.getNextValuesAndUpdateDS()
+        return dateTime is not None
 
     def positionFeed(self, day):
         """
@@ -34,4 +36,13 @@ class DynamicFeed(sqlitefeed.Feed):
 
         self.reset()
         while not self.eof() and self.peekDateTime() <= day:
-            self.dispatch()
+            self.nextEvent()
+
+    def getAllDays(self):
+        days = []
+        self.reset()
+        while not self.eof():
+            self.nextEvent()
+            days.append(self.peekDateTime())
+
+        return filter(None, days)
