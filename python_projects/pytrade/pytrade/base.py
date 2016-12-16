@@ -52,7 +52,7 @@ class TradingSystem(strategy.BaseStrategy):
         assert quantity > 0;
         assert  not self.isOpenPosition(instrument)
 
-        self.info("Buying %s shares of %s at %s" % (quantity, instrument, self.getBroker().getCurrentDateTime()))
+        self.debug("Order to buy %s shares of %s at %s" % (quantity, instrument, self.getBroker().getCurrentDateTime()))
         order = self.marketOrder(instrument=instrument, quantity=quantity, goodTillCanceled=False, allOrNone=True)
         order.stopLossValue = stopLossValue #o ideal seria um ter um novo tipo de ordem pra preencher esse valor.
 
@@ -61,7 +61,7 @@ class TradingSystem(strategy.BaseStrategy):
         qty = self.getBroker().getShares(instrument)
         assert qty>0
 
-        self.info("Selling %s shares of %s at %s" % (qty, instrument, self.getBroker().getCurrentDateTime()))
+        self.debug("Order to sell %s shares of %s at %s" % (qty, instrument, self.getBroker().getCurrentDateTime()))
         self.marketOrder(instrument=instrument, quantity=(-1*qty))
 
     def onBarsImpl(self, bars, instrument):
