@@ -50,7 +50,7 @@ class DonchianTradingAlgorithm(TradingAlgorithm):
 
     def calculateEntrySize(self, bar, instrument):
 
-        totalCash = self.getBroker().getTotalCash(includeShares=True)
+        totalCash = self.getBroker().getEquity()
         closeValue = bar.getClose()
         stopLossPoint = self.calculateStopLoss(bar, instrument)
 

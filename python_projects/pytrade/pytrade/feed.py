@@ -46,3 +46,9 @@ class DynamicFeed(sqlitefeed.Feed):
             days.append(self.peekDateTime())
 
         return filter(None, days)
+
+    def dispatchWithoutIncrementingDate(self):
+        dateTime, values = self.getCurrentValues()
+        if dateTime is not None:
+            self.getNewValuesEvent().emit(dateTime, values)
+        return dateTime is not None

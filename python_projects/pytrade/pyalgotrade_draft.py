@@ -2,12 +2,8 @@ import matplotlib
 from pytrade.algorithms.donchianchannels import DonchianTradingAlgorithm
 from pytrade.backtesting.backtest import GoogleFinanceBacktest
 from pytrade.feed import DynamicFeed
-import pytz, datetime
-from pyalgotrade.tools import googlefinance
 from pytrade.broker import PytradeBroker
-from pyalgotrade.broker import backtesting
 from pytrade.base import TradingSystem
-from pyalgotrade.observer import Event
 
 
 matplotlib.use('PDF')
@@ -16,10 +12,10 @@ matplotlib.use('PDF')
 codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5", "BRML3", "BVMF3", "CCRO3", "CIEL3", "CMIG4", "CPFE3", "CPLE6", "CSAN3", "CSNA3", "CTIP3", "CYRE3", "ECOR3", "EGIE3", "EMBR3", "ENBR3", "EQTL3", "ESTC3", "FIBR3", "GGBR4", "GOAU4", "HYPE3", "ITSA4", "ITUB4", "JBSS3", "KLBN11", "KROT3", "LAME4", "LREN3", "MRFG3", "MRVE3", "MULT3", "NATU3", "PCAR4", "PETR3", "PETR4", "QUAL3", "RADL3", "RENT3", "RUMO3", "SANB11", "SBSP3", "SMLE3", "SUZB5", "TIMP3", "UGPA3", "USIM5", "VALE3", "VALE5", "VIVT4", "WEGE3"]
 
 
-backtest = GoogleFinanceBacktest(instruments=codes, initialCash=10000, year=2014, csvStorage="./googlefinance")
+backtest = GoogleFinanceBacktest(instruments=codes, initialCash=10000, year=2014, debugMode=False, csvStorage="./googlefinance")
 backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.getBroker(), 9, 26, 0.05))
 backtest.run()
-backtest.generatePdfReport('/tmp/stock_analysis.pdf')
+# backtest.generatePdfReport('/tmp/stock_analysis.pdf')
 
 ############################################################################################################################
 
@@ -29,7 +25,7 @@ backtest.generatePdfReport('/tmp/stock_analysis.pdf')
 # googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
 #                                       rowFilter=rowFilter)
 db = "./sqliteddb"
-# feed = DynamicFeed(db, codes, maxLen=10)
+# feed = DynamicFeed    (db, codes, maxLen=10)
 # feed.getDatabase().addBarsFromFeed(googleFeed)
 ################################################################################################
 
@@ -45,13 +41,26 @@ for day in days:
     feed = DynamicFeed(db, codes, maxLen=60)
     feed.positionFeed(day)
 
-    broker = PytradeBroker(cash, feed, backtesting.FixedPerTrade(10), shares, activeOrders, nextOrderId)
-    strategy = TradingSystem(feed, broker, debugMode=True)
+    broker = PytradeBroker(cash, feed, shares, activeOrders, nextOrderId)
+    strategy = TradingSystem(feed, broker, debugMode=False)
     strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05))
 
-    feed.dispatch()
+    # feed.getNewValuesEvent().unsubscribe(broker.onBars)
+    feed.dispatchWithoutIncrementingDate()
+
+    feed.nextEvent()
+    for order in broker.getMarketOrdersToConfirm()+broker.getStopOrdersToConfirm():
+        bar = broker.getCurrentBarForInstrument(order.getInstrument())
+        if bar is None:
+            continue
+
+        if not broker.confirmOrder(order, bar):
+            broker.cancelOrder(order)
+
 
     cash = broker.getAvailableCash()
     shares = broker.getAllShares()
     activeOrders = broker.getAllActiveOrders()
     nextOrderId = broker.getNextOrderIdWithoutIncrementing()
+
+broker.getEquity()

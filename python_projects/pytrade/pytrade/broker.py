@@ -1,22 +1,57 @@
-from pyalgotrade.broker.backtesting import Broker
+from pyalgotrade.broker import BaseBrokerImpl
+from pyalgotrade.broker import  backtesting
 from pyalgotrade import logger
+from pyalgotrade.broker import Order
 
-class PytradeBroker(Broker):
+class PytradeBroker(BaseBrokerImpl):
     LOGGER_NAME = "pytrade.broker"
 
-    def __init__(self, cash, barFeed, commission=None, shares={}, activeOrders={}, nextOrderId=1):
-        super(PytradeBroker, self).__init__(cash, barFeed, commission)
+    def __init__(self, cash, barFeed, shares={}, activeOrders={}, nextOrderId=1):
+        super(PytradeBroker, self).__init__(cash, barFeed)
 
         self.initializeShares(shares)
         self.initializeActiveOrders(activeOrders, nextOrderId)
-
         self.setLogger(logger.getLogger(PytradeBroker.LOGGER_NAME))
 
-    def onBars(self, dateTime, bars):
-        self.getLogger().info("before onBars: %s" % (dateTime))
+    def initializeActiveOrders(self, activeOrders, nextOrderId):
+        self._activeOrders = activeOrders
+        self._nextOrderId = nextOrderId
 
-        #TODO: carrega cash, shares e orders do storage
-        super(PytradeBroker, self).onBars(dateTime, bars)
-        #TODO: salva cash, shares e orders no storage
+    def initializeShares(self, shares):
+        self._shares = shares
 
-        self.getLogger().info("after onBars")
+    def getNextOrderIdWithoutIncrementing(self):
+        return self._nextOrderId
+
+    def getMarketOrdersToConfirm(self):
+        return [o for o in self.getActiveOrders() if o.getType()==Order.Type.MARKET]
+
+    def getStopOrdersToConfirm(self):
+        bars = self.getFeed().getCurrentBars()
+        return [o for o in self.getActiveOrders() if o.getType() == Order.Type.STOP and o.getStopPrice()>=bars.getBar(instrument=o.getInstrument())]
+
+    def confirmOrder(self, order, bar):
+        self.getLogger().debug("Processing order %s " % (order.getId()))
+
+        self.acceptOrder(bar.getDateTime(), order)
+        quantity = order.getQuantity()
+        price = bar.getOpen()
+        commission=10
+        cost, sharesDelta, resultingCash = self.calculateCostSharesDeltaAndResultingCash(order, price, quantity, commission)
+
+        if resultingCash >= 0:
+            self.handleOrderExecution(order, bar.getDateTime(), price, quantity, commission, resultingCash, sharesDelta)
+            return True
+        else:
+            self.getLogger().debug("Not enough cash to fill %s order [%s] for %s share/s" % (
+                order.getInstrument(),
+                order.getId(),
+                order.getRemaining()
+            ))
+            return False
+
+    def createMarketOrder(self, action, instrument, quantity, onClose=False):
+        return backtesting.MarketOrder(action, instrument, quantity, onClose, self.getInstrumentTraits(instrument))
+
+    def createStopOrder(self, action, instrument, stopPrice, quantity):
+        return backtesting.StopOrder(action, instrument, stopPrice, quantity, self.getInstrumentTraits(instrument))

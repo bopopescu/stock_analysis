@@ -41,8 +41,7 @@ class DailyTradingResults(stratanalyzer.StrategyAnalyzer):
 
     def beforeOnBars(self, strat, bars):
         barDate = bars.getDateTime()
-        self.__totalCapital.appendWithDateTime(barDate
-                                               , strat.getBroker().getTotalCash(includeShares=True))
+        self.__totalCapital.appendWithDateTime(barDate, strat.getBroker().getEquity())
 
         try:
             dailyValue = self.__dailyTradeValues[bars.getDateTime()]

@@ -33,7 +33,7 @@ class TradingSystem(strategy.BaseStrategy):
         instrument = order.getInstrument()
         if order.getAction() == Order.Action.BUY and (order.getState() == Order.State.FILLED or order.getState() == Order.State.PARTIALLY_FILLED):
             shares = self.getBroker().getShares(instrument)
-            self.stopOrder(instrument=instrument, stopPrice=order.stopLossValue, quantity=(-1*shares), goodTillCanceled=True)
+            self.stopOrder(instrument=instrument, stopPrice=order.stopLossValue, quantity=(-1*shares), goodTillCanceled=True, allOrNone=True)
         elif order.getAction() == Order.Action.SELL and order.getState() == Order.State.ACCEPTED:
             #verify if there was a colision between an sell order and a stop order;
             activeOrders = self.getBroker().getActiveOrders(instrument=instrument)
@@ -41,7 +41,7 @@ class TradingSystem(strategy.BaseStrategy):
                 self.warning("Collision between stop loss and sell condition submitted at %s" % (order.getSubmitDateTime())) #I could solve that if, before explicitly exiting a position, I verified that the trade was proffitable. That way, the only way to exit a proffitable trade would be via stop loss, so no collisions would happen.
                 self.getBroker().cancelOrder(order)
         elif order.getAction() == Order.Action.SELL and order.getState() == Order.State.FILLED:
-            stopOrder = self.getBroker().getActiveOrders(instrument=instrument)[0]
+            stopOrder = [ o for o in self.getBroker().getActiveOrders(instrument=instrument) if o.getType()==Order.Type.STOP][0]
             assert stopOrder.getType() == Order.Type.STOP
             self.getBroker().cancelOrder(stopOrder)
 
@@ -52,7 +52,8 @@ class TradingSystem(strategy.BaseStrategy):
         assert quantity > 0;
         assert  not self.isOpenPosition(instrument)
 
-        order = self.marketOrder(instrument=instrument, quantity=quantity, goodTillCanceled=False, allOrNone=False)
+        self.info("Buying %s shares of %s at %s" % (quantity, instrument, self.getBroker().getCurrentDateTime()))
+        order = self.marketOrder(instrument=instrument, quantity=quantity, goodTillCanceled=False, allOrNone=True)
         order.stopLossValue = stopLossValue #o ideal seria um ter um novo tipo de ordem pra preencher esse valor.
 
     def exitPosition(self, instrument):
@@ -60,6 +61,7 @@ class TradingSystem(strategy.BaseStrategy):
         qty = self.getBroker().getShares(instrument)
         assert qty>0
 
+        self.info("Selling %s shares of %s at %s" % (qty, instrument, self.getBroker().getCurrentDateTime()))
         self.marketOrder(instrument=instrument, quantity=(-1*qty))
 
     def onBarsImpl(self, bars, instrument):
