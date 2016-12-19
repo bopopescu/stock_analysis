@@ -6,16 +6,16 @@ from pyalgotrade.broker import Order
 class PytradeBroker(BaseBrokerImpl):
     LOGGER_NAME = "pytrade.broker"
 
-    def __init__(self, cash, barFeed, shares={}, activeOrders={}, nextOrderId=1):
+    def __init__(self, cash, barFeed, shares={}, activeOrders={}):
         super(PytradeBroker, self).__init__(cash, barFeed)
 
         self.initializeShares(shares)
-        self.initializeActiveOrders(activeOrders, nextOrderId)
+        self.initializeActiveOrders(activeOrders)
         self.setLogger(logger.getLogger(PytradeBroker.LOGGER_NAME))
 
-    def initializeActiveOrders(self, activeOrders, nextOrderId):
+    def initializeActiveOrders(self, activeOrders):
         self._activeOrders = activeOrders
-        self._nextOrderId = nextOrderId
+        self._nextOrderId = max(activeOrders.keys()) + 1 if len(activeOrders) > 0 else 1
 
     def initializeShares(self, shares):
         self._shares = shares

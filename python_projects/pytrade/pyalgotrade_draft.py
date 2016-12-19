@@ -38,7 +38,6 @@ days =  feed.getAllDays()
 cash = 10000
 shares = {}
 activeOrders = {}
-nextOrderId = 1
 
 for day in days:
     fromDate = day - timedelta(days=maxLen)
@@ -46,7 +45,7 @@ for day in days:
     feed = DynamicFeed(db, codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
     feed.positionFeed(day)
 
-    broker = PytradeBroker(cash, feed, shares, activeOrders, nextOrderId)
+    broker = PytradeBroker(cash, feed, shares, activeOrders)
     strategy = TradingSystem(feed, broker, debugMode=False)
     strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05))
 
@@ -66,6 +65,5 @@ for day in days:
     cash = broker.getAvailableCash()
     shares = broker.getAllShares()
     activeOrders = broker.getAllActiveOrders()
-    nextOrderId = broker.getNextOrderIdWithoutIncrementing()
 
 broker.getEquity()

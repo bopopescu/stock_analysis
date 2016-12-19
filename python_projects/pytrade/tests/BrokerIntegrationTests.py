@@ -41,7 +41,6 @@ class BrokerIntegrationTests(unittest.TestCase):
         days = feed.getAllDays()
         shares = {}
         activeOrders = {}
-        nextOrderId = 1
 
         for day in days:
             fromDate = day - timedelta(days=maxLen)
@@ -49,7 +48,7 @@ class BrokerIntegrationTests(unittest.TestCase):
             feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
             feed.positionFeed(day)
 
-            broker = PytradeBroker(cash, feed, shares, activeOrders, nextOrderId)
+            broker = PytradeBroker(cash, feed, shares, activeOrders)
             strategy = TradingSystem(feed, broker, debugMode=False)
             strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, donchianEntry, donchianExit, riskFactor))
 
@@ -67,7 +66,6 @@ class BrokerIntegrationTests(unittest.TestCase):
             cash = broker.getAvailableCash()
             shares = broker.getAllShares()
             activeOrders = broker.getAllActiveOrders()
-            nextOrderId = broker.getNextOrderIdWithoutIncrementing()
 
         self.assertEqual(broker.getEquity(), 36922.16)
 
