@@ -1,4 +1,5 @@
 import matplotlib
+from datetime import timedelta
 from pytrade.algorithms.donchianchannels import DonchianTradingAlgorithm
 from pytrade.backtesting.backtest import GoogleFinanceBacktest
 from pytrade.feed import DynamicFeed
@@ -12,9 +13,9 @@ matplotlib.use('PDF')
 codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5", "BRML3", "BVMF3", "CCRO3", "CIEL3", "CMIG4", "CPFE3", "CPLE6", "CSAN3", "CSNA3", "CTIP3", "CYRE3", "ECOR3", "EGIE3", "EMBR3", "ENBR3", "EQTL3", "ESTC3", "FIBR3", "GGBR4", "GOAU4", "HYPE3", "ITSA4", "ITUB4", "JBSS3", "KLBN11", "KROT3", "LAME4", "LREN3", "MRFG3", "MRVE3", "MULT3", "NATU3", "PCAR4", "PETR3", "PETR4", "QUAL3", "RADL3", "RENT3", "RUMO3", "SANB11", "SBSP3", "SMLE3", "SUZB5", "TIMP3", "UGPA3", "USIM5", "VALE3", "VALE5", "VIVT4", "WEGE3"]
 
 
-backtest = GoogleFinanceBacktest(instruments=codes, initialCash=10000, year=2014, debugMode=False, csvStorage="./googlefinance")
-backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.getBroker(), 9, 26, 0.05))
-backtest.run()
+# backtest = GoogleFinanceBacktest(instruments=codes, initialCash=10000, year=2014, debugMode=False, csvStorage="./googlefinance")
+# backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.getBroker(), 9, 26, 0.05))
+# backtest.run()
 # backtest.generatePdfReport('/tmp/stock_analysis.pdf')
 
 ############################################################################################################################
@@ -29,7 +30,8 @@ db = "./sqliteddb"
 # feed.getDatabase().addBarsFromFeed(googleFeed)
 ################################################################################################
 
-feed = DynamicFeed(db, codes, maxLen=60)
+maxLen=int(26*1.4)
+feed = DynamicFeed(db, codes, maxLen=maxLen)
 
 #$36922.16
 days =  feed.getAllDays()
@@ -37,8 +39,11 @@ cash = 10000
 shares = {}
 activeOrders = {}
 nextOrderId = 1
+
 for day in days:
-    feed = DynamicFeed(db, codes, maxLen=60)
+    fromDate = day - timedelta(days=maxLen)
+    toDate = day + timedelta(days=5)
+    feed = DynamicFeed(db, codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
     feed.positionFeed(day)
 
     broker = PytradeBroker(cash, feed, shares, activeOrders, nextOrderId)
