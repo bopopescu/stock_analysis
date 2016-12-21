@@ -5,6 +5,8 @@ from pytrade.backtesting.backtest import GoogleFinanceBacktest
 from pytrade.feed import DynamicFeed
 from pytrade.broker import PytradeBroker
 from pytrade.base import TradingSystem
+from pytrade.persistence.memprovider import MemoryDataProvider
+from pytrade.persistence.sqliteprovider import SQLiteDataProvider
 
 
 matplotlib.use('PDF')
@@ -35,9 +37,9 @@ feed = DynamicFeed(db, codes, maxLen=maxLen)
 
 #$36922.16
 days =  feed.getAllDays()
-cash = 10000
-shares = {}
-activeOrders = {}
+dataProvider = SQLiteDataProvider(db, 'gabriel')
+dataProvider.createSchema()
+dataProvider.initializeUser(10000)
 
 for day in days:
     fromDate = day - timedelta(days=maxLen)
@@ -45,11 +47,10 @@ for day in days:
     feed = DynamicFeed(db, codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
     feed.positionFeed(day)
 
-    broker = PytradeBroker(cash, feed, shares, activeOrders)
+    broker = PytradeBroker(feed, dataProvider=dataProvider)
     strategy = TradingSystem(feed, broker, debugMode=False)
     strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05))
 
-    # feed.getNewValuesEvent().unsubscribe(broker.onBars)
     feed.dispatchWithoutIncrementingDate()
 
     feed.nextEvent()
@@ -62,8 +63,10 @@ for day in days:
             broker.cancelOrder(order)
 
 
-    cash = broker.getAvailableCash()
-    shares = broker.getAllShares()
-    activeOrders = broker.getAllActiveOrders()
+    dataProvider.persistCash(broker.getAvailableCash())
+    dataProvider.persistShares(broker.getAllShares())
+    dataProvider.persistOrders(broker.getAllActiveOrders())
+
+
 
 broker.getEquity()

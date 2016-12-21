@@ -6,6 +6,10 @@ from pytrade.base import TradingSystem
 from pytrade.algorithms.donchianchannels import DonchianTradingAlgorithm
 from pyalgotrade.tools import googlefinance
 from pytrade.backtesting.backtest import GoogleFinanceBacktest
+from pytrade.persistence.memprovider import MemoryDataProvider
+from pytrade.persistence.sqliteprovider import SQLiteDataProvider
+import pytz, datetime
+
 
 class BrokerIntegrationTests(unittest.TestCase):
     db = "./sqliteddb"
@@ -15,6 +19,12 @@ class BrokerIntegrationTests(unittest.TestCase):
              "LREN3", "MRFG3", "MRVE3", "MULT3", "NATU3", "PCAR4", "PETR3", "PETR4", "QUAL3", "RADL3", "RENT3", "RUMO3",
              "SANB11", "SBSP3", "SMLE3", "SUZB5", "TIMP3", "UGPA3", "USIM5", "VALE3", "VALE5", "VIVT4", "WEGE3"]
     csvStorage="./googlefinance"
+    donchianEntry = 9
+    donchianExit = 26
+    riskFactor = 0.05
+    initialCash = 10000
+    maxLen = int(donchianExit * 1.4)
+
 
     @classmethod
     def setUpClass(cls):
@@ -30,54 +40,121 @@ class BrokerIntegrationTests(unittest.TestCase):
         feed = DynamicFeed(cls.db, cls.codes, maxLen=10)
         feed.getDatabase().addBarsFromFeed(googleFeed)
 
-    def testLiveBrokerDonchianAlgorithm2014(self):
-        cash = 10000
-        donchianEntry = 9
-        donchianExit = 26
-        riskFactor = 0.05
-        maxLen = int(donchianExit * 1.4)
-        feed = DynamicFeed(self.db, self.codes, maxLen=maxLen)
+    def runDonchianAlgorithm(self, broker, feed, donchianEntry, donchianExit, riskFactor):
+        strategy = TradingSystem(feed, broker, debugMode=False)
+        strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, donchianEntry, donchianExit, riskFactor))
+        feed.dispatchWithoutIncrementingDate()
+        feed.nextEvent()
+        for order in broker.getMarketOrdersToConfirm() + broker.getStopOrdersToConfirm():
+            bar = broker.getCurrentBarForInstrument(order.getInstrument())
+            if bar is None:
+                continue
 
-        days = feed.getAllDays()
-        shares = {}
-        activeOrders = {}
+            if not broker.confirmOrder(order, bar):
+                broker.cancelOrder(order)
+
+    def testLiveBrokerDonchianAlgorithmWithSpecificDatesAndSQLiteDataProvider(self):
+        utc = pytz.utc
+        days = [
+            utc.localize(datetime.datetime(2014, 2, 7)),
+            utc.localize(datetime.datetime(2014, 2, 11)),
+            utc.localize(datetime.datetime(2014, 9, 18)),
+            utc.localize(datetime.datetime(2014, 10, 23)),
+            utc.localize(datetime.datetime(2014, 10, 28)),
+            utc.localize(datetime.datetime(2014, 12, 31))]
+
+        dataProvider = SQLiteDataProvider(self.db, 'gabriel')
+        dataProvider.createSchema()
+        dataProvider.initializeUser(self.initialCash)
 
         for day in days:
-            fromDate = day - timedelta(days=maxLen)
+            fromDate = day - timedelta(days=self.maxLen)
             toDate = day + timedelta(days=5)
-            feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
+            feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
             feed.positionFeed(day)
 
-            broker = PytradeBroker(cash, feed, shares, activeOrders)
-            strategy = TradingSystem(feed, broker, debugMode=False)
-            strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, donchianEntry, donchianExit, riskFactor))
+            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
 
-            feed.dispatchWithoutIncrementingDate()
-            feed.nextEvent()
+            dataProvider.persistCash(broker.getAvailableCash())
+            dataProvider.persistShares(broker.getAllShares())
+            dataProvider.persistOrders(broker.getAllActiveOrders())
 
-            for order in broker.getMarketOrdersToConfirm() + broker.getStopOrdersToConfirm():
-                bar = broker.getCurrentBarForInstrument(order.getInstrument())
-                if bar is None:
-                    continue
+        self.assertEqual(broker.getEquity(), 36922.16)
 
-                if not broker.confirmOrder(order, bar):
-                    broker.cancelOrder(order)
+    def testLiveBrokerDonchianAlgorithm2014WithSQLiteDataProvider(self):
+
+        feed = DynamicFeed(self.db, self.codes, maxLen=self.maxLen)
+        days = feed.getAllDays()
+
+        dataProvider = SQLiteDataProvider(self.db, 'gabriel')
+        dataProvider.createSchema()
+        dataProvider.initializeUser(self.initialCash)
+
+        for day in days:
+            fromDate = day - timedelta(days=self.maxLen)
+            toDate = day + timedelta(days=5)
+            feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
+            feed.positionFeed(day)
+
+            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
+
+            dataProvider.persistCash(broker.getAvailableCash())
+            dataProvider.persistShares(broker.getAllShares())
+            dataProvider.persistOrders(broker.getAllActiveOrders())
+
+        self.assertEqual(broker.getEquity(), 36922.16)
+
+
+
+    def testLiveBrokerDonchianAlgorithm2014WithoutDataProvider(self):
+        feed = DynamicFeed(self.db, self.codes, maxLen=self.maxLen)
+        days = feed.getAllDays()
+
+        cash = self.initialCash
+        shares = {}
+        orders = {}
+        for day in days:
+            fromDate = day - timedelta(days=self.maxLen)
+            toDate = day + timedelta(days=5)
+            feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
+            feed.positionFeed(day)
+
+            broker = PytradeBroker(feed, cash=cash, orders=orders, shares=shares)
+            self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
 
             cash = broker.getAvailableCash()
             shares = broker.getAllShares()
-            activeOrders = broker.getAllActiveOrders()
+            orders = broker.getAllActiveOrders()
+
+        self.assertEqual(broker.getEquity(), 36922.16)
+
+    def testLiveBrokerDonchianAlgorithm2014WithMemoryDataProvider(self):
+        feed = DynamicFeed(self.db, self.codes, maxLen=self.maxLen)
+        days = feed.getAllDays()
+
+        dataProvider = MemoryDataProvider()
+        dataProvider.persistCash(self.initialCash)
+        for day in days:
+            fromDate = day - timedelta(days=self.maxLen)
+            toDate = day + timedelta(days=5)
+            feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
+            feed.positionFeed(day)
+
+            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
+
+            dataProvider.persistCash(broker.getAvailableCash())
+            dataProvider.persistShares(broker.getAllShares())
+            dataProvider.persistOrders(broker.getAllActiveOrders())
 
         self.assertEqual(broker.getEquity(), 36922.16)
 
     def testBacktestingDonchianAlgorithm2014(self):
-        cash = 10000
-        donchianEntry = 9
-        donchianExit = 26
-        riskFactor = 0.05
-
-        backtest = GoogleFinanceBacktest(instruments=self.codes, initialCash=cash, year=2014, debugMode=False,
+        backtest = GoogleFinanceBacktest(instruments=self.codes, initialCash=self.initialCash, year=2014, debugMode=False,
                                          csvStorage=self.csvStorage)
-        backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.getBroker(), donchianEntry, donchianExit, riskFactor))
+        backtest.attachAlgorithm(DonchianTradingAlgorithm(backtest.getFeed(), backtest.getBroker(), self.donchianEntry, self.donchianExit, self.riskFactor))
         backtest.run()
 
         self.assertEqual(backtest.getBroker().getEquity(), 36922.16)

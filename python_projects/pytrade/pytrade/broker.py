@@ -6,11 +6,15 @@ from pyalgotrade.broker import Order
 class PytradeBroker(BaseBrokerImpl):
     LOGGER_NAME = "pytrade.broker"
 
-    def __init__(self, cash, barFeed, shares={}, activeOrders={}):
-        super(PytradeBroker, self).__init__(cash, barFeed)
+    def __init__(self, feed, cash=None, orders=None, shares=None, dataProvider=None):
+        cash = cash if cash is not None else dataProvider.loadCash()
+        orders = orders if orders is not None else dataProvider.loadOrders()
+        shares = shares if shares is not None else dataProvider.loadShares()
 
+        super(PytradeBroker, self).__init__(cash, feed)
+
+        self.initializeActiveOrders(orders)
         self.initializeShares(shares)
-        self.initializeActiveOrders(activeOrders)
         self.setLogger(logger.getLogger(PytradeBroker.LOGGER_NAME))
 
     def initializeActiveOrders(self, activeOrders):
