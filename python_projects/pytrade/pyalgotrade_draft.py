@@ -7,6 +7,7 @@ from pytrade.broker import PytradeBroker
 from pytrade.base import TradingSystem
 from pytrade.persistence.memprovider import MemoryDataProvider
 from pytrade.persistence.sqliteprovider import SQLiteDataProvider
+import pytradeapi
 
 
 matplotlib.use('PDF')
@@ -31,42 +32,35 @@ db = "./sqliteddb"
 # feed = DynamicFeed    (db, codes, maxLen=10)
 # feed.getDatabase().addBarsFromFeed(googleFeed)
 ################################################################################################
-
 maxLen=int(26*1.4)
 feed = DynamicFeed(db, codes, maxLen=maxLen)
-
-#$36922.16
 days =  feed.getAllDays()
-dataProvider = SQLiteDataProvider(db, 'gabriel')
-dataProvider.createSchema()
-dataProvider.initializeUser(10000)
 
-for day in days:
-    fromDate = day - timedelta(days=maxLen)
-    toDate = day + timedelta(days=5)
-    feed = DynamicFeed(db, codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=maxLen)
-    feed.positionFeed(day)
+username="gabriel"
+api = pytradeapi.PytradeApi(dbfilepah=db)
+api.reinitializeUser(username=username, cash=10000)
+tradingAlgorithmGenerator = lambda feed, broker: DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05)
 
-    broker = PytradeBroker(feed, dataProvider=dataProvider)
-    strategy = TradingSystem(feed, broker, debugMode=False)
-    strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05))
+for i in range(len(days)):
+    day = days[i]
+    api = pytradeapi.PytradeApi(db, username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen, debugmode=False)
+    api.executeAnalysis()
+    api.persistData(username=username)
 
-    feed.dispatchWithoutIncrementingDate()
+    if i == (len(days)-1):
+        continue
 
-    feed.nextEvent()
-    for order in broker.getMarketOrdersToConfirm()+broker.getStopOrdersToConfirm():
-        bar = broker.getCurrentBarForInstrument(order.getInstrument())
+    day = days[i+1]
+    api = pytradeapi.PytradeApi(db, username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen,
+                                debugmode=False)
+
+    for order in api.getActiveMarketOrders()+api.getActiveStopOrders():
+        bar = api.getCurrentBarForInstrument(order.getInstrument())
         if bar is None:
             continue
 
-        if not broker.confirmOrder(order, bar):
-            broker.cancelOrder(order)
+        if not api.confirmOrder(order, bar.getDateTime(), order.getQuantity(), bar.getOpen(), 10):
+            api.cancelOrder(order)
 
-
-    dataProvider.persistCash(broker.getAvailableCash())
-    dataProvider.persistShares(broker.getAllShares())
-    dataProvider.persistOrders(broker.getAllActiveOrders())
-
-
-
-broker.getEquity()
+    api.persistData(username=username)
+api.getEquity()

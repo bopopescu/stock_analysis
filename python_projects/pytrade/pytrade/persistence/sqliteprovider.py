@@ -86,12 +86,15 @@ class SQLiteDataProvider(DataProvider):
     """
     __DELETE_ORDERS_SQL = "delete from stock_order where user_id=?"
 
+    __INSERT_USER_SQL = "insert into user (name, cash) values (?, ?)"
+    __SELECT_USER_SQL = "select * from USER where name = ?"
+    __DELETE_USER_BY_ID_SQL = "delete from user where user_id = ?"
 
-    def __init__(self, dbFilePath, username):
+
+    def __init__(self, dbFilePath):
         super(SQLiteDataProvider, self).__init__()
         self.__connection = sqlite3.connect(dbFilePath)
         self.__connection.isolation_level = None  # To do auto-commit
-        self.__username = username
 
     def schemaExists(self):
         sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
@@ -128,15 +131,31 @@ class SQLiteDataProvider(DataProvider):
         cursor.execute(self.__CREATE_SHARES_TABLE_SQL)
         cursor.execute(self.__CREATE_ORDERS_TABLE_SQL)
 
-    def initializeUser(self, cash):
-        sql = "insert into %s (name, cash) values (?, ?)" % (self.__USERS_TABLE)
+    def initializeUser(self, username, cash):
         cursor = self.__connection.cursor()
-        cursor.execute(sql, [self.__username, cash])
+        cursor.execute(self.__INSERT_USER_SQL, [username, cash])
         cursor.close()
 
-    def getUserId(self):
+    def reinitializeUser(self, username, cash):
+        if self.userExists(username):
+            userId = self.getUserId(username)
+            cursor = self.__connection.cursor()
+            cursor.execute(self.__DELETE_SHARES_SQL, [userId])
+            cursor.execute(self.__DELETE_ORDERS_SQL, [userId])
+            cursor.execute(self.__DELETE_USER_BY_ID_SQL, [userId])
+
+        self.initializeUser(username, cash)
+
+    def userExists(self, username):
         cursor = self.__connection.cursor()
-        cursor.execute(self.__GET_USER_ID_SQL, [self.__username])
+        cursor.execute(self.__SELECT_USER_SQL, [username])
+        ret = True if cursor.fetchone() else False
+        cursor.close()
+        return ret
+
+    def getUserId(self, username):
+        cursor = self.__connection.cursor()
+        cursor.execute(self.__GET_USER_ID_SQL, [username])
         ret = cursor.fetchone()
         cursor.close()
         return ret[0]
@@ -168,38 +187,38 @@ class SQLiteDataProvider(DataProvider):
 
         return order
 
-    def loadCash(self):
+    def loadCash(self, username):
         cursor = self.__connection.cursor()
-        cursor.execute(self.__LOAD_CASH_SQL, [self.__username])
+        cursor.execute(self.__LOAD_CASH_SQL, [username])
         ret = cursor.fetchone()
         cursor.close()
         return ret[0]
 
-    def loadOrders(self):
+    def loadOrders(self, username):
         cursor = self.__connection.cursor()
-        cursor.execute(self.__LOAD_ORDERS_SQL, [self.__username])
+        cursor.execute(self.__LOAD_ORDERS_SQL, [username])
         ret = {}
         for row in cursor:
             ret[row[0]]=self.__createOrder(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
         cursor.close()
         return ret
 
-    def loadShares(self):
+    def loadShares(self, username):
         cursor = self.__connection.cursor()
-        cursor.execute(self.__LOAD_SHARES_SQL, [self.__username])
+        cursor.execute(self.__LOAD_SHARES_SQL, [username])
         ret = {}
         for row in cursor:
             ret[row[0]] = row[1]
         cursor.close()
         return ret
 
-    def persistCash(self, cash):
+    def persistCash(self, username, cash):
         cursor = self.__connection.cursor()
-        cursor.execute(self.__SAVE_CASH_SQL, [cash, self.__username])
+        cursor.execute(self.__SAVE_CASH_SQL, [cash, username])
         cursor.close()
 
-    def persistOrders(self, orders):
-        userId = self.getUserId()
+    def persistOrders(self, username, orders):
+        userId = self.getUserId(username)
 
         cursor = self.__connection.cursor()
         cursor.execute(self.__DELETE_ORDERS_SQL, [userId])
@@ -223,15 +242,15 @@ class SQLiteDataProvider(DataProvider):
                 parameters.append(o.getStopHit())
             elif o.getType() == Order.Type.MARKET:
                 parameters.append(o.getFillOnClose())
-                parameters.append(o.stopLossValue)
+                parameters.append(o.stopLossValue if o.getAction() == Order.Action.BUY else 0)
                 parameters.append(0)
             else:
                 raise ("Unsupported order type")
             cursor.execute(self.__SAVE_ORDERS_SQL, parameters)
         cursor.close()
 
-    def persistShares(self, shares):
-        userId = self.getUserId()
+    def persistShares(self, username, shares):
+        userId = self.getUserId(username)
 
         cursor = self.__connection.cursor()
         cursor.execute(self.__DELETE_SHARES_SQL, [userId])

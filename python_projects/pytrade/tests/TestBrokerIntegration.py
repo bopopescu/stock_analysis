@@ -54,6 +54,7 @@ class BrokerIntegrationTests(unittest.TestCase):
                 broker.cancelOrder(order)
 
     def testLiveBrokerDonchianAlgorithmWithSpecificDatesAndSQLiteDataProvider(self):
+        username = "gabriel"
         utc = pytz.utc
         days = [
             utc.localize(datetime.datetime(2014, 2, 7)),
@@ -63,9 +64,9 @@ class BrokerIntegrationTests(unittest.TestCase):
             utc.localize(datetime.datetime(2014, 10, 28)),
             utc.localize(datetime.datetime(2014, 12, 31))]
 
-        dataProvider = SQLiteDataProvider(self.db, 'gabriel')
+        dataProvider = SQLiteDataProvider(self.db)
         dataProvider.createSchema()
-        dataProvider.initializeUser(self.initialCash)
+        dataProvider.initializeUser(username, self.initialCash)
 
         for day in days:
             fromDate = day - timedelta(days=self.maxLen)
@@ -73,23 +74,24 @@ class BrokerIntegrationTests(unittest.TestCase):
             feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
             feed.positionFeed(day)
 
-            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            broker = PytradeBroker(feed, cash=dataProvider.loadCash(username), orders=dataProvider.loadOrders(username), shares=dataProvider.loadShares(username))
             self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
 
-            dataProvider.persistCash(broker.getAvailableCash())
-            dataProvider.persistShares(broker.getAllShares())
-            dataProvider.persistOrders(broker.getAllActiveOrders())
+            dataProvider.persistCash(username, broker.getAvailableCash())
+            dataProvider.persistShares(username, broker.getAllShares())
+            dataProvider.persistOrders(username, broker.getAllActiveOrders())
 
         self.assertEqual(broker.getEquity(), 36922.16)
 
     def testLiveBrokerDonchianAlgorithm2014WithSQLiteDataProvider(self):
+        username = "gabriel"
 
         feed = DynamicFeed(self.db, self.codes, maxLen=self.maxLen)
         days = feed.getAllDays()
 
-        dataProvider = SQLiteDataProvider(self.db, 'gabriel')
+        dataProvider = SQLiteDataProvider(self.db)
         dataProvider.createSchema()
-        dataProvider.initializeUser(self.initialCash)
+        dataProvider.initializeUser(username, self.initialCash)
 
         for day in days:
             fromDate = day - timedelta(days=self.maxLen)
@@ -97,12 +99,12 @@ class BrokerIntegrationTests(unittest.TestCase):
             feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
             feed.positionFeed(day)
 
-            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            broker = PytradeBroker(feed, cash=dataProvider.loadCash(username), orders=dataProvider.loadOrders(username), shares=dataProvider.loadShares(username))
             self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
 
-            dataProvider.persistCash(broker.getAvailableCash())
-            dataProvider.persistShares(broker.getAllShares())
-            dataProvider.persistOrders(broker.getAllActiveOrders())
+            dataProvider.persistCash(username, broker.getAvailableCash())
+            dataProvider.persistShares(username, broker.getAllShares())
+            dataProvider.persistOrders(username, broker.getAllActiveOrders())
 
         self.assertEqual(broker.getEquity(), 36922.16)
 
@@ -135,19 +137,19 @@ class BrokerIntegrationTests(unittest.TestCase):
         days = feed.getAllDays()
 
         dataProvider = MemoryDataProvider()
-        dataProvider.persistCash(self.initialCash)
+        dataProvider.persistCash(cash=self.initialCash)
         for day in days:
             fromDate = day - timedelta(days=self.maxLen)
             toDate = day + timedelta(days=5)
             feed = DynamicFeed(self.db, self.codes, fromDateTime=fromDate, toDateTime=toDate, maxLen=self.maxLen)
             feed.positionFeed(day)
 
-            broker = PytradeBroker(feed, dataProvider=dataProvider)
+            broker = PytradeBroker(feed, cash=dataProvider.loadCash(), orders=dataProvider.loadOrders(), shares=dataProvider.loadShares())
             self.runDonchianAlgorithm(broker, feed, self.donchianEntry, self.donchianExit, self.riskFactor)
 
-            dataProvider.persistCash(broker.getAvailableCash())
-            dataProvider.persistShares(broker.getAllShares())
-            dataProvider.persistOrders(broker.getAllActiveOrders())
+            dataProvider.persistCash(cash=broker.getAvailableCash())
+            dataProvider.persistShares(shares=broker.getAllShares())
+            dataProvider.persistOrders(orders=broker.getAllActiveOrders())
 
         self.assertEqual(broker.getEquity(), 36922.16)
 
