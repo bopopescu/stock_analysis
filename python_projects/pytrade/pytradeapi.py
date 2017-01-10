@@ -5,12 +5,17 @@ from datetime import timedelta
 from pytrade.broker import PytradeBroker
 from pytrade.base import TradingSystem
 from pyalgotrade import logger
+from pyalgotrade.barfeed import googlefeed
+from pyalgotrade.tools import googlefinance
+from pyalgotrade.utils import dt
+import glob
+import os
 
 
 class PytradeApi(object):
     LOGGER_NAME = "pytradeapi"
 
-    def __init__(self, dbfilepah, username=None, tradingAlgorithmGenerator=None, codes=None, date=datetime.now(),
+    def __init__(self, dbfilepah="/var/pytrade/sqlitedb", googleFinanceDir="/var/pytrade/googlefinance", username=None, tradingAlgorithmGenerator=None, codes=None, date=dt.as_utc(datetime.now()) ,
                  maxlen=90, debugmode=False):
         if codes is None:
             self.__codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5", "BRML3", "BVMF3",
@@ -24,6 +29,7 @@ class PytradeApi(object):
 
         self.__logger = logger.getLogger(PytradeApi.LOGGER_NAME)
         self.__dbFilePath = dbfilepah
+        self.__googleFinanceDir = googleFinanceDir
         self.__debugMode = debugmode
         self.__tradingAlgorithmGenerator = tradingAlgorithmGenerator
         self.__currentDate = date
@@ -132,3 +138,21 @@ class PytradeApi(object):
 
     def getCurrentBarForInstrument(self, instrument):
         return self.__broker.getCurrentBarForInstrument(instrument)
+
+    def updateStockData(self, fromDate=None, toDate=None):
+        if fromDate is None:
+            lastDate = self.getLastStockDate()
+            fromDate =  dt.unlocalize( lastDate if lastDate is not None else self.__currentDate - timedelta(days=365*2) )
+        if toDate is None:
+            toDate = dt.unlocalize(self.__currentDate)
+
+        rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
+                                row["Volume"] == "-" or googlefeed.parse_date(row["Date"]) < fromDate or googlefeed.parse_date(row["Date"]) > toDate
+
+        [os.remove(self.__googleFinanceDir + '/' + f) for f in glob.glob1(self.__googleFinanceDir, '*' + str(toDate.year) + '*')]
+        googleFeed = googlefinance.build_feed(self.__codes, fromDate.year, toDate.year, storage=self.__googleFinanceDir, skipErrors=False,
+                                              rowFilter=rowFilter)
+        self.__feed.getDatabase().addBarsFromFeed(googleFeed)
+
+    def getLastStockDate(self):
+        return self.__feed.getDatabase().getLastBarTimestamp()

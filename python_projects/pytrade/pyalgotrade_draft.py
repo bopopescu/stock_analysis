@@ -8,6 +8,8 @@ from pytrade.base import TradingSystem
 from pytrade.persistence.memprovider import MemoryDataProvider
 from pytrade.persistence.sqliteprovider import SQLiteDataProvider
 import pytradeapi
+from pyalgotrade.tools import googlefinance
+from pytrade.feed import DynamicFeed
 
 
 matplotlib.use('PDF')
@@ -23,14 +25,14 @@ codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5",
 
 ############################################################################################################################
 
-# rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
-#                         row["Volume"] == "-"
-# instruments = ["PETR4", "PETR3"]
-# googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
-#                                       rowFilter=rowFilter)
+rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
+                        row["Volume"] == "-"
+instruments = ["PETR4", "PETR3"]
+googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
+                                      rowFilter=rowFilter)
 db = "./sqliteddb"
-# feed = DynamicFeed    (db, codes, maxLen=10)
-# feed.getDatabase().addBarsFromFeed(googleFeed)
+feed = DynamicFeed    (db, codes, maxLen=10)
+feed.getDatabase().addBarsFromFeed(googleFeed)
 ################################################################################################
 maxLen=int(26*1.4)
 feed = DynamicFeed(db, codes, maxLen=maxLen)
