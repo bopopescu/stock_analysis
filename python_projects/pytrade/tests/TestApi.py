@@ -44,7 +44,7 @@ class ApiIntegrationTests(unittest.TestCase):
 
         for i in range(len(days)):
             day = days[i]
-            api = PytradeApi(self.db, self.username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=self.maxLen, debugmode=False)
+            api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=self.maxLen, debugmode=False)
             api.executeAnalysis()
             api.persistData(username=self.username)
 
@@ -52,9 +52,9 @@ class ApiIntegrationTests(unittest.TestCase):
                 continue
 
             day = days[i + 1]
-            api = PytradeApi(self.db, self.username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=self.maxLen, debugmode=False)
+            api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=self.maxLen, debugmode=False)
 
-            for order in api.getActiveMarketOrders() + api.getActiveStopOrders():
+            for order in api.getActiveMarketOrders() + api.getStopOrdersToConfirm():
                 bar = api.getCurrentBarForInstrument(order.getInstrument())
                 if bar is None:
                     continue
@@ -84,17 +84,17 @@ class ApiIntegrationTests(unittest.TestCase):
         tradingAlgorithmGenerator = lambda feed, broker: DonchianTradingAlgorithm(feed, broker, self.donchianEntry,
                                                                                   self.donchianExit, self.riskFactor)
         for day in specificdays:
-            api = PytradeApi(self.db, self.username, tradingAlgorithmGenerator, codes=None, date=day,
+            api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day,
                              maxlen=self.maxLen, debugmode=False)
             api.executeAnalysis()
             api.persistData(username=self.username)
 
             index = alldays.index(day)
             day = alldays[index+1]
-            api = PytradeApi(self.db, self.username, tradingAlgorithmGenerator, codes=None, date=day,
+            api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day,
                              maxlen=self.maxLen, debugmode=False)
 
-            for order in api.getActiveMarketOrders() + api.getActiveStopOrders():
+            for order in api.getActiveMarketOrders() + api.getStopOrdersToConfirm():
                 bar = api.getCurrentBarForInstrument(order.getInstrument())
                 if bar is None:
                     continue

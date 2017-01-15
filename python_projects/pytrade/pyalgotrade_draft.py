@@ -10,6 +10,8 @@ from pytrade.persistence.sqliteprovider import SQLiteDataProvider
 import pytradeapi
 from pyalgotrade.tools import googlefinance
 from pytrade.feed import DynamicFeed
+from pyalgotrade.broker import Order
+import pytz, datetime
 
 
 matplotlib.use('PDF')
@@ -25,14 +27,14 @@ codes = ["ABEV3", "BBAS3", "BBDC3", "BBDC4", "BBSE3", "BRAP4", "BRFS3", "BRKM5",
 
 ############################################################################################################################
 
-rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
-                        row["Volume"] == "-"
-instruments = ["PETR4", "PETR3"]
-googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
-                                      rowFilter=rowFilter)
+# rowFilter = lambda row: row["Close"] == "-" or row["Open"] == "-" or row["High"] == "-" or row["Low"] == "-" or \
+#                         row["Volume"] == "-"
+# instruments = ["PETR4", "PETR3"]
+# googleFeed = googlefinance.build_feed(codes, 2014, 2014, storage="./googlefinance", skipErrors=True,
+#                                       rowFilter=rowFilter)
 db = "./sqliteddb"
-feed = DynamicFeed    (db, codes, maxLen=10)
-feed.getDatabase().addBarsFromFeed(googleFeed)
+# feed = DynamicFeed    (db, codes, maxLen=10)
+# feed.getDatabase().addBarsFromFeed(googleFeed)
 ################################################################################################
 maxLen=int(26*1.4)
 feed = DynamicFeed(db, codes, maxLen=maxLen)
@@ -43,9 +45,14 @@ api = pytradeapi.PytradeApi(dbfilepah=db)
 api.reinitializeUser(username=username, cash=10000)
 tradingAlgorithmGenerator = lambda feed, broker: DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05)
 
+utc = pytz.utc
+days = [
+            utc.localize(datetime.datetime(2014, 2, 7)),
+            utc.localize(datetime.datetime(2014, 2, 11))]
+
 for i in range(len(days)):
     day = days[i]
-    api = pytradeapi.PytradeApi(db, username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen, debugmode=False)
+    api = pytradeapi.PytradeApi(dbfilepah=db, username=username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen, debugmode=False)
     api.executeAnalysis()
     api.persistData(username=username)
 
@@ -53,10 +60,10 @@ for i in range(len(days)):
         continue
 
     day = days[i+1]
-    api = pytradeapi.PytradeApi(db, username, tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen,
+    api = pytradeapi.PytradeApi(dbfilepah=db, username=username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen,
                                 debugmode=False)
 
-    for order in api.getActiveMarketOrders()+api.getActiveStopOrders():
+    for order in api.getActiveMarketOrders()+api.getStopOrdersToConfirm():
         bar = api.getCurrentBarForInstrument(order.getInstrument())
         if bar is None:
             continue
@@ -66,3 +73,9 @@ for i in range(len(days)):
 
     api.persistData(username=username)
 api.getEquity()
+
+
+
+from pytradecli import PytradeCli
+cli = PytradeCli(dbfilepah='./sqliteddb', maxlen=800)
+cli.getAccountInfo()

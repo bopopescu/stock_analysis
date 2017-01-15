@@ -3,6 +3,7 @@ from pyalgotrade.broker import Order
 from pyalgotrade import broker
 from pyalgotrade.broker import backtesting
 import sqlite3
+from pyalgotrade.utils import dt
 
 class SQLiteDataProvider(DataProvider):
     __USERS_TABLE = "user"
@@ -199,7 +200,7 @@ class SQLiteDataProvider(DataProvider):
         cursor.execute(self.__LOAD_ORDERS_SQL, [username])
         ret = {}
         for row in cursor:
-            ret[row[0]]=self.__createOrder(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], row[13], row[14])
+            ret[row[0]]=self.__createOrder(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], dt.timestamp_to_datetime(row[12]), row[13], row[14])
         cursor.close()
         return ret
 
@@ -235,7 +236,7 @@ class SQLiteDataProvider(DataProvider):
                           o.getGoodTillCanceled(),
                           o.getInstrument(),
                           o.getQuantity(),
-                          o.getSubmitDateTime()]
+                          dt.datetime_to_timestamp(o.getSubmitDateTime())]
             if o.getType() == Order.Type.STOP:
                 parameters.append(0)
                 parameters.append(o.getStopPrice())
@@ -257,3 +258,10 @@ class SQLiteDataProvider(DataProvider):
         for code, quantity in shares.iteritems():
             cursor.execute(self.__SAVE_SHARES_SQL, [userId, code, quantity])
         cursor.close()
+
+    def getLastValuesForInstrument(self, instrument, date):
+        sql = "select b.timestamp, b.open, b.high, b.low, b.close, b.volume from bar b inner join instrument i on i.instrument_id=b.instrument_id where i.name=? and b.timestamp<=? order by b.timestamp desc"
+        cursor = self.__connection.cursor()
+        cursor.execute(sql, [instrument, dt.datetime_to_timestamp(date)])
+        ret = cursor.next()
+        return (dt.timestamp_to_datetime(ret[0]), ret[1], ret[2], ret[3], ret[4], ret[5])

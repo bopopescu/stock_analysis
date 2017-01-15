@@ -56,7 +56,7 @@ class PytradeApi(object):
         toDate = self.__currentDate + timedelta(days=5)
         self.__feed = DynamicFeed(self.__dbFilePath, self.__codes, fromDateTime=fromDate, toDateTime=toDate,
                                   maxLen=self.__maxLen)
-        self.__feed.positionFeed(self.__currentDate)
+        self.__feed.positionFeed(dt.as_utc(self.__currentDate) )
 
     def initializeBroker(self, username):
         assert self.__feed is not None
@@ -89,10 +89,13 @@ class PytradeApi(object):
         return self.__broker.getAvailableCash()
 
     def getActiveMarketOrders(self):
-        return self.__broker.getMarketOrdersToConfirm()
+        return self.__broker.getActiveMarketOrders()
 
-    def getActiveStopOrders(self):
+    def getStopOrdersToConfirm(self):
         return self.__broker.getStopOrdersToConfirm()
+
+    def getStopOrders(self):
+        return self.__broker.getActiveStopOrders()
 
     def getAllActiveOrders(self):
         return self.__broker.getActiveOrders()
@@ -156,3 +159,6 @@ class PytradeApi(object):
 
     def getLastStockDate(self):
         return self.__feed.getDatabase().getLastBarTimestamp()
+
+    def getLastValuesForInstrument(self, instrument, date=datetime.now()):
+        return self.__dataProvider.getLastValuesForInstrument(instrument, date)

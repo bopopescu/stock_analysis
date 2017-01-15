@@ -23,12 +23,15 @@ class PytradeBroker(BaseBrokerImpl):
     def getNextOrderIdWithoutIncrementing(self):
         return self._nextOrderId
 
-    def getMarketOrdersToConfirm(self):
+    def getActiveMarketOrders(self):
         return [o for o in self.getActiveOrders() if o.getType()==Order.Type.MARKET]
 
     def getStopOrdersToConfirm(self):
         bars = self.getFeed().getCurrentBars()
         return [o for o in self.getActiveOrders() if o.getType() == Order.Type.STOP and o.getStopPrice()>=bars.getBar(instrument=o.getInstrument())]
+
+    def getActiveStopOrders(self):
+        return [o for o in self.getActiveOrders() if o.getType() == Order.Type.STOP]
 
     def confirmOrder(self, order, bar):
         self.getLogger().debug("Processing order %s " % (order.getId()))

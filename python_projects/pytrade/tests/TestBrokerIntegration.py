@@ -45,7 +45,7 @@ class BrokerIntegrationTests(unittest.TestCase):
         strategy.setAlgorithm(DonchianTradingAlgorithm(feed, broker, donchianEntry, donchianExit, riskFactor))
         feed.dispatchWithoutIncrementingDate()
         feed.nextEvent()
-        for order in broker.getMarketOrdersToConfirm() + broker.getStopOrdersToConfirm():
+        for order in broker.getActiveMarketOrders() + broker.getStopOrdersToConfirm():
             bar = broker.getCurrentBarForInstrument(order.getInstrument())
             if bar is None:
                 continue
