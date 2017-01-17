@@ -23,6 +23,9 @@ class PytradeBroker(BaseBrokerImpl):
     def getNextOrderIdWithoutIncrementing(self):
         return self._nextOrderId
 
+    def getOrderById(self, orderId):
+        return self._activeOrders[orderId]
+
     def getActiveMarketOrders(self):
         return [o for o in self.getActiveOrders() if o.getType()==Order.Type.MARKET]
 

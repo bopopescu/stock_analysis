@@ -79,3 +79,26 @@ api.getEquity()
 from pytradecli import PytradeCli
 cli = PytradeCli(dbfilepah='./sqliteddb', maxlen=800)
 cli.getAccountInfo()
+
+maxLen=int(26*1.4)
+feed = DynamicFeed(db, codes, maxLen=maxLen)
+allDays = feed.getAllDays()
+utc = pytz.utc
+specificdays = [
+            utc.localize(datetime.datetime(2014, 2, 7)),
+            utc.localize(datetime.datetime(2014, 2, 11)),
+            utc.localize(datetime.datetime(2014, 9, 18)),
+            utc.localize(datetime.datetime(2014, 10, 23)),
+            utc.localize(datetime.datetime(2014, 10, 28)),
+            utc.localize(datetime.datetime(2014, 12, 29))]
+for day in specificdays:
+    cli = PytradeCli(dbfilepah='./sqliteddb', date=day, maxlen=800)
+    orders = cli.executeAnalysis()
+
+    nextDay = allDays[allDays.index(day)+1]
+    for order in orders:
+        open = cli.getLastValuesForInstrument(order.getInstrument(), nextDay)[1]
+
+        if not cli.confirmOrder(orderId=order.getId(), quantity=order.getQuantity(), price=open, commission=10, date=nextDay):
+            cli.cancelOrder(order.getId())
+    cli.save()

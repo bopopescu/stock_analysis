@@ -162,3 +162,6 @@ class PytradeApi(object):
 
     def getLastValuesForInstrument(self, instrument, date=datetime.now()):
         return self.__dataProvider.getLastValuesForInstrument(instrument, date)
+
+    def getOrderById(self, orderId):
+        return self.__broker.getOrderById(orderId)
