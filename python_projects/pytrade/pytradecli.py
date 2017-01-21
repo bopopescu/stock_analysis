@@ -163,7 +163,7 @@ class PytradeCli(object):
             "R${:,.2f}".format(values[4]),
             "R${:,.2f}".format(values[5]),
         ])
-        table.draw()
+        print(table.draw())
         return values
 
 
