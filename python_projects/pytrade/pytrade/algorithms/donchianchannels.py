@@ -1,14 +1,10 @@
 import math
 
-from pyalgotrade import dataseries
 from pytrade.base import TradingAlgorithm
 
 
-class DonchianChannel(dataseries.SequenceDataSeries):
-    def __init__(self, feed, instrument, entrySize, exitSize, maxLen=None):
-
-        super(DonchianChannel, self).__init__(maxLen)
-
+class DonchianChannel:
+    def __init__(self, feed, instrument, entrySize, exitSize):
         self.__feed = feed
         self.__instrument = instrument
         self.__entrySize = entrySize
@@ -36,7 +32,7 @@ class DonchianTradingAlgorithm(TradingAlgorithm):
 
         self.__donchians = {}
         for instrument in feed.getRegisteredInstruments():
-            self.__donchians[instrument] = DonchianChannel(feed, instrument, donchianEntrySize, donchianExitSize, maxLen=60)
+            self.__donchians[instrument] = DonchianChannel(feed, instrument, donchianEntrySize, donchianExitSize)
 
     def shouldAnalyze(self, bar, instrument):
         return self.__donchians[instrument].isReady()
