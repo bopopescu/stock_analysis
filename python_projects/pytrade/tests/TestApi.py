@@ -46,7 +46,7 @@ class ApiIntegrationTests(unittest.TestCase):
             day = days[i]
             api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=self.maxLen, debugmode=False)
             api.executeAnalysis()
-            api.persistData(username=self.username)
+            api.persistData()
 
             if i == (len(days) - 1):
                 continue
@@ -62,7 +62,7 @@ class ApiIntegrationTests(unittest.TestCase):
                 if not api.confirmOrder(order, bar.getDateTime(), order.getQuantity(), bar.getOpen(), 10):
                     api.cancelOrder(order)
 
-            api.persistData(username=self.username)
+            api.persistData()
 
         self.assertEqual(api.getEquity(), 36922.16)
 
@@ -87,7 +87,7 @@ class ApiIntegrationTests(unittest.TestCase):
             api = PytradeApi(dbfilepah=self.db, username=self.username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day,
                              maxlen=self.maxLen, debugmode=False)
             api.executeAnalysis()
-            api.persistData(username=self.username)
+            api.persistData()
 
             index = alldays.index(day)
             day = alldays[index+1]
@@ -102,7 +102,7 @@ class ApiIntegrationTests(unittest.TestCase):
                 if not api.confirmOrder(order, bar.getDateTime(), order.getQuantity(), bar.getOpen(), 10):
                     api.cancelOrder(order)
 
-            api.persistData(username=self.username)
+            api.persistData()
 
         self.assertEqual(api.getEquity(), 36922.16)
 

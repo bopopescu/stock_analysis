@@ -45,16 +45,17 @@ api = pytradeapi.PytradeApi(dbfilepah=db)
 api.reinitializeUser(username=username, cash=10000)
 tradingAlgorithmGenerator = lambda feed, broker: DonchianTradingAlgorithm(feed, broker, 9, 26, 0.05)
 
-utc = pytz.utc
-days = [
-            utc.localize(datetime.datetime(2014, 2, 7)),
-            utc.localize(datetime.datetime(2014, 2, 11))]
+# utc = pytz.utc
+# days = [
+#             utc.localize(datetime.datetime(2014, 2, 7)),
+#             utc.localize(datetime.datetime(2014, 2, 11))]
+
 
 for i in range(len(days)):
     day = days[i]
     api = pytradeapi.PytradeApi(dbfilepah=db, username=username, tradingAlgorithmGenerator=tradingAlgorithmGenerator, codes=None, date=day, maxlen=maxLen, debugmode=False)
     api.executeAnalysis()
-    api.persistData(username=username)
+    api.persistData()
 
     if i == (len(days)-1):
         continue
@@ -71,7 +72,7 @@ for i in range(len(days)):
         if not api.confirmOrder(order, bar.getDateTime(), order.getQuantity(), bar.getOpen(), 10):
             api.cancelOrder(order)
 
-    api.persistData(username=username)
+    api.persistData()
 api.getEquity()
 
 
@@ -79,6 +80,8 @@ api.getEquity()
 from pytradecli import PytradeCli
 cli = PytradeCli(dbfilepah='./sqliteddb', maxlen=800)
 cli.getAccountInfo()
+
+cli.getApi().reinitializeUser(cash=10000, username='gabriel')
 
 maxLen=int(26*1.4)
 feed = DynamicFeed(db, codes, maxLen=maxLen)
@@ -91,9 +94,13 @@ specificdays = [
             utc.localize(datetime.datetime(2014, 10, 23)),
             utc.localize(datetime.datetime(2014, 10, 28)),
             utc.localize(datetime.datetime(2014, 12, 29))]
-for day in specificdays:
+for i in range(len(allDays)):
+    day = allDays[i]
     cli = PytradeCli(dbfilepah='./sqliteddb', date=day, maxlen=800)
     orders = cli.executeAnalysis()
+
+    if i == (len(days) - 1):
+        continue
 
     nextDay = allDays[allDays.index(day)+1]
     for order in orders:

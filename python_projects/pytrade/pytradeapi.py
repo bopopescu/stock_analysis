@@ -38,6 +38,7 @@ class PytradeApi(object):
         self.initializeDataProvider()
         self.initializeFeed()
 
+        self.__username = username
         if username is not None:
             self.initializeBroker(username)
             self.initializeStrategy()  # tradingAlgorithmGenerator must not be None
@@ -109,10 +110,10 @@ class PytradeApi(object):
     def getEquity(self):
         return self.__broker.getEquity()
 
-    def persistData(self, username):
-        self.__dataProvider.persistCash(username=username, cash=self.__broker.getAvailableCash())
-        self.__dataProvider.persistShares(username=username, shares=self.__broker.getAllShares())
-        self.__dataProvider.persistOrders(username=username, orders=self.__broker.getAllActiveOrders())
+    def persistData(self):
+        self.__dataProvider.persistCash(username=self.__username, cash=self.__broker.getAvailableCash())
+        self.__dataProvider.persistShares(username=self.__username, shares=self.__broker.getAllShares())
+        self.__dataProvider.persistOrders(username=self.__username, orders=self.__broker.getAllActiveOrders())
 
     def confirmOrder(self, order, datetime, quantity, price, commission):
         self.__broker.acceptOrder(datetime, order)

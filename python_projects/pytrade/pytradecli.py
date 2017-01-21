@@ -149,7 +149,7 @@ class PytradeCli(object):
         self.__api.cancelOrder(self.__api.getOrderById(orderId))
 
     def save(self):
-        self.__api.persistData(self.__username)
+        self.__api.persistData()
 
     def getLastValuesForInstrument(self, instrument, date):
         values = self.__api.getLastValuesForInstrument(instrument, date)
