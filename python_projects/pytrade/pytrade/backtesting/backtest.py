@@ -7,6 +7,7 @@ from pyalgotrade.stratanalyzer import returns
 from pytrade.backtesting.analyzer.dalytradingresults import DailyTradingResults
 from pyalgotrade import plotter
 from matplotlib.backends.backend_pdf import PdfPages
+from pyalgotrade.plotter import SecondaryMarker
 
 class GoogleFinanceBacktest(object):
 
@@ -41,14 +42,10 @@ class GoogleFinanceBacktest(object):
         self.__plotters[0].getOrCreateSubplot("returns").addDataSeries("Simple returns", returnsAnalyzer.getReturns())
         self.__plotters[0].getOrCreateSubplot("dailyresult").addDataSeries("Daily Results", dailyResultsAnalyzer.getTradeResults())
 
-        for i in range(0, len(instruments), 3):
+        for i in range(0, len(instruments)):
             p = plotter.StrategyPlotter(self.__strategy, plotAllInstruments=False, plotPortfolio=False)
             p.getInstrumentSubplot(instruments[i])
             self.__plotters.append(p)
-            if i < len(instruments) - 1:
-                p.getInstrumentSubplot(instruments[i + 1])
-            if i < len(instruments) - 2:
-                p.getInstrumentSubplot(instruments[i + 2])
 
     def getBroker(self):
         return self.__broker
@@ -67,5 +64,13 @@ class GoogleFinanceBacktest(object):
     def generatePdfReport(self, pdfFile):
         pdf = PdfPages(pdfFile)
         for p in self.__plotters:
+            subplots = p.getSubplots()
+            for instrument, subplot in subplots.items():
+                for ti in self.__strategy.getAlgorithm().getTechnicalIndicators().values():
+                    if ti.isNewPlot():
+                        p.getOrCreateSubplot(instrument + " " + ti.getName()).addAndProcessDataSeries(instrument + " " + ti.getName(), ti[instrument])
+                    else:
+                        subplot.addAndProcessDataSeries(instrument + " " + ti.getName(), ti[instrument], defaultClass=SecondaryMarker)
+
             pdf.savefig(p.buildFigure())
         pdf.close()

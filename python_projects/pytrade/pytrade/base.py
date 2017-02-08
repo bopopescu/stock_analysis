@@ -15,6 +15,9 @@ class TradingSystem(strategy.BaseStrategy):
     def setAlgorithm(self, tradingAlgorithm):
         self.__tradingAlgorithm = tradingAlgorithm
 
+    def getAlgorithm(self):
+        return self.__tradingAlgorithm
+
     def __setDebugMode(self, debugOn):
         """Enable/disable debug level messages in the strategy and backtesting broker.
         This is enabled by default."""
@@ -65,6 +68,8 @@ class TradingSystem(strategy.BaseStrategy):
         self.marketOrder(instrument=instrument, quantity=(-1*qty))
 
     def onBarsImpl(self, bars, instrument):
+        self.__tradingAlgorithm.onBars(bars, instrument)
+
         if (not self.__tradingAlgorithm.shouldAnalyze(bars, instrument)):
             self.debug("Skipping stock %s at date %s" % (len(bars.getInstruments()), bars.getDateTime()))
             return
@@ -87,12 +92,22 @@ class TradingSystem(strategy.BaseStrategy):
 class TradingAlgorithm(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, feed, broker):
-        self.__feed = feed
-        self.__broker = broker
+    def __init__(self, feed, broker, technicalIndicators=None):
+        self._feed = feed
+        self._broker = broker
+        self._technicalIndicators = technicalIndicators
+
+    def onBars(self, bars, instrument):
+        if self._technicalIndicators is None:
+            return
+        for ti in self._technicalIndicators.values():
+            ti.onBars(bars, instrument)
 
     def getBroker(self):
-        return self.__broker
+        return self._broker
+
+    def getTechnicalIndicators(self):
+        return self._technicalIndicators if self._technicalIndicators is not None else {}
 
     @abc.abstractmethod
     def shouldAnalyze(self, bar, instrument):
