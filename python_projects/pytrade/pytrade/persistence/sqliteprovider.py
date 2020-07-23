@@ -98,7 +98,7 @@ class SQLiteDataProvider(DataProvider):
         self.__connection.isolation_level = None  # To do auto-commit
 
     def schemaExists(self):
-        sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+        sql = "SELECT name FROM sqlite_main WHERE type='table' AND name=?"
 
         cursor = self.__connection.cursor()
         cursor.execute(sql, [self.__USERS_TABLE])
